@@ -4,7 +4,13 @@
 Memusatkan dan mendigitalkan seluruh siklus pengelolaan beasiswa—mulai dari pendaftaran mahasiswa, verifikasi berkas secara *online*, penetapan hasil seleksi, penanganan kendala, hingga audit pencairan dana—untuk meningkatkan transparansi, mempercepat waktu seleksi, dan mempermudah pelaporan kepada sponsor.
 
 ## Project Reference
-- **Tech Stack:** Node.js (Backend), React.js (Frontend), MySQL & Supabase (Auth/RLS), Docker & Nginx.
+  **Tech Stack:**
+  - **Frontend:** React.js (Vite) + TypeScript + Central Axios Client (dengan Interceptors untuk JWT)
+  - **Backend:** Node.js (Express.js)
+  - **Database:** MySQL (Dikelola menggunakan Sequelize ORM & Migrations untuk menjaga integritas data)
+  - **Auth & Security:** Supabase Auth (Verifikasi sesi di backend wajib via Supabase Admin SDK `getUser`)
+  - **Storage:** Supabase Storage Buckets (dengan RLS ketat max 2MB PDF)
+  - **Infrastructure:** Docker Compose & Nginx (sebagai Reverse Proxy & CORS handler)
 - **Primary Goal:** Transisi dari pengelolaan beasiswa manual yang tersebar menjadi satu sistem terpadu yang memfasilitasi 4 hak akses utama secara spesifik (Mahasiswa, Staff, Kabag Kemahasiswaan, dan Wakil Bagian Keuangan).
 - **Success Metrics:**
   - **Data Integrity:** 0% duplikasi data untuk form aplikasi mahasiswa dan rekam data sponsor.

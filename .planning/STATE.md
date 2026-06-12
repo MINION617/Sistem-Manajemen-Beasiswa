@@ -2,35 +2,30 @@
 
 ## Project Reference
 **Core Value:** Digitalisasi siklus pengelolaan beasiswa untuk transparansi dan efisiensi seleksi.
-**Current Focus:** Phase 1 — Foundation & Initial Setup.
+**Current Focus:** Phase 2 — Administrative Workflow & Monitoring.
 
 ## Current Position
-- **Phase:** 1 (Foundation & Initial Setup)
-- **Plan:** Membangun infrastruktur dasar, manajemen data master, dan portal pendaftaran mahasiswa.
-- **Status:** Memulai implementasi dasar (Backend & Database).
-- **Progress:** [▓░░░░░░░░░░░░░░░░░░░] 5%
+- **Phase:** 2 (Administrative Workflow & Monitoring)
+- **Plan:** Memfasilitasi proses verifikasi berkas oleh staff, pemantauan aktif oleh pimpinan, dan transparansi status bagi mahasiswa.
+- **Status:** Phase 1 Selesai. Memulai perencanaan Phase 2.
+- **Progress:** [▓▓▓▓▓░░░░░░░░░░░░░░░] 25%
 
 ## Performance Metrics
-- **Requirements Covered:** 19/19 (Mapped to 4 Phases)
-- **Tech Stack Alignment:** Node.js (Backend), MySQL (Data), Supabase (Auth), Docker.
-- **Phase 1 Readiness:** High (Requirements and Roadmap updated).
+- **Requirements Covered:** 6/19 (Phase 1 core implemented)
+- **Tech Stack Alignment:** Node.js, MySQL, Supabase, Docker (Functional).
+- **Phase 1 Status:** COMPLETED.
 
 ## Accumulated Context
 ### Decisions
-- Menggunakan Node.js sebagai backend utama dengan MySQL untuk penyimpanan data aplikasi.
-- Supabase digunakan khusus untuk Autentikasi (NIM/Password) dan manajemen Storage untuk file PDF.
-- Implementasi menggunakan Docker dan Nginx untuk mempermudah deployment di infrastruktur existing.
-- Batas unggahan dokumen PDF ditetapkan maksimal 2MB.
+- Arsitektur Hybrid (Node.js + MySQL + Supabase) terbukti stabil untuk fondasi.
+- Row Level Security (RLS) di Supabase Storage harus dikonfigurasi manual untuk keamanan penuh.
+- Middleware autentikasi menggunakan Supabase Admin SDK berjalan dengan baik.
 
 ### Todos
-- [ ] Setup boilerplate Node.js (Express/NestJS) dengan Docker.
-- [ ] Inisialisasi skema database MySQL untuk data master sponsor dan beasiswa.
-- [ ] Integrasi Supabase Auth untuk 4 role pengguna.
-- [ ] Implementasi fitur profil mahasiswa dan form pendaftaran awal.
+- [ ] Perencanaan Phase 2: Workflow Verifikasi & Monitoring.
+- [ ] Implementasi Dashboard Admin untuk validasi dokumen PDF.
+- [ ] Setup sistem notifikasi real-time untuk perubahan status.
 
 ### Blockers
-- Menunggu pemilihan framework backend spesifik (Express vs NestJS) — akan menggunakan Express.js untuk fleksibilitas maksimal sesuai instruksi umum.
+- None.
 
-## Session Continuity
-**Last session:** Pengguna memperbarui PROJECT.md, REQUIREMENTS.md, dan ROADMAP.md.
-**Next steps:** Melakukan riset ulang (rebuild research) dan memulai eksekusi Phase 1.
