@@ -4,10 +4,10 @@
 
 | Phase | Name | Focus | Requirements |
 | :--- | :--- | :--- | :--- |
-| 1 | Foundation & Initial Setup | Data master, portal pendaftaran, profil | FR-001, FR-014, FR-015 |
-| 2 | Administrative Workflow & Monitoring | Verifikasi berkas, monitoring, pusat aduan | FR-002, FR-006, FR-007, FR-016, FR-017, FR-018 |
-| 3 | Selection, Review & Final Approval | Input nilai, review pimpinan, penetapan | FR-003, FR-004, FR-008, FR-010 |
-| 4 | Disbursement, Audit & Financial Reporting | Pencairan dana, audit transfer, laporan | FR-005, FR-009, FR-011, FR-012, FR-013 |
+| 1 | Foundation & Initial Setup | Data master, portal pendaftaran, profil | FR-001, FR-002, FR-003, FR-007 |
+| 2 | Administrative Workflow & Monitoring | Verifikasi berkas, monitoring, pusat aduan | FR-004, FR-005, FR-008, FR-009, FR-013 |
+| 3 | Selection, Review & Final Approval | Input nilai, review pimpinan, penetapan | FR-010, FR-011, FR-014, FR-015 |
+| 4 | Disbursement, Audit & Financial Reporting | Pencairan dana, audit transfer, laporan | FR-012, FR-016, FR-017, FR-018, FR-019 |
 
 ---
 
@@ -15,7 +15,13 @@
 
 **Goals:** Membangun fondasi infrastruktur sistem, manajemen data master sponsor, dan memungkinkan mahasiswa melengkapi profil serta mendaftar beasiswa.
 
-**Requirements covered:** FR-001, FR-014, FR-015
+**Requirements covered:** FR-001, FR-002, FR-003, FR-007
+
+**Plans:** 4 plans
+- [ ] 01-01-PLAN.md — Infrastructure & Database Setup
+- [ ] 01-02-PLAN.md — Authentication & Role-Based Access Control
+- [ ] 01-03-PLAN.md — Administrative CRUD (Sponsors & Scholarships)
+- [ ] 01-04-PLAN.md — Student Portal (Profile & Registration)
 
 **Deliverables:**
 * Setup proyek awal dan skema database utama.
@@ -35,7 +41,7 @@
 
 **Goals:** Memfasilitasi proses verifikasi berkas oleh staff, pemantauan aktif oleh pimpinan, dan transparansi status bagi mahasiswa.
 
-**Requirements covered:** FR-002, FR-006, FR-007, FR-016, FR-017, FR-018
+**Requirements covered:** FR-004, FR-005, FR-008, FR-009, FR-013
 
 **Deliverables:**
 * Dashboard admin (*real-time*) untuk memvalidasi dokumen PDF aplikasi.
@@ -55,7 +61,7 @@
 
 **Goals:** Mendukung proses penilaian tahap lanjut, peninjauan kualifikasi, hingga penetapan penerima beasiswa secara resmi.
 
-**Requirements covered:** FR-003, FR-004, FR-008, FR-010
+**Requirements covered:** FR-010, FR-011, FR-014, FR-015
 
 **Deliverables:**
 * Form input skor tes dan nilai wawancara oleh staff.
@@ -75,7 +81,7 @@
 
 **Goals:** Menutup siklus operasional beasiswa dengan pencairan dana yang dapat diaudit, serta pelaporan ringkasan finansial untuk pemangku kepentingan.
 
-**Requirements covered:** FR-005, FR-009, FR-011, FR-012, FR-013
+**Requirements covered:** FR-012, FR-016, FR-017, FR-018, FR-019
 
 **Deliverables:**
 * Modul unggah bukti transfer dan pembaruan status pencairan (*Paid/Unpaid*).
