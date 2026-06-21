@@ -34,27 +34,9 @@
    01. KONFIGURASI & SESSION
    ============================================================ */
 
-const SUPABASE_URL      = 'https://YOUR_PROJECT.supabase.co';
-const SUPABASE_ANON_KEY = 'YOUR_ANON_KEY';
-
-function getSession() {
-  const s = sessionStorage.getItem('bk_user') || localStorage.getItem('bk_user');
-  return s ? JSON.parse(s) : null;
-}
-
-const session = getSession();
-
-if (!session || session.role !== 'staff') {
-  // Aktifkan di production:
-  // window.location.href = '../LOGIN/login.html';
-}
-
-/* Demo session — hapus di production */
-const demoSession = session || {
-  nama_lengkap : 'Rangga Adi Nugroho',
-  role         : 'staff',
-  id           : 'demo-staff-uuid',
-};
+/* Guard staff AKTIF via shared BK layer (shared/session.js) */
+const session = (window.BK && BK.session) ? BK.session.requireRole('staff') : null;
+const demoSession = session || {};
 
 
 /* ============================================================
@@ -608,8 +590,8 @@ document.getElementById('cancelLogout')?.addEventListener('click', hideLogout);
 document.getElementById('logoutOverlay')?.addEventListener('click', hideLogout);
 
 document.getElementById('confirmLogout')?.addEventListener('click', () => {
-  sessionStorage.removeItem('bk_user');
-  localStorage.removeItem('bk_user');
+  if (window.BK && BK.session) BK.session.clearSession();
+  else { sessionStorage.removeItem('bk_user'); localStorage.removeItem('bk_user'); }
   window.location.href = '../LOGIN/login.html';
 });
 

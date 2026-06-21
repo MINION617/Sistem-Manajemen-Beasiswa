@@ -66,6 +66,12 @@ create table if not exists public.sponsors (
   kontak_perusahaan varchar(50),
   alamat_perusahaan text,
   jenis_industri    varchar(50),
+  tagline           text,
+  tentang           text,
+  narahubung        varchar(100),
+  email             varchar(120),
+  warna             varchar(20),
+  is_aktif          boolean not null default true,
   created_at        timestamptz not null default now()
 );
 
