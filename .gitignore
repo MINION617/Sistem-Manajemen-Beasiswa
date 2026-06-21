@@ -4,6 +4,9 @@ BACKEND/.env
 .env.local
 *.env
 
+# Frontend local Supabase config (real anon key/url live here, not in git)
+FRONTEND/shared/config.local.js
+
 # Dependencies
 node_modules/
 

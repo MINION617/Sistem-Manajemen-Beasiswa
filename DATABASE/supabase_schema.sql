@@ -102,6 +102,19 @@ create table if not exists public.dokumen_pendaftaran (
   created_at     timestamptz not null default now()
 );
 
+-- dokumen_mahasiswa: profile-stage uploads (the standard package, D-08),
+-- owned by the student and reused across all their applications.
+create table if not exists public.dokumen_mahasiswa (
+  id            uuid primary key default gen_random_uuid(),
+  mahasiswa_id  uuid not null references public.profiles(id) on delete cascade,
+  jenis_dokumen varchar(50) not null,  -- transkrip | berkas_pendukung | sertifikat_prestasi
+  file_path     text,
+  file_url      text,
+  ukuran_file   bigint,
+  uploaded_at   timestamptz not null default now(),
+  unique (mahasiswa_id, jenis_dokumen)
+);
+
 create table if not exists public.hasil_seleksi (
   id               uuid primary key default gen_random_uuid(),
   pendaftaran_id   uuid not null references public.pendaftaran(id) on delete cascade,
@@ -203,6 +216,7 @@ alter table public.sponsors            enable row level security;
 alter table public.beasiswa            enable row level security;
 alter table public.pendaftaran         enable row level security;
 alter table public.dokumen_pendaftaran enable row level security;
+alter table public.dokumen_mahasiswa   enable row level security;
 alter table public.hasil_seleksi       enable row level security;
 alter table public.penerima_beasiswa   enable row level security;
 alter table public.penyaluran_dana     enable row level security;
@@ -245,6 +259,12 @@ create policy dokumen_owner on public.dokumen_pendaftaran
             where p.id = pendaftaran_id and p.mahasiswa_id = auth.uid())
   );
 create policy dokumen_staff_read on public.dokumen_pendaftaran
+  for select using (public.current_role() in ('staff','kabag'));
+
+-- dokumen_mahasiswa: student owns their own; staff/kabag read.
+create policy dokmhs_owner on public.dokumen_mahasiswa
+  for all using (mahasiswa_id = auth.uid()) with check (mahasiswa_id = auth.uid());
+create policy dokmhs_staff_read on public.dokumen_mahasiswa
   for select using (public.current_role() in ('staff','kabag'));
 
 -- hasil_seleksi: staff write; mahasiswa read own; kabag read all (MGMT-02).

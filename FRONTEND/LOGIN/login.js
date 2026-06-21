@@ -2,22 +2,8 @@
    LOGIN.JS — Beasiswa Kampus (Multi-Role)
    ============================================================
 
-   STRUKTUR FILE:
-   01. Konfigurasi Supabase
-   02. Konfigurasi Role (ROLE_CONFIG)
-   03. Akun Dummy — hanya untuk development
-   04. State
-   05. Auto-redirect jika sudah login
-   06. Render konten sesuai role
-   07. Pemilih role (role switcher)
-   08. Toggle tampil/sembunyikan password
-   09. Submit login
-   10. Supabase helpers (produksi)
-   11. Session helpers
-   12. UI helpers
-   13. Modal — Lupa Password
-   14. Modal helpers
-   15. Init
+   Auth: REAL Supabase Auth via window.BK (shared/supabaseConfig.js +
+   shared/api.js + shared/session.js). Dummy accounts removed.
 
    ALUR REDIRECT PER ROLE:
      mahasiswa → ../dashboard/dashboard.html
@@ -26,23 +12,16 @@
      wabag     → ../KABAGWABAG/WABAG/dashboardWabag.html
 
    CATATAN:
-     - Registrasi mandiri DIHAPUS. Akun mahasiswa dibuat oleh
-       admin kampus dari data akademik (NIM + password sistem).
-     - hasRegister dihapus dari ROLE_CONFIG karena tidak relevan.
+     - Registrasi mandiri DIHAPUS. Akun dibuat admin kampus (NIM/NIP + password).
+     - Login pakai NIM/NIP; email auth memakai konvensi <nim>@kampus.ac.id
+       (lihat BK.config.emailFromIdentifier).
    ============================================================ */
 
 
 /* ============================================================
-   01. KONFIGURASI SUPABASE
-   ============================================================ */
-
-const SUPABASE_URL      = 'https://YOUR_PROJECT.supabase.co';
-const SUPABASE_ANON_KEY = 'YOUR_ANON_KEY';
-
-
-/* ============================================================
-   02. KONFIGURASI ROLE
+   01. KONFIGURASI ROLE
    Mengatur tampilan panel kiri + form sesuai role yang dipilih.
+   (Konfigurasi Supabase ada di shared/supabaseConfig.js → window.BK.)
    ============================================================ */
 
 const ROLE_CONFIG = {
@@ -57,7 +36,7 @@ const ROLE_CONFIG = {
     idLabel     : 'NIM',
     idPlaceholder: 'Masukkan NIM kamu',
     redirect    : '../dashboard/dashboard.html',
-    demoHint    : 'Akun demo — NIM <code>2150001</code> · Password <code>demo1234</code>',
+    demoHint    : 'Gunakan NIM dan password dari kampus.',
     features: [
       { icon: '🎓', title: 'Daftar Beasiswa',       sub: '9+ beasiswa aktif dari sponsor terpercaya' },
       { icon: '📊', title: 'Pantau Status Seleksi',  sub: 'Tracking real-time setiap tahap seleksi' },
@@ -81,7 +60,7 @@ const ROLE_CONFIG = {
     idLabel     : 'NIP',
     idPlaceholder: 'Masukkan NIP kamu',
     redirect    : '../STAFFADMIN/dashboardStaffAdmin.html',
-    demoHint    : 'Akun demo — NIP <code>198801</code> · Password <code>demo1234</code>',
+    demoHint    : 'Gunakan NIP dan password dari kampus.',
     features: [
       { icon: '🏢', title: 'Manajemen Sponsor & Beasiswa', sub: 'Tambah, ubah, hapus program & sponsor' },
       { icon: '✅', title: 'Verifikasi Pendaftar',          sub: 'Periksa berkas & seleksi administrasi' },
@@ -105,7 +84,7 @@ const ROLE_CONFIG = {
     idLabel     : 'NIP',
     idPlaceholder: 'Masukkan NIP kamu',
     redirect    : '../KABAGWABAG/KABAG/dashboardKabag.html',
-    demoHint    : 'Akun demo — NIP <code>197505</code> · Password <code>demo1234</code>',
+    demoHint    : 'Gunakan NIP dan password dari kampus.',
     features: [
       { icon: '👀', title: 'Monitoring Pendaftar Aktif', sub: 'Statistik peserta seleksi berjalan' },
       { icon: '🏅', title: 'Review Kualifikasi',         sub: 'IPK, nilai tes, wawancara, sertifikat' },
@@ -129,7 +108,7 @@ const ROLE_CONFIG = {
     idLabel     : 'NIP',
     idPlaceholder: 'Masukkan NIP kamu',
     redirect    : '../KABAGWABAG/WABAG/dashboardWabag.html',
-    demoHint    : 'Akun demo — NIP <code>198003</code> · Password <code>demo1234</code>',
+    demoHint    : 'Gunakan NIP dan password dari kampus.',
     features: [
       { icon: '📈', title: 'Ringkasan Keuangan',       sub: 'Grafik & total perputaran dana' },
       { icon: '🧾', title: 'Detail Alokasi & Sponsor', sub: 'Rincian dana per penerima & sponsor' },
@@ -143,7 +122,7 @@ const ROLE_CONFIG = {
     ],
   },
 
-  /* ── Kabag / Wabag gabungan — dibedakan dari NIP saat login ── */
+  /* ── Kabag / Wabag gabungan — dibedakan dari role profil saat login ── */
   kabag_wabag: {
     logo        : '📊',
     badge       : 'Portal Kabag & Wabag · Monitoring',
@@ -154,7 +133,7 @@ const ROLE_CONFIG = {
     idLabel     : 'NIP',
     idPlaceholder: 'Masukkan NIP kamu',
     redirect    : null,
-    demoHint    : 'Kabag — NIP <code>197505</code> &nbsp;|&nbsp; Wabag — NIP <code>198003</code> · Password <code>demo1234</code>',
+    demoHint    : 'Gunakan NIP dan password dari kampus.',
     features: [
       { icon: '👀', title: 'Monitoring Pendaftar',   sub: 'Statistik peserta seleksi berjalan' },
       { icon: '🎯', title: 'Monitoring Penerima',    sub: 'Daftar final penerima & sponsornya' },
@@ -172,115 +151,26 @@ const ROLE_CONFIG = {
 
 
 /* ============================================================
-   03. AKUN DUMMY — hanya untuk development
-   Hapus seluruh blok ini saat production!
-   ============================================================ */
-
-const DUMMY_ACCOUNTS = {
-
-  mahasiswa: [
-    {
-      email          : 'adinda@mahasiswa.com',
-      nim_nip        : '2150001',
-      password       : 'demo1234',
-      role           : 'mahasiswa',
-      nama_lengkap   : 'Adinda Putri Lestari',
-      program_studi  : 'Teknik Informatika',
-      ipk            : 3.85,
-      nomor_whatsapp : '081210001001',
-      alamat         : 'Jl. Mawar No. 10, Bandung',
-    },
-    {
-      email          : 'bagas@mahasiswa.com',
-      nim_nip        : '2150042',
-      password       : 'demo1234',
-      role           : 'mahasiswa',
-      nama_lengkap   : 'Bagas Pratama Wijaya',
-      program_studi  : 'Manajemen',
-      ipk            : 3.62,
-      nomor_whatsapp : '081210002002',
-      alamat         : 'Jl. Melati No. 5, Surabaya',
-    },
-  ],
-
-  staff: [
-    {
-      email          : 'rangga@staff.kampus.ac.id',
-      nim_nip        : '198801',
-      password       : 'demo1234',
-      role           : 'staff',
-      nama_lengkap   : 'Rangga Adi Nugroho',
-      jabatan        : 'Staff Bagian Beasiswa',
-      unit           : 'Bagian Kemahasiswaan',
-      nomor_whatsapp : '081220001001',
-    },
-    {
-      email          : 'sari@staff.kampus.ac.id',
-      nim_nip        : '199002',
-      password       : 'demo1234',
-      role           : 'staff',
-      nama_lengkap   : 'Sari Wulandari',
-      jabatan        : 'Staff Administrasi Beasiswa',
-      unit           : 'Bagian Kemahasiswaan',
-      nomor_whatsapp : '081220002002',
-    },
-  ],
-
-  kabag: [
-    {
-      email          : 'bambang@kampus.ac.id',
-      nim_nip        : '197505',
-      password       : 'demo1234',
-      role           : 'kabag',
-      nama_lengkap   : 'Dr. Bambang Sutejo, M.M.',
-      jabatan        : 'Kepala Bagian Kemahasiswaan',
-      unit           : 'Bagian Kemahasiswaan',
-      nomor_whatsapp : '081230001001',
-    },
-  ],
-
-  wabag: [
-    {
-      email          : 'hartini@kampus.ac.id',
-      nim_nip        : '198003',
-      password       : 'demo1234',
-      role           : 'wabag',
-      nama_lengkap   : 'Dra. Hartini, M.M.',
-      jabatan        : 'Wakil Bagian Keuangan',
-      unit           : 'Bagian Keuangan',
-      nomor_whatsapp : '081240001001',
-    },
-  ],
-
-};
-
-
-/* ============================================================
-   04. STATE
+   02. STATE
    ============================================================ */
 
 let activeRole = 'mahasiswa';
 
 
 /* ============================================================
-   05. AUTO-REDIRECT JIKA SUDAH LOGIN
+   03. AUTO-REDIRECT JIKA SUDAH LOGIN
    ============================================================ */
 
-function getSession() {
-  const s = sessionStorage.getItem('bk_user') || localStorage.getItem('bk_user');
-  return s ? JSON.parse(s) : null;
-}
-
 (function autoRedirect() {
-  const existing = getSession();
-  if (existing && ROLE_CONFIG[existing.role]) {
+  const existing = (window.BK && BK.session) ? BK.session.getSession() : null;
+  if (existing && ROLE_CONFIG[existing.role] && ROLE_CONFIG[existing.role].redirect) {
     window.location.href = ROLE_CONFIG[existing.role].redirect;
   }
 })();
 
 
 /* ============================================================
-   06. RENDER KONTEN SESUAI ROLE
+   04. RENDER KONTEN SESUAI ROLE
    ============================================================ */
 
 function applyRole(role) {
@@ -288,18 +178,14 @@ function applyRole(role) {
   if (!cfg) return;
 
   activeRole = role;
-
-  /* Ubah atribut [data-role] → CSS variables ikut berubah */
   document.body.dataset.role = role;
 
-  /* Panel kiri */
   setHTML('infoBadge', cfg.badge);
   setHTML('infoTitle', cfg.title);
   setText('infoDesc',  cfg.desc);
   renderFeatures(cfg.features);
   renderStats(cfg.stats);
 
-  /* Form kanan */
   setText('formLogo',     cfg.logo);
   setText('formTitle',    cfg.formTitle);
   setText('formSubtitle', cfg.formSubtitle);
@@ -312,11 +198,8 @@ function applyRole(role) {
   }
 
   setHTML('demoHint', cfg.demoHint);
-
-  /* Reset error & pesan */
   clearErrors();
 
-  /* Update tombol role aktif */
   document.querySelectorAll('.role-btn').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.role === role);
   });
@@ -325,7 +208,6 @@ function applyRole(role) {
 function renderFeatures(features) {
   const el = document.getElementById('infoFeatures');
   if (!el) return;
-
   el.innerHTML = features
     .map((f, i) => `
       <li style="animation-delay:${i * 0.07}s">
@@ -342,7 +224,6 @@ function renderFeatures(features) {
 function renderStats(stats) {
   const el = document.getElementById('infoStats');
   if (!el) return;
-
   el.innerHTML = stats
     .map((s, i) => `
       ${i > 0 ? '<div class="mini-stat-divider"></div>' : ''}
@@ -356,7 +237,7 @@ function renderStats(stats) {
 
 
 /* ============================================================
-   07. PEMILIH ROLE
+   05. PEMILIH ROLE
    ============================================================ */
 
 document.getElementById('roleGrid')?.addEventListener('click', (e) => {
@@ -367,7 +248,7 @@ document.getElementById('roleGrid')?.addEventListener('click', (e) => {
 
 
 /* ============================================================
-   08. TOGGLE TAMPIL / SEMBUNYIKAN PASSWORD
+   06. TOGGLE TAMPIL / SEMBUNYIKAN PASSWORD
    ============================================================ */
 
 const toggleBtn = document.getElementById('togglePwd');
@@ -375,16 +256,14 @@ const pwdInput  = document.getElementById('passwordInput');
 
 toggleBtn?.addEventListener('click', () => {
   const show = pwdInput.type === 'password';
-
   pwdInput.type = show ? 'text' : 'password';
-
   toggleBtn.querySelector('.eye-open').style.display   = show ? 'none' : '';
   toggleBtn.querySelector('.eye-closed').style.display = show ? ''     : 'none';
 });
 
 
 /* ============================================================
-   09. SUBMIT LOGIN
+   07. SUBMIT LOGIN — REAL SUPABASE AUTH
    ============================================================ */
 
 document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
@@ -396,110 +275,61 @@ document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
   const cfg        = ROLE_CONFIG[activeRole];
   let valid        = true;
 
-  /* Validasi field kosong */
-  if (!identifier) {
-    showError('identifierInput', 'identifierError', `${cfg.idLabel} wajib diisi`);
-    valid = false;
-  }
-  if (!password) {
-    showError('passwordInput', 'passwordError', 'Password wajib diisi');
-    valid = false;
-  }
+  if (!identifier) { showError('identifierInput', 'identifierError', `${cfg.idLabel} wajib diisi`); valid = false; }
+  if (!password)   { showError('passwordInput', 'passwordError', 'Password wajib diisi'); valid = false; }
   if (!valid) return;
+
+  if (!window.BK || !BK.sb || !BK.api) {
+    showMsg('error', '✗ Supabase belum dikonfigurasi. Hubungi admin.');
+    return;
+  }
 
   setLoading(true);
 
   try {
+    const { data, error } = await BK.api.signIn(identifier, password);
 
-    /* ── Dummy login (development) ── */
-
-    /* Untuk role kabag_wabag: cek ke pool kabag dulu, lalu wabag */
-    let pool;
-    if (activeRole === 'kabag_wabag') {
-      pool = [
-        ...(DUMMY_ACCOUNTS['kabag'] || []),
-        ...(DUMMY_ACCOUNTS['wabag'] || []),
-      ];
-    } else {
-      pool = DUMMY_ACCOUNTS[activeRole] || [];
-    }
-
-    const matched = pool.find(acc =>
-      (acc.email === identifier || acc.nim_nip === identifier) &&
-      acc.password === password
-    );
-
-    if (matched) {
-      await delay(700);
-
-      /* Redirect menggunakan ROLE_CONFIG role asli akun (kabag/wabag),
-         bukan dari kabag_wabag yang redirect-nya null */
-      const matchedRedirect = ROLE_CONFIG[matched.role]?.redirect || cfg.redirect;
-
-      saveSession({
-        id             : 'dummy-' + matched.role + '-' + matched.nim_nip,
-        role           : matched.role,
-        nama_lengkap   : matched.nama_lengkap,
-        nim_nip        : matched.nim_nip,
-        email          : matched.email,
-        jabatan        : matched.jabatan        || null,
-        unit           : matched.unit           || null,
-        program_studi  : matched.program_studi  || null,
-        ipk            : matched.ipk            || null,
-        nomor_whatsapp : matched.nomor_whatsapp || null,
-        alamat         : matched.alamat         || null,
-        access_token   : 'dummy-token-' + matched.nim_nip,
-      });
-
-      const firstName = matched.nama_lengkap.split(' ')[0];
-      showMsg('success', `✓ Selamat datang, ${firstName}! Mengarahkan ke dashboard...`);
-      setTimeout(() => window.location.href = matchedRedirect, 900);
-      return;
-    }
-
-    /* ── Fallback Supabase (produksi) ── */
-    const email = identifier.includes('@')
-      ? identifier
-      : await nimToEmail(identifier);
-
-    if (!email) {
+    if (error || !data) {
       showMsg('error', `✗ ${cfg.idLabel} atau password salah.`);
       return;
     }
 
-    const auth = await supabaseSignIn(email, password);
-    if (auth.error) {
-      showMsg('error', `✗ ${cfg.idLabel} atau password salah.`);
-      return;
-    }
-
-    const profile = await fetchProfile(auth.access_token, auth.user.id);
+    const profile = data.profile;
     if (!profile) {
       showMsg('error', '✗ Profil tidak ditemukan. Hubungi admin.');
+      await BK.api.signOut();
       return;
     }
 
     /* Untuk kabag_wabag: terima role kabag atau wabag */
-    const allowedRoles = activeRole === 'kabag_wabag'
-      ? ['kabag', 'wabag']
-      : [activeRole];
-
-    if (!allowedRoles.includes(profile.role)) {
-      showMsg('error', `✗ Akun ini bukan akun ${cfg.formTitle.replace('Login ', '').toLowerCase()}.`);
+    const allowedRoles = activeRole === 'kabag_wabag' ? ['kabag', 'wabag'] : [activeRole];
+    if (allowedRoles.indexOf(profile.role) === -1) {
+      showMsg('error', '✗ Akun ini tidak sesuai dengan portal yang dipilih.');
+      await BK.api.signOut();
       return;
     }
 
-    /* Redirect sesuai role asli profil */
-    const profileRedirect = ROLE_CONFIG[profile.role]?.redirect || cfg.redirect;
+    const redirect = (ROLE_CONFIG[profile.role] && ROLE_CONFIG[profile.role].redirect) || cfg.redirect;
+    const remember = document.getElementById('rememberMe')?.checked;
 
-    saveSession({
-      ...profile,
-      access_token  : auth.access_token,
-      refresh_token : auth.refresh_token,
-    });
+    BK.session.saveSession({
+      id             : profile.id,
+      role           : profile.role,
+      nama_lengkap   : profile.nama_lengkap,
+      nim_nip        : profile.nim_nip,
+      email          : profile.email,
+      program_studi  : profile.program_studi || null,
+      ipk            : profile.ipk            || null,
+      nomor_whatsapp : profile.nomor_whatsapp || null,
+      alamat         : profile.alamat         || null,
+      jabatan        : profile.jabatan        || null,
+      unit           : profile.unit           || null,
+      access_token   : (data.session && data.session.access_token) || null,
+    }, remember);
 
-    showMsg('success', `✓ Selamat datang, ${profile.nama_lengkap}!`);
-    setTimeout(() => window.location.href = profileRedirect, 900);
+    const firstName = (profile.nama_lengkap || 'Pengguna').split(' ')[0];
+    showMsg('success', `✓ Selamat datang, ${firstName}! Mengarahkan ke dashboard...`);
+    setTimeout(() => { window.location.href = redirect; }, 700);
 
   } catch (err) {
     showMsg('error', '✗ Gagal terhubung ke server. Coba lagi.');
@@ -511,72 +341,7 @@ document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
 
 
 /* ============================================================
-   10. SUPABASE HELPERS (referensi produksi)
-   ============================================================ */
-
-async function supabaseSignIn(email, password) {
-  const res = await fetch(
-    `${SUPABASE_URL}/auth/v1/token?grant_type=password`,
-    {
-      method  : 'POST',
-      headers : {
-        'Content-Type' : 'application/json',
-        'apikey'       : SUPABASE_ANON_KEY,
-      },
-      body: JSON.stringify({ email, password }),
-    }
-  );
-  const data = await res.json();
-  return res.ok ? data : { error: data };
-}
-
-async function nimToEmail(nim) {
-  try {
-    const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/profiles?nim_nip=eq.${encodeURIComponent(nim)}&select=id`,
-      { headers: { 'apikey': SUPABASE_ANON_KEY } }
-    );
-    const data = await res.json();
-    if (!data?.length) return null;
-    return `${nim}@kampus.ac.id`;
-  } catch {
-    return null;
-  }
-}
-
-async function fetchProfile(accessToken, userId) {
-  try {
-    const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/profiles?id=eq.${userId}&select=*`,
-      {
-        headers: {
-          'apikey'        : SUPABASE_ANON_KEY,
-          'Authorization' : `Bearer ${accessToken}`,
-        },
-      }
-    );
-    const data = await res.json();
-    return data?.length > 0 ? data[0] : null;
-  } catch {
-    return null;
-  }
-}
-
-
-/* ============================================================
-   11. SESSION HELPERS
-   ============================================================ */
-
-function saveSession(data) {
-  sessionStorage.setItem('bk_user', JSON.stringify(data));
-  if (document.getElementById('rememberMe')?.checked) {
-    localStorage.setItem('bk_user', JSON.stringify(data));
-  }
-}
-
-
-/* ============================================================
-   12. UI HELPERS
+   08. UI HELPERS
    ============================================================ */
 
 function setLoading(on) {
@@ -632,13 +397,9 @@ document.querySelectorAll('input').forEach(inp => {
   });
 });
 
-function delay(ms) {
-  return new Promise(r => setTimeout(r, ms));
-}
-
 
 /* ============================================================
-   13. MODAL — LUPA PASSWORD
+   09. MODAL — LUPA PASSWORD (Supabase reset)
    ============================================================ */
 
 const forgotModal = document.getElementById('forgotModal');
@@ -662,8 +423,16 @@ document.getElementById('forgotForm')?.addEventListener('submit', async (e) => {
   }
 
   if (msg) { msg.className = 'form-message success'; msg.textContent = '⏳ Mengirimkan link reset...'; }
-  await delay(1500);
-  if (msg) { msg.textContent = '✓ Link reset dikirim! Cek email terdaftar kamu.'; }
+
+  try {
+    const email = BK.config.emailFromIdentifier(val);
+    const { error } = await BK.sb.auth.resetPasswordForEmail(email);
+    if (msg) msg.textContent = error
+      ? '✗ Gagal mengirim link reset. Coba lagi.'
+      : '✓ Link reset dikirim! Cek email terdaftar kamu.';
+  } catch {
+    if (msg) msg.textContent = '✗ Gagal mengirim link reset. Coba lagi.';
+  }
 
   setTimeout(() => {
     closeModal(forgotModal);
@@ -674,7 +443,7 @@ document.getElementById('forgotForm')?.addEventListener('submit', async (e) => {
 
 
 /* ============================================================
-   14. MODAL HELPERS
+   10. MODAL HELPERS
    ============================================================ */
 
 function openModal(m) {
@@ -697,9 +466,8 @@ document.addEventListener('keydown', (e) => {
 
 
 /* ============================================================
-   15. INIT
+   11. INIT
    ============================================================ */
 
 applyRole('mahasiswa');
-
-console.log('🔐 login.js loaded — mode development, akun dummy aktif');
+console.log('🔐 login.js loaded — Supabase auth mode');
