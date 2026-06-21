@@ -10,31 +10,62 @@
 /* =================================================================
    1. CONFIGURATION & CONSTANTS
    ================================================================= */
-const SUPABASE_URL      = 'https://YOUR_PROJECT.supabase.co';
-const SUPABASE_ANON_KEY = 'YOUR_ANON_KEY';
-
-
 /* =================================================================
-   2. SESSION MANAGEMENT
+   2. SESSION MANAGEMENT (shared BK layer)
    ================================================================= */
-function getSession() {
-  const raw = sessionStorage.getItem('bk_user') || localStorage.getItem('bk_user');
-  return raw ? JSON.parse(raw) : null;
-}
+const session = (window.BK && BK.session) ? BK.session.requireRole('mahasiswa') : null;
 
-const session = getSession();
-
-// Redirect kalau bukan mahasiswa (PRODUCTION)
-// Comment baris di bawah saat development di browser tanpa sesi.
-if (!session || session.role !== 'mahasiswa') {
-  window.location.href = '../LOGIN/login.html';
-}
+/* Cache dokumen mahasiswa untuk gate kesiapan (D-06/D-07) */
+let myDocsCache = null;
 
 
 /* =================================================================
    3. DATA — field emoji diganti: icon + iconColor + emoji_bg tetap
    ================================================================= */
-const beasiswaList = [
+let beasiswaList = [];   /* diisi dari Supabase via loadBeasiswa() */
+
+/* Visual per kategori (presentasi saja; tidak disimpan di DB) */
+const KATEGORI_VISUAL = {
+  prestasi: { icon: 'solar:cup-star-bold-duotone',    iconColor: '#d97706', accent: '#fbbf24', emoji_bg: '#fef3c7' },
+  riset:    { icon: 'solar:microscope-bold-duotone',  iconColor: '#8b5cf6', accent: '#8b5cf6', emoji_bg: '#ede9fe' },
+  afirmasi: { icon: 'solar:leaf-bold-duotone',        iconColor: '#10b981', accent: '#10b981', emoji_bg: '#d1fae5' },
+  industri: { icon: 'solar:buildings-2-bold-duotone', iconColor: '#2563eb', accent: '#3b82f6', emoji_bg: '#dbeafe' },
+  _default: { icon: 'solar:diploma-bold-duotone',     iconColor: '#2563eb', accent: '#3b82f6', emoji_bg: '#dbeafe' },
+};
+
+/* Map baris DB → bentuk kartu yang dipakai render */
+function mapBeasiswaRow(b) {
+  const vis = KATEGORI_VISUAL[b.kategori] || KATEGORI_VISUAL._default;
+  return {
+    id: b.id,
+    nama_program: b.nama_program,
+    sponsor_nama: (b.sponsors && b.sponsors.nama_perusahaan) || '—',
+    sponsor_industri: (b.sponsors && b.sponsors.jenis_industri) || '—',
+    kuota_penerima: b.kuota || 0,
+    kategori: b.kategori || 'lainnya',
+    nominal_dana: b.nominal_dana || 0,
+    tanggal_buka: b.tanggal_buka || null,
+    tanggal_tutup: b.tanggal_tutup || null,
+    deskripsi: b.deskripsi || '',
+    persyaratan: Array.isArray(b.persyaratan) ? b.persyaratan : [],
+    icon: vis.icon, iconColor: vis.iconColor, accent: vis.accent, emoji_bg: vis.emoji_bg,
+  };
+}
+
+async function loadBeasiswa() {
+  if (window.BK && BK.api && BK.sb) {
+    const { data, error } = await BK.api.listBeasiswa({ status: 'aktif' });
+    if (!error && Array.isArray(data)) {
+      beasiswaList = data.map(mapBeasiswaRow);
+      return;
+    }
+  }
+  /* fallback: seed lokal jika Supabase belum tersedia */
+  beasiswaList = beasiswaSeed.slice();
+}
+
+/* ===== Seed lokal (fallback bila Supabase kosong/tak tersedia) ===== */
+const beasiswaSeed = [
   {
     id: 'b-001',
     nama_program: 'Beasiswa Mandiri Prestasi',
@@ -280,6 +311,7 @@ function formatRupiah(num) {
 }
 
 function formatTanggal(str) {
+  if (!str) return '—';
   return new Date(str).toLocaleDateString('id-ID', {
     day: 'numeric',
     month: 'long',
@@ -288,6 +320,7 @@ function formatTanggal(str) {
 }
 
 function deadlineLabel(tanggalTutup) {
+  if (!tanggalTutup) return { text: 'Pendaftaran dibuka', urgent: false };
   const diff = Math.ceil(
     (new Date(tanggalTutup) - new Date()) / (1000 * 60 * 60 * 24)
   );
@@ -327,14 +360,12 @@ function initUserInfo() {
    7. DAFTAR STATUS
    ================================================================= */
 async function loadSudahDaftar() {
-  /* === PRODUCTION SUPABASE ===
-  const res = await fetch(
-    `${SUPABASE_URL}/rest/v1/pendaftaran?mahasiswa_id=eq.${session.id}&select=beasiswa_id`,
-    { headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${session.access_token}` } }
-  );
-  const data = await res.json();
-  data.forEach(d => sudahDaftar.add(d.beasiswa_id));
-  */
+  if (session && window.BK && BK.api && BK.sb && session.id) {
+    const { data, error } = await BK.api.listMyPendaftaran(session.id);
+    if (!error && Array.isArray(data)) {
+      data.forEach(p => sudahDaftar.add(p.beasiswa_id));
+    }
+  }
   updateStripSudahDaftar();
 }
 
@@ -541,9 +572,34 @@ function openDetail(id) {
   openModal();
 }
 
+/* Gate kesiapan (D-06/D-07): profil + dokumen inti wajib lengkap */
+async function checkReadiness() {
+  if (!session || !window.BK || !BK.api || !BK.sb) {
+    return { ready: false, missingProfile: ['Sesi tidak ditemukan / Supabase belum siap'], missingDocs: [] };
+  }
+  if (myDocsCache === null) {
+    const { data } = await BK.api.listDokumenMahasiswa(session.id);
+    myDocsCache = data || [];
+  }
+  return BK.rules.isReadyToApply(session, myDocsCache);
+}
+
 function initDetailLanjut() {
-  document.getElementById('btnLanjutDaftar')?.addEventListener('click', () => {
+  document.getElementById('btnLanjutDaftar')?.addEventListener('click', async () => {
     if (!selectedBeasiswa) return;
+
+    const ready = await checkReadiness();
+    if (!ready.ready) {
+      const reasons = [].concat(
+        ready.missingProfile.map(x => 'Profil: ' + x),
+        ready.missingDocs.map(x => 'Dokumen: ' + x)
+      );
+      alert(
+        'Belum bisa mendaftar. Lengkapi dulu:\n\n• ' + reasons.join('\n• ') +
+        '\n\nBuka menu "Profil Saya" untuk melengkapi profil & mengunggah dokumen.'
+      );
+      return;
+    }
 
     const set = (id, val) => {
       const el = document.getElementById(id);
@@ -556,17 +612,7 @@ function initDetailLanjut() {
     set('formProdi', session?.program_studi || '—');
 
     document.getElementById('formDaftar').reset();
-    document.querySelectorAll('.file-upload').forEach(el => {
-      el.classList.remove('has-file');
-    });
-    document.querySelectorAll('.upload-main').forEach((el, i) => {
-      const defaults = [
-        'Klik untuk upload atau drag & drop',
-        'TOEFL / IELTS / lainnya',
-        'KTP, KK, Surat Rekomendasi, dll.',
-      ];
-      el.textContent = defaults[i] || 'Klik untuk upload';
-    });
+    document.querySelectorAll('.file-upload').forEach(el => el.classList.remove('has-file'));
     clearFormErrors();
 
     showStep('form');
@@ -592,19 +638,10 @@ function validateForm() {
   clearFormErrors();
   let valid = true;
 
-  const sertif = document.getElementById('sertifikat_prestasi');
-  const berkas = document.getElementById('berkas_pendukung');
-  const agree  = document.getElementById('agreeCheck');
-
-  if (!sertif.files.length) {
-    showFormError('errSertifikat', 'Sertifikat prestasi wajib diupload');
-    valid = false;
-  }
-  if (!berkas.files.length) {
-    showFormError('errBerkas', 'Berkas pendukung wajib diupload');
-    valid = false;
-  }
-  if (!agree.checked) {
+  /* Dokumen inti sudah divalidasi lewat gate kesiapan profil (D-08).
+     Di langkah ini cukup konfirmasi pernyataan. */
+  const agree = document.getElementById('agreeCheck');
+  if (agree && !agree.checked) {
     showFormError('errAgree', 'Centang pernyataan di atas untuk melanjutkan');
     valid = false;
   }
@@ -626,13 +663,31 @@ function initFormSubmit() {
     e.preventDefault();
     if (!validateForm()) return;
 
+    if (!selectedBeasiswa) return;
     setSubmitLoading(true);
 
     try {
-      /* === PRODUCTION SUPABASE === (identik asli) */
+      if (!window.BK || !BK.api || !BK.sb || !session) {
+        alert('Supabase belum siap. Coba lagi nanti.');
+        return;
+      }
 
-      await delay(1500);
+      const { error } = await BK.api.createPendaftaran(session.id, selectedBeasiswa.id);
 
+      if (error) {
+        if (error.code === 'duplicate') {
+          sudahDaftar.add(selectedBeasiswa.id);
+          updateStripSudahDaftar();
+          renderGrid();
+          alert(error.message || 'Kamu sudah mendaftar beasiswa ini.');
+          closeModalHandler();
+        } else {
+          alert('Gagal mendaftar: ' + (error.message || 'coba lagi.'));
+        }
+        return;
+      }
+
+      /* Sukses → status awal "menunggu_verifikasi" (D-09), tampil di Pendaftaran Saya */
       sudahDaftar.add(selectedBeasiswa.id);
       updateStripSudahDaftar();
       renderGrid();
@@ -854,8 +909,8 @@ function initLogout() {
   document.getElementById('logoutOverlay')?.addEventListener('click', hideLogoutModal);
 
   document.getElementById('confirmLogout')?.addEventListener('click', () => {
-    sessionStorage.removeItem('bk_user');
-    localStorage.removeItem('bk_user');
+    if (window.BK && BK.session) BK.session.clearSession();
+    else { sessionStorage.removeItem('bk_user'); localStorage.removeItem('bk_user'); }
     window.location.href = '../LOGIN/login.html';
   });
 }
@@ -889,17 +944,17 @@ function applyScrollReveal() {
 /* =================================================================
   20. INITIALIZATION (DOMContentLoaded)
    ================================================================= */
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
 
   initBgCanvas();
   initParticles();
-
   initUserInfo();
-  loadSudahDaftar();
 
+  await loadBeasiswa();
+  await loadSudahDaftar();
   renderGrid();
 
-  const total = beasiswaList.reduce((a, b) => a + b.kuota_penerima, 0);
+  const total = beasiswaList.reduce((a, b) => a + (b.kuota_penerima || 0), 0);
   const stripKuota = document.getElementById('stripKuota');
   if (stripKuota) stripKuota.textContent = total;
 
@@ -916,12 +971,11 @@ document.addEventListener('DOMContentLoaded', () => {
   initMobileNav();
   initLogout();
 
+  /* Deep-link ?id= → buka detail beasiswa (fix audit N2) */
+  const qid = new URLSearchParams(window.location.search).get('id');
+  if (qid && beasiswaList.some(b => b.id === qid)) openDetail(qid);
+
   setTimeout(applyScrollReveal, 80);
 
-  console.log(
-    '🎓 daftarBeasiswa.js loaded — user:',
-    session?.nama_lengkap,
-    '| beasiswa aktif:',
-    beasiswaList.length
-  );
+  console.log('🎓 daftarBeasiswa.js loaded — beasiswa aktif:', beasiswaList.length);
 });

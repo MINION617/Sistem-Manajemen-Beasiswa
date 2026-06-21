@@ -6,37 +6,15 @@
             Struktur kode vertikal (satu properti per baris).
    ============================================================ */
 
-const SUPABASE_URL      = 'https://YOUR_PROJECT.supabase.co';
-const SUPABASE_ANON_KEY = 'YOUR_ANON_KEY';
-
-
 /* ============================================================
-   SESSION
+   SHARED LAYER — BK.session / BK.api / BK.rules
+   (dimuat via <script> sebelum file ini; lihat profilMahasiswa.html)
    ============================================================ */
-function getSession() {
-  const s = sessionStorage.getItem('bk_user') || localStorage.getItem('bk_user');
-  return s ? JSON.parse(s) : null;
-}
+const session = (window.BK && BK.session) ? BK.session.requireRole('mahasiswa') : null;
 
-const session = getSession();
-
-if (!session || session.role !== 'mahasiswa') {
-  // Uncomment saat production:
-  // window.location.href = '../LOGIN/login.html';
-}
-
-/* Demo session untuk preview tanpa login */
-const demoSession = session || {
-  nama_lengkap   : 'Rizky Firmansyah',
-  nim_nip        : '2021310045',
-  program_studi  : 'Teknik Informatika',
-  ipk            : 3.85,
-  alamat         : 'Jl. Merdeka No. 12, Jakarta Pusat',
-  nomor_whatsapp : '081234567890',
-  email          : 'rizky@mahasiswa.ac.id',
-  role           : 'mahasiswa',
-  id             : 'demo-uuid',
-};
+/* State profil + dokumen */
+let demoSession = session || {};
+let myDocs = [];
 
 
 /* ============================================================
@@ -128,16 +106,20 @@ function initUserInfo() {
 /* ============================================================
    MINI STATS
    ============================================================ */
-function initMiniStats() {
-  animateNum('statTotal',  4);
-  animateNum('statLolos',  2);
-  animateNum('statProses', 1);
-  setEl('statDana', 'Rp 9 jt');
+function initMiniStats() { loadStats(); }
 
-  /* Hero badges */
-  setEl('heroBadgeDaftar', '4');
-  setEl('heroBadgeLolos',  '2');
-  setEl('heroBadgeDana',   'Rp 9 jt');
+async function loadStats() {
+  if (!session || !window.BK || !BK.api || !BK.sb) return;
+  const { data, error } = await BK.api.listMyPendaftaran(session.id);
+  if (error || !data) return;
+  const total  = data.length;
+  const lolos  = data.filter(p => p.status === 'lolos_final').length;
+  const proses = data.filter(p => ['menunggu_verifikasi', 'lolos_berkas', 'wawancara'].indexOf(p.status) !== -1).length;
+  setEl('statTotal', total);
+  setEl('statLolos', lolos);
+  setEl('statProses', proses);
+  setEl('heroBadgeDaftar', String(total));
+  setEl('heroBadgeLolos',  String(lolos));
 }
 
 
@@ -220,11 +202,8 @@ document.getElementById('formProfil')?.addEventListener('submit', async (e) => {
   }
 
   setLoading(true);
-  await delay(1000);
 
-  /* Update session lokal */
-  const updated = {
-    ...demoSession,
+  const patch = {
     nama_lengkap   : namaVal,
     program_studi  : prodiVal,
     ipk            : ipkVal,
@@ -232,16 +211,31 @@ document.getElementById('formProfil')?.addEventListener('submit', async (e) => {
     nomor_whatsapp : waVal,
   };
 
-  sessionStorage.setItem('bk_user', JSON.stringify(updated));
+  try {
+    if (window.BK && BK.api && BK.sb && session && session.id) {
+      const { error } = await BK.api.updateProfile(session.id, patch);
+      if (error) {
+        showFormMsg('error', '✗ Gagal menyimpan: ' + (error.message || 'coba lagi'));
+        setLoading(false);
+        return;
+      }
+    }
 
-  if (localStorage.getItem('bk_user')) {
-    localStorage.setItem('bk_user', JSON.stringify(updated));
+    /* Sinkronkan session lokal */
+    demoSession = { ...demoSession, ...patch };
+    const remember = !!localStorage.getItem('bk_user');
+    if (window.BK && BK.session) BK.session.saveSession(demoSession, remember);
+
+    initUserInfo();
+    disableEdit();
+    renderReadiness();
+    showFormMsg('success', '✓ Profil berhasil diperbarui!');
+  } catch (err) {
+    showFormMsg('error', '✗ Gagal terhubung ke server.');
+    console.error(err);
+  } finally {
+    setLoading(false);
   }
-
-  initUserInfo();
-  disableEdit();
-  showFormMsg('success', '✓ Profil berhasil diperbarui!');
-  setLoading(false);
 
   setTimeout(() => clearFormMsg(), 3500);
 });
@@ -392,8 +386,8 @@ function initLogout() {
   logoutOverlay?.addEventListener('click', closeLogoutModal);
 
   document.getElementById('confirmLogout')?.addEventListener('click', () => {
-    sessionStorage.removeItem('bk_user');
-    localStorage.removeItem('bk_user');
+    if (window.BK && BK.session) BK.session.clearSession();
+    else { sessionStorage.removeItem('bk_user'); localStorage.removeItem('bk_user'); }
     window.location.href = '../LOGIN/login.html';
   });
 }
@@ -551,6 +545,83 @@ function clearFormMsg() {
 
 
 /* ============================================================
+   READINESS GATE + DOKUMEN (Phase 1 — D-06/D-07/D-08)
+   ============================================================ */
+async function loadDocs() {
+  if (session && window.BK && BK.api && BK.sb && session.id) {
+    const { data, error } = await BK.api.listDokumenMahasiswa(session.id);
+    myDocs = (!error && data) ? data : [];
+  }
+  renderDocList();
+  renderReadiness();
+}
+
+function renderDocList() {
+  const wrap = document.getElementById('docList');
+  if (!wrap || !window.BK || !BK.rules) return;
+  wrap.innerHTML = BK.rules.CORE_DOCS.map(d => {
+    const have = myDocs.some(x => x.jenis_dokumen === d.key);
+    return `
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid #eef2f7">
+        <div>
+          <strong>${d.label}</strong> ${d.required ? '<span style="color:#dc2626">*</span>' : '<span style="color:#94a3b8">(opsional)</span>'}
+          <div style="font-size:12px;color:${have ? '#059669' : '#dc2626'}">${have ? '✓ Terunggah' : 'Belum diunggah'}</div>
+        </div>
+        <label class="btn-edit" style="cursor:pointer;white-space:nowrap">
+          ${have ? 'Ganti' : 'Unggah'}
+          <input type="file" data-doc="${d.key}" accept=".pdf,.jpg,.jpeg,.png" style="display:none" />
+        </label>
+      </div>`;
+  }).join('');
+  wrap.querySelectorAll('input[type=file]').forEach(inp => {
+    inp.addEventListener('change', e => handleUpload(e.target.dataset.doc, e.target.files[0]));
+  });
+}
+
+async function handleUpload(jenis, file) {
+  const msg = document.getElementById('docMsg');
+  if (!file) return;
+  if (file.size > 5 * 1024 * 1024) {
+    if (msg) { msg.className = 'form-message error'; msg.textContent = '⚠ Ukuran maksimal 5MB.'; }
+    return;
+  }
+  if (!session || !window.BK || !BK.api || !BK.sb) {
+    if (msg) { msg.className = 'form-message error'; msg.textContent = '⚠ Supabase belum siap.'; }
+    return;
+  }
+  if (msg) { msg.className = 'form-message success'; msg.textContent = '⏳ Mengunggah...'; }
+  const { error } = await BK.api.uploadDokumenMahasiswa(session.id, jenis, file);
+  if (error) {
+    if (msg) { msg.className = 'form-message error'; msg.textContent = '✗ Gagal unggah: ' + (error.message || ''); }
+    return;
+  }
+  if (msg) msg.textContent = '✓ Dokumen tersimpan.';
+  await loadDocs();
+  setTimeout(() => { if (msg) { msg.className = 'form-message'; msg.textContent = ''; } }, 2500);
+}
+
+function renderReadiness() {
+  const el = document.getElementById('readyBanner');
+  if (!el || !window.BK || !BK.rules) return;
+  const r = BK.rules.isReadyToApply(demoSession, myDocs);
+  if (r.ready) {
+    el.innerHTML = `<div style="background:#d1fae5;color:#065f46;padding:12px 14px;border-radius:10px;font-size:14px">
+      ✓ Profil &amp; dokumen lengkap. Kamu siap
+      <a href="../daftarBeasiswa/daftarBeasiswa.html" style="color:#065f46;font-weight:800">mendaftar beasiswa →</a>
+    </div>`;
+  } else {
+    const items = []
+      .concat(r.missingProfile.map(x => 'Profil: ' + x), r.missingDocs.map(x => 'Dokumen: ' + x))
+      .map(x => `<li>${x}</li>`).join('');
+    el.innerHTML = `<div style="background:#fef3c7;color:#92400e;padding:12px 14px;border-radius:10px;font-size:14px">
+      <strong>Lengkapi dulu sebelum bisa mendaftar:</strong>
+      <ul style="margin:6px 0 0 18px">${items}</ul>
+    </div>`;
+  }
+}
+
+
+/* ============================================================
    KEYBOARD SHORTCUTS
    ============================================================ */
 document.addEventListener('keydown', e => {
@@ -569,6 +640,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initParticles();
   initUserInfo();
   initMiniStats();
+  loadDocs();
   initNavbarScroll();
   initMobileNav();
   initLogout();

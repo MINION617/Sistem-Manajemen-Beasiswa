@@ -78,6 +78,9 @@ create table if not exists public.beasiswa (
   kategori       varchar(50),
   nominal_dana   bigint,
   kuota          int,
+  tanggal_buka   date,
+  tanggal_tutup  date,
+  persyaratan    text[],                                  -- daftar syarat
   status         varchar(20) not null default 'aktif',   -- aktif | nonaktif
   created_at     timestamptz not null default now()
 );

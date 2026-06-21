@@ -721,6 +721,21 @@
             </form>
           </div>
 
+          <!-- Kesiapan Pendaftaran (readiness gate — Phase 1, D-06/D-07/D-08) -->
+          <div class="form-card reveal" style="margin-top:20px">
+            <div class="form-card-header">
+              <div class="form-card-title">
+                <span class="form-card-icon">
+                  <iconify-icon icon="solar:clipboard-check-bold-duotone" width="20" style="color:#2563eb"></iconify-icon>
+                </span>
+                <h3>Kesiapan Pendaftaran</h3>
+              </div>
+            </div>
+            <div id="readyBanner"></div>
+            <div id="docList" style="margin-top:12px"></div>
+            <div class="form-message" id="docMsg"></div>
+          </div>
+
         </div>
       </div>
     </section>
@@ -817,6 +832,14 @@
     </div>
   </div>
 
+
+  <!-- Supabase + shared layer (order matters) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../shared/config.local.js"></script>
+  <script src="../shared/supabaseConfig.js"></script>
+  <script src="../shared/applicationRules.js"></script>
+  <script src="../shared/session.js"></script>
+  <script src="../shared/api.js"></script>
 
   <script src="profilMahasiswa.js"></script>
 </body>

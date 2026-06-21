@@ -5,26 +5,9 @@
             Semua fungsi, logika, struktur identik asli.
    ============================================ */
 
-const SUPABASE_URL      = 'https://YOUR_PROJECT.supabase.co';
-const SUPABASE_ANON_KEY = 'YOUR_ANON_KEY';
-
-// ===== SESSION =====
-function getSession() {
-  const s = sessionStorage.getItem('bk_user') || localStorage.getItem('bk_user');
-  return s ? JSON.parse(s) : null;
-}
-const session = getSession();
-if (!session || session.role !== 'mahasiswa') {
-  // window.location.href = '../LOGIN/login.html'; // aktifkan di production
-}
-
-// Demo session fallback (hapus di production)
-const demoSession = session || {
-  nama_lengkap: 'Rizky Firmansyah',
-  nim_nip: '2021310045',
-  role: 'mahasiswa',
-  id: 'demo-uuid',
-};
+// ===== SESSION (shared BK layer) =====
+const session = (window.BK && BK.session) ? BK.session.requireRole('mahasiswa') : null;
+const demoSession = session || {};
 
 // ===== STATUS CONFIG =====
 // icon: Iconify icon name + iconColor menggantikan emoji string
@@ -169,10 +152,49 @@ function initUserInfo() {
   el('welcomeTitle', 'Pendaftaran ' + first + ' 📋');
 }
 
-// ===== LOAD DATA =====
+// ===== LOAD DATA (Supabase) =====
+function synthTimeline(status, tgl) {
+  const idx = TAHAPAN_IDX[status] ?? 0;
+  const rej = IS_REJECTED.includes(status);
+  const tl  = [];
+  for (let i = 0; i <= idx; i++) {
+    const key = (rej && i === idx) ? status : TAHAPAN[i].key;
+    tl.push({ step: key, tanggal: tgl, catatan: '' });
+  }
+  return tl;
+}
+
+function mapPendaftaranRow(p) {
+  const b    = p.beasiswa || {};
+  const spon = b.sponsors || {};
+  const hs   = Array.isArray(p.hasil_seleksi) ? (p.hasil_seleksi[0] || null) : (p.hasil_seleksi || null);
+  const tgl  = p.tanggal_daftar || p.created_at;
+  return {
+    id: p.id,
+    status: p.status,
+    tanggal_daftar: tgl,
+    updated_at: p.created_at || tgl,
+    beasiswa: {
+      nama_program: b.nama_program || '—',
+      kuota_penerima: (b.kuota ?? '—'),
+      nominal_dana: b.nominal_dana || 0,
+      tanggal_tutup: b.tanggal_tutup || null,
+      sponsors: { nama_perusahaan: spon.nama_perusahaan || '—', industri: spon.jenis_industri || '—' },
+    },
+    icon: 'solar:diploma-bold-duotone', iconColor: '#2563eb', iconBg: '#dbeafe',
+    hasil_seleksi: hs ? { nilai_tes: hs.nilai_tes, nilai_wawancara: hs.nilai_wawancara, catatan_staff: hs.catatan_staff } : null,
+    dokumen: [],
+    timeline: synthTimeline(p.status, tgl),
+  };
+}
+
 async function loadData() {
-  /* Production: Supabase query identik asli */
-  allData = [...dummyData];
+  if (session && window.BK && BK.api && BK.sb && session.id) {
+    const { data, error } = await BK.api.listMyPendaftaran(session.id);
+    allData = (!error && Array.isArray(data)) ? data.map(mapPendaftaranRow) : [];
+  } else {
+    allData = [];
+  }
   renderStats();
   renderList();
 }
@@ -491,13 +513,15 @@ document.getElementById('btnLogout')?.addEventListener('click', showLogoutModal)
 document.getElementById('cancelLogout')?.addEventListener('click', hideLogoutModal);
 document.getElementById('logoutOverlay')?.addEventListener('click', hideLogoutModal);
 document.getElementById('confirmLogout')?.addEventListener('click', () => {
-  sessionStorage.removeItem('bk_user'); localStorage.removeItem('bk_user');
+  if (window.BK && BK.session) BK.session.clearSession();
+  else { sessionStorage.removeItem('bk_user'); localStorage.removeItem('bk_user'); }
   window.location.href = '../LOGIN/login.html';
 });
 
 // ===== UTILS =====
 function setEl(id, val) { const e = document.getElementById(id); if (e) e.textContent = val; }
 function formatTanggal(str) {
+  if (!str) return '—';
   return new Date(str).toLocaleDateString('id-ID', { day:'numeric', month:'long', year:'numeric' });
 }
 function formatRupiah(num) { return 'Rp ' + num.toLocaleString('id-ID'); }

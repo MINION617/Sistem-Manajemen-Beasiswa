@@ -644,6 +644,14 @@
   <!-- =================================================================
        SCRIPT
        ================================================================= -->
+  <!-- Supabase + shared layer (order matters) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../shared/config.local.js"></script>
+  <script src="../shared/supabaseConfig.js"></script>
+  <script src="../shared/applicationRules.js"></script>
+  <script src="../shared/session.js"></script>
+  <script src="../shared/api.js"></script>
+
   <script src="daftarBeasiswa.js"></script>
 </body>
 </html>

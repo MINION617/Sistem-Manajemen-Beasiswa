@@ -93,7 +93,7 @@
     listMyPendaftaran: function (mahasiswaId) {
       return wrap(
         sb().from('pendaftaran')
-          .select('*, beasiswa(id, nama_program, nominal_dana, sponsors(nama_perusahaan)), hasil_seleksi(*), penerima_beasiswa(*), penyaluran_dana(*)')
+          .select('*, beasiswa(id, nama_program, nominal_dana, kuota, kategori, tanggal_tutup, sponsors(nama_perusahaan, jenis_industri)), hasil_seleksi(*), penerima_beasiswa(*), penyaluran_dana(*)')
           .eq('mahasiswa_id', mahasiswaId)
           .order('tanggal_daftar', { ascending: false })
       );
