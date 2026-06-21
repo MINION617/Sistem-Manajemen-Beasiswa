@@ -323,6 +323,17 @@ create policy notifikasi_owner on public.notifikasi
   for all using (user_id = auth.uid()) with check (user_id = auth.uid());
 
 -- ============================================================
+-- GRANTS — Supabase roles need table privileges; RLS still filters rows.
+-- Without these, even RLS-permitted queries fail with "permission denied".
+-- ============================================================
+grant usage on schema public to anon, authenticated, service_role;
+grant select, insert, update, delete on all tables in schema public to authenticated, service_role;
+grant select on all tables in schema public to anon;
+-- future tables inherit these grants
+alter default privileges in schema public grant select, insert, update, delete on tables to authenticated, service_role;
+alter default privileges in schema public grant select on tables to anon;
+
+-- ============================================================
 -- STORAGE BUCKETS (run in dashboard or via API; policies below)
 -- ============================================================
 -- Create two PRIVATE buckets:
