@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard Staff — Beasiswa Kampus</title>
+
+  <!-- ── Fonts ── -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,800;9..144,900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet"
+  />
+
+  <!-- ── Iconify ── -->
+  <script src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js"></script>
+
+  <!-- ── Stylesheet ── -->
+  <link rel="stylesheet" href="dashboardStaffAdmin.css" />
+</head>
+<body>
+
+  <!-- ================================================================
+       BG CANVAS + PARTICLES
+       ================================================================ -->
+  <canvas id="bgCanvas"></canvas>
+  <div class="particles" id="particles"></div>
+
+
+  <!-- ================================================================
+       SIDEBAR
+       ================================================================ -->
+  <aside class="sidebar" id="sidebar">
+
+    <!-- Logo -->
+    <div class="sidebar-header">
+      <a href="../beranda.html" class="logo">
+        <span class="logo-mark">B</span>
+        <span class="logo-text">Beasiswa<strong>Kampus</strong></span>
+      </a>
+      <button class="sidebar-close" id="sidebarClose" aria-label="Tutup menu">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- User info -->
+    <div class="sidebar-user">
+      <div class="user-avatar" id="sidebarAvatar">S</div>
+      <div class="user-info">
+        <div class="user-name" id="sidebarName">Staff Admin</div>
+        <span class="user-role-tag">
+          <iconify-icon icon="solar:folder-with-files-bold-duotone" width="11"></iconify-icon>
+          Staff Admin
+        </span>
+      </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Operasional</div>
+
+      <a href="dashboardStaffAdmin.html" class="nav-item active">
+        <span class="nav-icon">
+          <iconify-icon icon="solar:home-2-bold-duotone"></iconify-icon>
+        </span>
+        <span>Dashboard</span>
+      </a>
+
+      <a href="sponsorDanBeasiswa/manajemenSponsorBeasiswa.html" class="nav-item">
+        <span class="nav-icon">
+          <iconify-icon icon="solar:buildings-2-bold-duotone"></iconify-icon>
+        </span>
+        <span>Sponsor &amp; Beasiswa</span>
+      </a>
+
+      <a href="verifikasiPendaftaran/verifikasiPendaftar.html" class="nav-item">
+        <span class="nav-icon">
+          <iconify-icon icon="solar:check-circle-bold-duotone"></iconify-icon>
+        </span>
+        <span>Verifikasi Pendaftar</span>
+        <span class="nav-badge" id="badgeVerifikasi"></span>
+      </a>
+
+      <a href="inputHasilSeleksi/inputHasilSeleksi.html" class="nav-item">
+        <span class="nav-icon">
+          <iconify-icon icon="solar:document-add-bold-duotone"></iconify-icon>
+        </span>
+        <span>Input Hasil Seleksi</span>
+      </a>
+
+      <a href="penetapanPenerima/penetapanPenerima.html" class="nav-item">
+        <span class="nav-icon">
+          <iconify-icon icon="solar:cup-star-bold-duotone"></iconify-icon>
+        </span>
+        <span>Penetapan Penerima</span>
+      </a>
+
+      <a href="PencairanDana/pencairanDana.html" class="nav-item">
+        <span class="nav-icon">
+          <iconify-icon icon="solar:transfer-horizontal-bold-duotone"></iconify-icon>
+        </span>
+        <span>Pencairan Dana</span>
+      </a>
+
+      <div class="nav-section-label">Lainnya</div>
+
+      <a href="pusatLaporanKendala/pusatLaporanKendala.html" class="nav-item">
+        <span class="nav-icon">
+          <iconify-icon icon="solar:chat-round-like-bold-duotone"></iconify-icon>
+        </span>
+        <span>Pusat Laporan Kendala</span>
+        <span class="nav-badge" id="badgeLaporan"></span>
+      </a>
+    </nav>
+
+    <!-- Logout -->
+    <div class="sidebar-footer">
+      <button class="btn-logout" id="btnLogout">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Keluar
+      </button>
+    </div>
+
+  </aside>
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+
+  <!-- ================================================================
+       MAIN CONTENT
+       ================================================================ -->
+  <div class="main-content">
+
+    <!-- ── TOP BAR ── -->
+    <header class="topbar">
+      <div class="topbar-left">
+
+        <!-- Mobile hamburger -->
+        <button class="hamburger-btn" id="hamburgerBtn" aria-label="Buka menu">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M3 12h18M3 6h18M3 18h18" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+          </svg>
+        </button>
+
+        <!-- Page title -->
+        <div class="page-title">
+          <h1>Dashboard Staff</h1>
+          <p>Pusat kendali pelaksanaan beasiswa</p>
+        </div>
+      </div>
+
+      <div class="topbar-right">
+
+        <!-- Search -->
+        <div class="topbar-search">
+          <svg viewBox="0 0 24 24" fill="none">
+            <circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2"/>
+            <path d="M21 21l-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          <input type="text" placeholder="Cari pendaftar, beasiswa..." />
+        </div>
+
+        <!-- Notif (link ke Pusat Laporan Kendala) -->
+        <a href="pusatLaporanKendala/pusatLaporanKendala.html" class="topbar-notif" title="Laporan kendala">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span class="notif-dot" id="notifDot" style="display:none"></span>
+        </a>
+
+        <!-- Avatar -->
+        <a href="#" class="topbar-avatar" id="topbarAvatar">S</a>
+      </div>
+    </header>
+
+
+    <!-- ── PAGE BODY ── -->
+    <div class="page-body">
+
+      <!-- Welcome Banner -->
+      <div class="welcome-banner">
+        <div class="welcome-text">
+          <h2 id="welcomeTitle">Halo, Staff! 👋</h2>
+          <p id="welcomeSubtitle">Ada beberapa tugas menunggu tindakanmu hari ini.</p>
+        </div>
+        <a href="verifikasiPendaftaran/verifikasiPendaftar.html" class="btn-primary">
+          Mulai Verifikasi
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </a>
+      </div>
+
+      <!-- Stats Grid -->
+      <div class="stats-grid">
+
+        <div class="stat-card stat-amber">
+          <div class="stat-icon">
+            <iconify-icon icon="solar:inbox-in-bold-duotone" style="color:#d97706"></iconify-icon>
+          </div>
+          <div class="stat-info">
+            <div class="stat-num" id="statVerifikasi">—</div>
+            <div class="stat-label">Pendaftar Perlu Verifikasi</div>
+          </div>
+          <span class="stat-tag">Antre</span>
+        </div>
+
+        <div class="stat-card stat-blue">
+          <div class="stat-icon">
+            <iconify-icon icon="solar:clock-circle-bold-duotone" style="color:#2563eb"></iconify-icon>
+          </div>
+          <div class="stat-info">
+            <div class="stat-num" id="statProses">—</div>
+            <div class="stat-label">Sedang Proses Seleksi</div>
+          </div>
+          <span class="stat-tag">Proses</span>
+        </div>
+
+        <div class="stat-card stat-green">
+          <div class="stat-icon">
+            <iconify-icon icon="solar:cup-bold-duotone" style="color:#059669"></iconify-icon>
+          </div>
+          <div class="stat-info">
+            <div class="stat-num" id="statPenerima">—</div>
+            <div class="stat-label">Penerima Ditetapkan</div>
+          </div>
+          <span class="stat-tag">Final</span>
+        </div>
+
+        <div class="stat-card stat-purple">
+          <div class="stat-icon">
+            <iconify-icon icon="solar:card-transfer-bold-duotone" style="color:#7c3aed"></iconify-icon>
+          </div>
+          <div class="stat-info">
+            <div class="stat-num" id="statPencairan">—</div>
+            <div class="stat-label">Dana Menunggu Pencairan</div>
+          </div>
+          <span class="stat-tag">Tindak</span>
+        </div>
+
+      </div>
+
+      <!-- Workflow Pipeline -->
+      <div class="workflow">
+        <div class="workflow-head">
+          <h3>
+            <iconify-icon
+              icon="solar:routing-bold-duotone"
+              style="vertical-align:middle;margin-right:6px;color:var(--accent)"
+            ></iconify-icon>
+            Alur Seleksi Beasiswa
+          </h3>
+          <span class="hint">Jumlah pendaftar di tiap tahap — klik untuk menindaklanjuti</span>
+        </div>
+        <div class="pipeline" id="pipeline">
+          <!-- Dirender oleh JS (renderPipeline) -->
+        </div>
+      </div>
+
+      <!-- 2-Kolom: Antrian Verifikasi + Laporan Kendala -->
+      <div class="dashboard-grid">
+
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">
+              <iconify-icon icon="solar:inbox-in-bold-duotone" style="color:var(--accent)"></iconify-icon>
+              Antrian Verifikasi Berkas
+            </h3>
+            <a href="verifikasiPendaftaran/verifikasiPendaftar.html" class="card-link">
+              Lihat semua →
+            </a>
+          </div>
+          <div class="card-body" id="listVerifikasi">
+            <!-- Dirender oleh JS (renderVerifikasi) -->
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">
+              <iconify-icon icon="solar:chat-round-like-bold-duotone" style="color:var(--orange)"></iconify-icon>
+              Laporan Kendala Terbaru
+            </h3>
+            <a href="pusatLaporanKendala/pusatLaporanKendala.html" class="card-link">
+              Lihat semua →
+            </a>
+          </div>
+          <div class="card-body" id="listLaporan">
+            <!-- Dirender oleh JS (renderLaporan) -->
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Quick Actions -->
+      <div>
+        <h3 class="section-label">
+          <iconify-icon
+            icon="solar:bolt-bold-duotone"
+            style="vertical-align:middle;margin-right:6px;color:var(--accent)"
+          ></iconify-icon>
+          Aksi Cepat
+        </h3>
+        <div class="actions-grid" id="actionsGrid">
+          <!-- Dirender oleh JS (renderActions) -->
+        </div>
+      </div>
+
+    </div><!-- end page-body -->
+  </div><!-- end main-content -->
+
+
+  <!-- ================================================================
+       MODAL LOGOUT
+       ================================================================ -->
+  <div class="modal" id="logoutModal">
+    <div class="modal-overlay" id="logoutOverlay"></div>
+    <div class="modal-box">
+      <div class="modal-icon-wrap">
+        <iconify-icon icon="solar:door-open-bold-duotone" style="color:#be123c" width="48"></iconify-icon>
+      </div>
+      <h3>Keluar dari Portal?</h3>
+      <p>Kamu akan keluar dari sesi staff. Pastikan pekerjaan sudah tersimpan.</p>
+      <div class="modal-actions">
+        <button class="btn-cancel" id="cancelLogout">Batal</button>
+        <button class="btn-danger" id="confirmLogout">Ya, Keluar</button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ── Script ── -->
+  <script src="dashboardStaffAdmin.js"></script>
+</body>
+</html>

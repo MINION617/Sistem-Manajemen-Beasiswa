@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Input Hasil Seleksi — Beasiswa Kampus Staff</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,800;9..144,900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js"></script>
+  <link rel="stylesheet" href="inputHasilSeleksi.css" />
+</head>
+<body>
+
+  <canvas id="bgCanvas"></canvas>
+  <div class="particles" id="particles"></div>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <a href="../beranda.html" class="logo">
+        <span class="logo-mark">B</span>
+        <span class="logo-text">Beasiswa<strong>Kampus</strong></span>
+      </a>
+      <button class="sidebar-close" id="sidebarClose">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <div class="sidebar-user">
+      <div class="user-avatar" id="sidebarAvatar">S</div>
+      <div class="user-info">
+        <div class="user-name" id="sidebarName">Staff Admin</div>
+        <span class="user-role-tag">
+          <iconify-icon icon="solar:folder-with-files-bold-duotone" width="11"></iconify-icon>
+          Staff Admin
+        </span>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Operasional</div>
+      <a href="../dashboardStaffAdmin.html" class="nav-item">
+        <span class="nav-icon"><iconify-icon icon="solar:home-2-bold-duotone"></iconify-icon></span>
+        <span>Dashboard</span>
+      </a>
+      <a href="../sponsorDanBeasiswa/manajemenSponsorBeasiswa.html" class="nav-item">
+        <span class="nav-icon"><iconify-icon icon="solar:buildings-2-bold-duotone"></iconify-icon></span>
+        <span>Sponsor &amp; Beasiswa</span>
+      </a>
+      <a href="../verifikasiPendaftaran/verifikasiPendaftar.html" class="nav-item">
+        <span class="nav-icon"><iconify-icon icon="solar:check-circle-bold-duotone"></iconify-icon></span>
+        <span>Verifikasi Pendaftar</span>
+      </a>
+      <a href="inputHasilSeleksi.html" class="nav-item active">
+        <span class="nav-icon"><iconify-icon icon="solar:document-add-bold-duotone"></iconify-icon></span>
+        <span>Input Hasil Seleksi</span>
+      </a>
+      <a href="../penetapanPenerima/penetapanPenerima.html" class="nav-item">
+        <span class="nav-icon"><iconify-icon icon="solar:cup-star-bold-duotone"></iconify-icon></span>
+        <span>Penetapan Penerima</span>
+      </a>
+      <a href="../PencairanDana/pencairanDana.html" class="nav-item">
+        <span class="nav-icon"><iconify-icon icon="solar:transfer-horizontal-bold-duotone"></iconify-icon></span>
+        <span>Pencairan Dana</span>
+      </a>
+      <div class="nav-section-label">Lainnya</div>
+      <a href="../pusatLaporanKendala/pusatLaporanKendala.html" class="nav-item">
+        <span class="nav-icon"><iconify-icon icon="solar:chat-round-like-bold-duotone"></iconify-icon></span>
+        <span>Pusat Laporan Kendala</span>
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="btn-logout" id="btnLogout">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Keluar
+      </button>
+    </div>
+  </aside>
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <!-- MAIN -->
+  <div class="main-content">
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="hamburger-btn" id="hamburgerBtn">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M3 12h18M3 6h18M3 18h18" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
+        </button>
+        <div class="page-title">
+          <h1>Input Hasil Seleksi</h1>
+          <p>Input nilai tes &amp; wawancara untuk pendaftar yang lolos berkas</p>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <div class="topbar-search">
+          <svg viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2"/><path d="M21 21l-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          <input type="text" id="searchInput" placeholder="Cari nama mahasiswa atau beasiswa..." />
+        </div>
+        <a href="../pusatLaporanKendala/pusatLaporanKendala.html" class="topbar-notif">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+        <a href="#" class="topbar-avatar" id="topbarAvatar">S</a>
+      </div>
+    </header>
+
+    <div class="page-body">
+
+      <!-- BANNER -->
+      <div class="welcome-banner">
+        <div class="welcome-text">
+          <h2>Input Hasil Seleksi</h2>
+          <p id="bannerSubtitle">Isi nilai tes dan wawancara agar mahasiswa dapat melihat perkembangan seleksinya.</p>
+        </div>
+        <div class="banner-badge">
+          <iconify-icon icon="solar:document-add-bold-duotone" width="32" style="color:white"></iconify-icon>
+          <span id="bannerCount" style="font-family:var(--font-display);font-size:28px;font-weight:900;color:white;line-height:1">0</span>
+          <span style="font-size:12px;color:rgba(255,255,255,.8)">Perlu Input</span>
+        </div>
+      </div>
+
+      <!-- STATS -->
+      <div class="stats-grid">
+        <div class="stat-card stat-amber">
+          <div class="stat-icon"><iconify-icon icon="solar:notes-bold-duotone" style="color:#d97706"></iconify-icon></div>
+          <div class="stat-info">
+            <div class="stat-num" id="statBelumTes">—</div>
+            <div class="stat-label">Belum Input Nilai Tes</div>
+          </div>
+          <span class="stat-tag">Tes</span>
+        </div>
+        <div class="stat-card stat-blue">
+          <div class="stat-icon"><iconify-icon icon="solar:microphone-bold-duotone" style="color:#2563eb"></iconify-icon></div>
+          <div class="stat-info">
+            <div class="stat-num" id="statBelumWawancara">—</div>
+            <div class="stat-label">Belum Input Wawancara</div>
+          </div>
+          <span class="stat-tag">Wawancara</span>
+        </div>
+        <div class="stat-card stat-green">
+          <div class="stat-icon"><iconify-icon icon="solar:check-circle-bold-duotone" style="color:#059669"></iconify-icon></div>
+          <div class="stat-info">
+            <div class="stat-num" id="statLengkap">—</div>
+            <div class="stat-label">Nilai Lengkap</div>
+          </div>
+          <span class="stat-tag">Selesai</span>
+        </div>
+        <div class="stat-card stat-purple">
+          <div class="stat-icon"><iconify-icon icon="solar:users-group-two-rounded-bold-duotone" style="color:#7c3aed"></iconify-icon></div>
+          <div class="stat-info">
+            <div class="stat-num" id="statTotal">—</div>
+            <div class="stat-label">Total Peserta Aktif</div>
+          </div>
+          <span class="stat-tag">Total</span>
+        </div>
+      </div>
+
+      <!-- TAB FILTER -->
+      <div class="tab-bar">
+        <button class="tab-btn active" data-tab="lolos_berkas">
+          <iconify-icon icon="solar:notes-bold-duotone" width="14"></iconify-icon>
+          Perlu Nilai Tes
+          <span class="tab-count" id="tcTes">0</span>
+        </button>
+        <button class="tab-btn" data-tab="wawancara">
+          <iconify-icon icon="solar:microphone-bold-duotone" width="14"></iconify-icon>
+          Perlu Nilai Wawancara
+          <span class="tab-count" id="tcWawancara">0</span>
+        </button>
+        <button class="tab-btn" data-tab="semua">
+          Semua Peserta
+          <span class="tab-count" id="tcSemua">0</span>
+        </button>
+      </div>
+
+      <!-- TOOLBAR -->
+      <div class="panel-toolbar">
+        <span class="panel-count" id="panelCount">0 peserta</span>
+        <select class="filter-select" id="filterBeasiswa">
+          <option value="all">Semua Beasiswa</option>
+        </select>
+      </div>
+
+      <!-- LIST -->
+      <div class="list-area">
+        <div class="peserta-list" id="pesertaList"></div>
+        <div class="empty-state" id="emptyState" style="display:none">
+          <iconify-icon icon="solar:document-add-bold-duotone" width="52" style="color:var(--text-4);display:block;margin-bottom:12px"></iconify-icon>
+          <h3>Tidak ada peserta</h3>
+          <p>Semua nilai sudah terisi atau tidak ada peserta pada tahap ini.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- MODAL INPUT NILAI -->
+  <div class="modal" id="modalInput">
+    <div class="modal-overlay" id="modalInputOverlay"></div>
+    <div class="modal-box modal-wide">
+      <button class="modal-close" id="modalInputClose">×</button>
+      <h3 id="modalInputTitle">Input Nilai Seleksi</h3>
+      <p class="modal-sub">
+        Nilai akan tersimpan ke tabel <code>hasil_seleksi</code> dan terlihat di halaman
+        <strong>Pendaftaran Saya</strong> mahasiswa.
+      </p>
+
+      <div id="modalInputContent"></div>
+
+      <form id="formNilai" novalidate>
+        <div class="form-grid">
+
+          <!-- nilai_tes — sinkron dengan hasil_seleksi.nilai_tes mahasiswa -->
+          <div class="form-group">
+            <label>
+              Nilai Tes
+              <span class="req">*</span>
+            </label>
+            <div class="nilai-input-wrap">
+              <input
+                type="number"
+                id="fNilaiTes"
+                name="nilai_tes"
+                min="0" max="100" step="0.5"
+                placeholder="0 – 100"
+              />
+              <span class="nilai-badge" id="badgeNilaiTes">—</span>
+            </div>
+            <div class="field-hint">Range: 0 – 100. Simpan kosong jika belum ada tes.</div>
+          </div>
+
+          <!-- nilai_wawancara — sinkron dengan hasil_seleksi.nilai_wawancara mahasiswa -->
+          <div class="form-group">
+            <label>Nilai Wawancara</label>
+            <div class="nilai-input-wrap">
+              <input
+                type="number"
+                id="fNilaiWawancara"
+                name="nilai_wawancara"
+                min="0" max="100" step="0.5"
+                placeholder="0 – 100"
+              />
+              <span class="nilai-badge" id="badgeNilaiWawancara">—</span>
+            </div>
+            <div class="field-hint">Kosongkan jika sesi wawancara belum dilaksanakan.</div>
+          </div>
+
+          <!-- catatan_staff — sinkron dengan hasil_seleksi.catatan_staff mahasiswa -->
+          <div class="form-group form-group-full">
+            <label>Catatan Staff</label>
+            <textarea
+              id="fCatatanStaff"
+              name="catatan_staff"
+              rows="3"
+              placeholder="Catatan evaluasi singkat yang akan dilihat mahasiswa di halaman Pendaftaran Saya..."
+            ></textarea>
+          </div>
+
+          <!-- jadwal_wawancara — info tambahan untuk mahasiswa -->
+          <div class="form-group form-group-full">
+            <label>Jadwal Wawancara (opsional)</label>
+            <input
+              type="datetime-local"
+              id="fJadwalWawancara"
+              name="jadwal_wawancara"
+            />
+            <div class="field-hint">Jadwal ini akan muncul di timeline pendaftaran mahasiswa.</div>
+          </div>
+
+        </div>
+
+        <div class="form-message" id="formNilaiMsg"></div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn-cancel" id="cancelNilai">Batal</button>
+          <button type="submit" class="btn-save" id="btnSimpanNilai">
+            <span class="btn-text">
+              <iconify-icon icon="solar:diskette-bold-duotone" width="15"></iconify-icon>
+              Simpan Nilai
+            </span>
+            <span class="btn-loader" id="loaderNilai" style="display:none">
+              <svg class="spinner" viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" stroke-dasharray="31.4" stroke-dashoffset="10"/>
+              </svg>
+              Menyimpan...
+            </span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- LOGOUT MODAL -->
+  <div class="modal" id="logoutModal">
+    <div class="modal-overlay" id="logoutOverlay"></div>
+    <div class="modal-box">
+      <div class="modal-icon-wrap">
+        <iconify-icon icon="solar:door-open-bold-duotone" style="color:#be123c" width="48"></iconify-icon>
+      </div>
+      <h3>Keluar dari Portal?</h3>
+      <p>Kamu akan keluar dari sesi staff. Pastikan pekerjaan sudah tersimpan.</p>
+      <div class="modal-actions">
+        <button class="btn-cancel" id="cancelLogout">Batal</button>
+        <button class="btn-danger" id="confirmLogout">Ya, Keluar</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="inputHasilSeleksi.js"></script>
+</body>
+</html>

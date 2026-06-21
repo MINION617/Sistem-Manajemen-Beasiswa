@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Laporan Kendala — Beasiswa Kampus</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,800;9..144,900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet"
+  />
+
+  <script src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js"></script>
+  <link rel="stylesheet" href="laporanKendala.css" />
+</head>
+<body>
+
+  <canvas id="bgCanvas"></canvas>
+  <div class="particles" id="particles"></div>
+
+  <!-- ============================================================
+       SIDEBAR
+  ============================================================ -->
+  <aside class="sidebar" id="sidebar">
+
+    <div class="sidebar-header">
+      <a href="../../beranda.html" class="logo">
+        <span class="logo-mark">B</span>
+        <span class="logo-text">Beasiswa<strong>Kampus</strong></span>
+      </a>
+      <button class="sidebar-close" id="sidebarClose" aria-label="Tutup menu">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="sidebar-user">
+      <div class="user-avatar" id="sidebarAvatar">K</div>
+      <div class="user-info">
+        <div class="user-name" id="sidebarName">Kepala Bagian</div>
+        <span class="user-role-tag">
+          <iconify-icon icon="solar:star-bold-duotone" width="11"></iconify-icon>
+          <span id="sidebarRoleLabel">Kabag</span>
+        </span>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Menu Utama</div>
+
+      <a href="#" class="nav-item" id="navDashboard">
+        <span class="nav-icon">
+          <iconify-icon icon="solar:home-2-bold-duotone"></iconify-icon>
+        </span>
+        <span>Dashboard</span>
+      </a>
+
+      <a href="monitoringPendaftar.html" class="nav-item">
+        <span class="nav-icon">
+          <iconify-icon icon="solar:users-group-two-rounded-bold-duotone"></iconify-icon>
+        </span>
+        <span>Monitoring Pendaftar</span>
+      </a>
+
+      <a href="penerima.html" class="nav-item">
+        <span class="nav-icon">
+          <iconify-icon icon="solar:cup-star-bold-duotone"></iconify-icon>
+        </span>
+        <span>Penerima Beasiswa</span>
+      </a>
+
+      <div class="nav-section-label">Lainnya</div>
+
+      <a href="laporanKendala.html" class="nav-item active">
+        <span class="nav-icon">
+          <iconify-icon icon="solar:chat-round-like-bold-duotone"></iconify-icon>
+        </span>
+        <span>Laporan Kendala</span>
+        <span class="nav-badge show" id="badgeLaporan">0</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <button class="btn-logout" id="btnLogout">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path
+            d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+        Keluar
+      </button>
+    </div>
+
+  </aside>
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <!-- ============================================================
+       MAIN CONTENT
+  ============================================================ -->
+  <div class="main-content">
+
+    <!-- TOPBAR -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="hamburger-btn" id="hamburgerBtn" aria-label="Buka menu">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M3 12h18M3 6h18M3 18h18" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+          </svg>
+        </button>
+        <div class="page-title">
+          <h1 id="pageTitle">Laporan Kendala</h1>
+          <p>Monitoring laporan mahasiswa &amp; progres penanganan staff</p>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <div class="topbar-search">
+          <svg viewBox="0 0 24 24" fill="none">
+            <circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2"/>
+            <path d="M21 21l-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          <input
+            type="text"
+            id="searchInput"
+            placeholder="Cari judul laporan atau nama mahasiswa..."
+          />
+        </div>
+        <a href="laporanKendala.html" class="topbar-notif topbar-notif-active" title="Laporan kendala">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path
+              d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+          <span class="notif-dot" id="notifDot"></span>
+        </a>
+        <a href="#" class="topbar-avatar" id="topbarAvatar">K</a>
+      </div>
+    </header>
+
+    <!-- PAGE BODY -->
+    <div class="page-body">
+
+      <!-- WELCOME BANNER -->
+      <div class="welcome-banner">
+        <div class="welcome-text">
+          <h2 id="bannerTitle">Laporan Kendala</h2>
+          <p>Pantau seluruh laporan mahasiswa dan progres penanganan oleh staff.</p>
+        </div>
+        <div class="banner-stat-wrap">
+          <div class="banner-stat-item">
+            <span class="banner-stat-num orange" id="bannerMasuk">0</span>
+            <span class="banner-stat-label">Baru Masuk</span>
+          </div>
+          <div class="banner-stat-item">
+            <span class="banner-stat-num yellow" id="bannerDiproses">0</span>
+            <span class="banner-stat-label">Diproses</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- STATS GRID -->
+      <div class="stats-grid">
+
+        <div class="stat-card stat-coral">
+          <div class="stat-icon">
+            <iconify-icon icon="solar:chat-round-unread-bold-duotone" style="color:#e11d48"></iconify-icon>
+          </div>
+          <div class="stat-info">
+            <div class="stat-num" id="statMasuk">—</div>
+            <div class="stat-label">Laporan Baru Masuk</div>
+          </div>
+          <span class="stat-tag">Baru</span>
+        </div>
+
+        <div class="stat-card stat-amber">
+          <div class="stat-icon">
+            <iconify-icon icon="solar:hourglass-bold-duotone" style="color:#d97706"></iconify-icon>
+          </div>
+          <div class="stat-info">
+            <div class="stat-num" id="statDiproses">—</div>
+            <div class="stat-label">Sedang Diproses</div>
+          </div>
+          <span class="stat-tag">Proses</span>
+        </div>
+
+        <div class="stat-card stat-green">
+          <div class="stat-icon">
+            <iconify-icon icon="solar:check-circle-bold-duotone" style="color:#059669"></iconify-icon>
+          </div>
+          <div class="stat-info">
+            <div class="stat-num" id="statSelesai">—</div>
+            <div class="stat-label">Selesai Ditangani</div>
+          </div>
+          <span class="stat-tag">Selesai</span>
+        </div>
+
+        <div class="stat-card stat-blue">
+          <div class="stat-icon">
+            <iconify-icon icon="solar:chart-2-bold-duotone" style="color:#2563eb"></iconify-icon>
+          </div>
+          <div class="stat-info">
+            <div class="stat-num" id="statTotal">—</div>
+            <div class="stat-label">Total Laporan</div>
+          </div>
+          <span class="stat-tag">Total</span>
+        </div>
+
+      </div>
+
+      <!-- TAB BAR -->
+      <div class="tab-bar">
+        <button class="tab-btn active" data-tab="all">
+          Semua
+          <span class="tab-count" id="tcAll">0</span>
+        </button>
+        <button class="tab-btn" data-tab="masuk">
+          <iconify-icon icon="solar:chat-round-unread-bold-duotone" width="13"></iconify-icon>
+          Baru Masuk
+          <span class="tab-count" id="tcMasuk">0</span>
+        </button>
+        <button class="tab-btn" data-tab="diproses">
+          <iconify-icon icon="solar:hourglass-bold-duotone" width="13"></iconify-icon>
+          Diproses
+          <span class="tab-count" id="tcDiproses">0</span>
+        </button>
+        <button class="tab-btn" data-tab="selesai">
+          <iconify-icon icon="solar:check-circle-bold-duotone" width="13"></iconify-icon>
+          Selesai
+          <span class="tab-count" id="tcSelesai">0</span>
+        </button>
+      </div>
+
+      <!-- TOOLBAR -->
+      <div class="panel-toolbar">
+        <span class="panel-count" id="panelCount">0 laporan</span>
+        <select class="filter-select" id="filterKategori">
+          <option value="all">Semua Kategori</option>
+          <option value="dokumen">Dokumen &amp; Berkas</option>
+          <option value="status">Status Pendaftaran</option>
+          <option value="dana">Dana &amp; Transfer</option>
+          <option value="teknis">Masalah Teknis</option>
+          <option value="lainnya">Lainnya</option>
+        </select>
+      </div>
+
+      <!-- LIST AREA -->
+      <div class="list-area">
+        <div class="laporan-list" id="laporanList"></div>
+        <div class="empty-state" id="emptyState" style="display:none">
+          <iconify-icon
+            icon="solar:chat-round-like-bold-duotone"
+            width="52"
+            style="color:var(--text-4);display:block;margin-bottom:12px"
+          ></iconify-icon>
+          <h3>Tidak ada laporan</h3>
+          <p>Tidak ada laporan pada kategori ini.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ============================================================
+       MODAL DETAIL LAPORAN
+  ============================================================ -->
+  <div class="modal" id="modalDetail">
+    <div class="modal-overlay" id="modalDetailOverlay"></div>
+    <div class="modal-box modal-wide">
+      <button class="modal-close" id="modalDetailClose">×</button>
+      <div id="modalDetailContent"></div>
+      <div class="modal-actions" style="margin-top:20px">
+        <button class="btn-cancel" id="closeDetail">Tutup</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       MODAL LOGOUT
+  ============================================================ -->
+  <div class="modal" id="logoutModal">
+    <div class="modal-overlay" id="logoutOverlay"></div>
+    <div class="modal-box">
+      <div class="modal-icon-wrap">
+        <iconify-icon icon="solar:door-open-bold-duotone" style="color:#be123c" width="48"></iconify-icon>
+      </div>
+      <h3>Keluar dari Portal?</h3>
+      <p>Pastikan pekerjaan sudah tersimpan.</p>
+      <div class="modal-actions">
+        <button class="btn-cancel" id="cancelLogout">Batal</button>
+        <button class="btn-danger" id="confirmLogout">Ya, Keluar</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="laporanKendala.js"></script>
+</body>
+</html>

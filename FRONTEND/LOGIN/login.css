@@ -1,0 +1,1123 @@
+/* ============================================================
+   LOGIN.CSS — Beasiswa Kampus (Multi-Role)
+   Role: mahasiswa · staff · kabag · wabag (Wakil Keuangan)
+   ============================================================
+
+   STRUKTUR FILE:
+   01. Design Tokens (semua role = BIRU)
+   02. Reset & Base (overflow:hidden, height:100vh)
+   03. Background Dekoratif
+   04. Navbar
+   05. Layout Utama (split 50/50, full-screen tanpa scroll)
+   06. Panel Kiri — Info
+   07. Panel Kanan — Form
+       07a. Role Switcher
+       07b. Kartu Login
+       07c. Form Groups
+       07d. Tombol Submit
+       07e. Footer & Misc
+   08. Modal
+   09. Responsive
+   ============================================================ */
+
+
+/* ============================================================
+   01. DESIGN TOKENS
+   Semua role menggunakan palet BIRU yang sama.
+   Panel kiri tetap punya sedikit variasi gradien per role
+   agar terasa berbeda secara visual, tapi tetap dalam spektrum
+   biru (bukan hijau/ungu/oranye seperti sebelumnya).
+   ============================================================ */
+
+:root {
+  /* ── Palet biru brand ── */
+  --blue-50  : #eff6ff;
+  --blue-100 : #dbeafe;
+  --blue-200 : #bfdbfe;
+  --blue-400 : #60a5fa;
+  --blue-500 : #3b82f6;
+  --blue-600 : #2563eb;
+  --blue-700 : #1d4ed8;
+  --blue-800 : #1e40af;
+  --blue-900 : #1e3a8a;
+
+  /* ── Warna aksen pendukung ── */
+  --yellow      : #fbbf24;
+  --yellow-soft : #fef3c7;
+  --coral       : #fb7185;
+  --coral-soft  : #ffe4e6;
+  --mint        : #34d399;
+  --mint-soft   : #d1fae5;
+
+  /* ── Netral ── */
+  --bg         : #f6f8ff;
+  --surface    : #ffffff;
+  --border     : #e2e8f0;
+  --text       : #0f172a;
+  --text-muted : #64748b;
+  --text-light : #94a3b8;
+
+  /* ── Tipografi ── */
+  --font-display : 'Fraunces', Georgia, serif;
+  --font-body    : 'Plus Jakarta Sans', system-ui, sans-serif;
+
+  /* ── Bayangan ── */
+  --shadow-sm : 0 2px 8px rgba(15, 23, 42, 0.04);
+  --shadow-md : 0 8px 24px rgba(15, 23, 42, 0.08);
+  --shadow-lg : 0 24px 48px rgba(30, 58, 138, 0.12);
+
+  /* ── Radius ── */
+  --radius-sm : 10px;
+  --radius-md : 16px;
+  --radius-lg : 24px;
+  --radius-xl : 32px;
+
+  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* ── Variabel role (default = mahasiswa, BIRU) ──
+     Semua role di-override ke varian biru di bawah.     */
+  --accent      : #2563eb;
+  --accent-dark : #1d4ed8;
+  --accent-soft : #dbeafe;
+  --accent-ring : rgba(37, 99, 235, 0.12);
+  --panel-from  : #1e40af;
+  --panel-to    : #0f1e50;
+}
+
+
+/* ── Tema per role — SEMUA BIRU ──
+   Mahasiswa  : biru cerah  (--blue-600)
+   Staff      : biru medium (--blue-700)   → sedikit lebih tua
+   Kabag      : biru gelap  (--blue-800)   → terasa "formal"
+   Wabag      : biru tua    (--blue-900)   → paling dalam
+   Panel kiri tetap punya gradien biru berbeda tiap role.   */
+
+body[data-role="mahasiswa"] {
+  --accent      : #2563eb;
+  --accent-dark : #1d4ed8;
+  --accent-soft : #dbeafe;
+  --accent-ring : rgba(37, 99, 235, 0.14);
+  --panel-from  : #1e40af;
+  --panel-to    : #0f1e50;
+}
+
+body[data-role="staff"] {
+  --accent      : #2563eb;
+  --accent-dark : #1d4ed8;
+  --accent-soft : #dbeafe;
+  --accent-ring : rgba(37, 99, 235, 0.14);
+  --panel-from  : #1e40af;
+  --panel-to    : #0f1e50;
+}
+
+body[data-role="kabag"] {
+  --accent      : #2563eb;
+  --accent-dark : #1d4ed8;
+  --accent-soft : #dbeafe;
+  --accent-ring : rgba(37, 99, 235, 0.14);
+  --panel-from  : #1e40af;
+  --panel-to    : #0f1e50;
+}
+
+body[data-role="wabag"] {
+  --accent      : #2563eb;
+  --accent-dark : #1d4ed8;
+  --accent-soft : #dbeafe;
+  --accent-ring : rgba(37, 99, 235, 0.14);
+  --panel-from  : #1e40af;
+  --panel-to    : #0f1e50;
+}
+
+
+/* ============================================================
+   02. RESET & BASE
+   overflow: hidden → tidak ada scrollbar sama sekali
+   height: 100vh   → page pas satu layar
+   ============================================================ */
+
+*,
+*::before,
+*::after {
+  margin     : 0;
+  padding    : 0;
+  box-sizing : border-box;
+}
+
+html,
+body {
+  height   : 100%;
+  overflow : hidden;   /* ← hapus scrollbar */
+}
+
+body {
+  font-family : var(--font-body);
+  background  : var(--bg);
+  color       : var(--text);
+  line-height : 1.6;
+}
+
+
+/* ============================================================
+   03. BACKGROUND DEKORATIF
+   ============================================================ */
+
+.page-bg {
+  position       : fixed;
+  inset          : 0;
+  pointer-events : none;
+  overflow       : hidden;
+  z-index        : 0;
+}
+
+.blob {
+  position      : absolute;
+  border-radius : 50%;
+  filter        : blur(80px);
+  animation     : float 14s ease-in-out infinite;
+  transition    : background 0.6s ease;
+}
+
+.blob-1 {
+  width      : 520px;
+  height     : 520px;
+  background : var(--accent-soft);
+  top        : -160px;
+  left       : -160px;
+  opacity    : 0.55;
+}
+
+.blob-2 {
+  width           : 420px;
+  height          : 420px;
+  background      : var(--yellow);
+  top             : 38%;
+  right           : -120px;
+  opacity         : 0.20;
+  animation-delay : -5s;
+}
+
+.blob-3 {
+  width           : 360px;
+  height          : 360px;
+  background      : var(--mint);
+  bottom          : -100px;
+  left            : 28%;
+  opacity         : 0.16;
+  animation-delay : -9s;
+}
+
+@keyframes float {
+  0%, 100% { transform: translate(0, 0); }
+  33%      { transform: translate(30px, -30px); }
+  66%      { transform: translate(-20px, 20px); }
+}
+
+.dot-grid {
+  position              : absolute;
+  inset                 : 0;
+  background-image      : radial-gradient(circle, var(--blue-200) 1px, transparent 1px);
+  background-size       : 32px 32px;
+  opacity               : 0.3;
+  mask-image            : radial-gradient(ellipse at center, black 40%, transparent 75%);
+  -webkit-mask-image    : radial-gradient(ellipse at center, black 40%, transparent 75%);
+}
+
+
+/* ============================================================
+   04. NAVBAR
+   Height dikompres ke 52px (dari 65px) supaya form muat 1 layar.
+   ============================================================ */
+
+.navbar {
+  position         : fixed;
+  top              : 0;
+  left             : 0;
+  right            : 0;
+  z-index          : 100;
+  background       : rgba(255, 255, 255, 0.92);
+  backdrop-filter  : blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom    : 1px solid var(--border);
+  box-shadow       : var(--shadow-sm);
+}
+
+.nav-container {
+  max-width       : 1280px;
+  margin          : 0 auto;
+  padding         : 10px 24px;    /* dikurangi dari 14px */
+  display         : flex;
+  align-items     : center;
+  justify-content : space-between;
+}
+
+.logo {
+  display         : flex;
+  align-items     : center;
+  gap             : 10px;
+  text-decoration : none;
+  color           : var(--text);
+  font-size       : 16px;
+  font-weight     : 700;
+  font-family     : var(--font-body);
+}
+
+.logo-mark {
+  width         : 34px;           /* sedikit lebih kecil */
+  height        : 34px;
+  background    : linear-gradient(135deg, var(--blue-600), var(--blue-800));
+  color         : white;
+  border-radius : 10px;
+  display       : grid;
+  place-items   : center;
+  font-family   : var(--font-display);
+  font-weight   : 900;
+  font-size     : 17px;
+  box-shadow    : 0 4px 12px rgba(37, 99, 235, 0.3);
+  position      : relative;
+  flex-shrink   : 0;
+}
+
+.logo-mark::after {
+  content       : '';
+  position      : absolute;
+  width         : 7px;
+  height        : 7px;
+  background    : var(--yellow);
+  border-radius : 50%;
+  top           : -2px;
+  right         : -2px;
+  border        : 2px solid white;
+}
+
+.logo-text {
+  letter-spacing: -0.02em;
+}
+
+.logo-text strong {
+  color       : var(--blue-700);
+  font-weight : 800;
+}
+
+.btn-back {
+  display         : inline-flex;
+  align-items     : center;
+  gap             : 8px;
+  color           : var(--text-muted);
+  text-decoration : none;
+  font-size       : 13px;
+  font-weight     : 500;
+  padding         : 7px 14px;
+  border-radius   : 100px;
+  border          : 1.5px solid var(--border);
+  transition      : var(--transition);
+  background      : white;
+}
+
+.btn-back:hover {
+  color        : var(--accent-dark);
+  border-color : var(--accent-soft);
+  background   : var(--accent-soft);
+  transform    : translateX(-2px);
+}
+
+.btn-back svg {
+  width  : 15px;
+  height : 15px;
+}
+
+
+/* ============================================================
+   05. LAYOUT UTAMA
+   height: calc(100vh - 54px) → isi tepat di bawah navbar,
+   tidak ada ruang kosong, tidak ada scroll.
+   ============================================================ */
+
+.main-wrapper {
+  position              : relative;
+  z-index               : 1;
+  height                : calc(100vh - 54px);   /* 100vh - tinggi navbar */
+  margin-top            : 54px;                  /* offset navbar */
+  display               : grid;
+  grid-template-columns : 1fr 1fr;
+  overflow              : hidden;
+}
+
+
+/* ============================================================
+   06. PANEL KIRI — INFO (adaptif per role)
+   Flex column dengan justify: center agar konten tengah vertikal
+   ============================================================ */
+
+.info-panel {
+  background  : linear-gradient(145deg, var(--panel-from) 0%, var(--panel-to) 100%);
+  display     : flex;
+  align-items : center;
+  padding     : 40px 48px;       /* dikurangi dari 60px 56px */
+  position    : relative;
+  overflow    : hidden;
+  transition  : background 0.6s ease;
+}
+
+/* Garis pelangi tipis di atas panel */
+.info-panel::before {
+  content    : '';
+  position   : absolute;
+  top        : 0;
+  left       : 0;
+  right      : 0;
+  height     : 4px;
+  background : linear-gradient(90deg, var(--yellow), var(--coral), var(--mint), var(--blue-400));
+}
+
+/* Dot pattern overlay */
+.info-panel::after {
+  content          : '';
+  position         : absolute;
+  inset            : 0;
+  background-image : radial-gradient(circle, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size  : 28px 28px;
+  pointer-events   : none;
+}
+
+.info-content {
+  position  : relative;
+  z-index   : 1;
+  max-width : 420px;
+}
+
+/* Badge "Portal xxx" */
+.badge {
+  display       : inline-flex;
+  align-items   : center;
+  gap           : 8px;
+  background    : rgba(255, 255, 255, 0.10);
+  border        : 1px solid rgba(255, 255, 255, 0.18);
+  padding       : 5px 14px;           /* dikurangi */
+  border-radius : 100px;
+  font-size     : 12px;
+  font-weight   : 600;
+  color         : rgba(255, 255, 255, 0.9);
+  margin-bottom : 18px;               /* dikurangi dari 28px */
+}
+
+.badge-dot {
+  width         : 7px;
+  height        : 7px;
+  background    : var(--mint);
+  border-radius : 50%;
+  position      : relative;
+}
+
+.badge-dot::after {
+  content       : '';
+  position      : absolute;
+  inset         : -4px;
+  background    : var(--mint);
+  border-radius : 50%;
+  opacity       : 0.4;
+  animation     : pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%   { transform: scale(1);   opacity: 0.4; }
+  100% { transform: scale(2.5); opacity: 0; }
+}
+
+/* Judul besar */
+.info-title {
+  font-family    : var(--font-display);
+  font-size      : clamp(24px, 2.6vw, 38px);   /* dikecilkan */
+  font-weight    : 800;
+  line-height    : 1.1;
+  letter-spacing : -0.03em;
+  color          : white;
+  margin-bottom  : 12px;                         /* dikurangi dari 18px */
+}
+
+.title-highlight {
+  position      : relative;
+  color         : var(--yellow);
+  font-style    : italic;
+  display       : inline-block;
+}
+
+/* Deskripsi */
+.info-desc {
+  font-size     : 13px;             /* dikurangi dari 15px */
+  color         : rgba(255, 255, 255, 0.68);
+  margin-bottom : 20px;             /* dikurangi dari 32px */
+  max-width     : 400px;
+  line-height   : 1.6;
+}
+
+/* Feature list */
+.feature-list {
+  list-style     : none;
+  display        : flex;
+  flex-direction : column;
+  gap            : 10px;            /* dikurangi dari 14px */
+  margin-bottom  : 22px;            /* dikurangi dari 36px */
+}
+
+.feature-list li {
+  display     : flex;
+  align-items : flex-start;
+  gap         : 12px;
+  animation   : featIn 0.4s ease both;
+}
+
+@keyframes featIn {
+  from { opacity: 0; transform: translateX(-8px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+.feature-icon {
+  font-size     : 18px;
+  width         : 38px;             /* dikurangi dari 42px */
+  height        : 38px;
+  background    : rgba(255, 255, 255, 0.10);
+  border-radius : 11px;
+  display       : grid;
+  place-items   : center;
+  flex-shrink   : 0;
+}
+
+.feature-list li > div {
+  display        : flex;
+  flex-direction : column;
+  gap            : 1px;
+}
+
+.feature-list strong {
+  color       : white;
+  font-size   : 13px;
+  font-weight : 700;
+}
+
+.feature-list span {
+  color     : rgba(255, 255, 255, 0.58);
+  font-size : 11px;
+}
+
+/* Mini statistik */
+.mini-stats {
+  display          : flex;
+  align-items      : center;
+  gap              : 16px;
+  background       : rgba(255, 255, 255, 0.08);
+  border           : 1px solid rgba(255, 255, 255, 0.12);
+  border-radius    : var(--radius-md);
+  padding          : 14px 18px;     /* dikurangi */
+  backdrop-filter  : blur(8px);
+}
+
+.mini-stat {
+  text-align: center;
+}
+
+.mini-stat-num {
+  font-family : var(--font-display);
+  font-size   : 20px;               /* dikurangi dari 22px */
+  font-weight : 800;
+  color       : var(--yellow);
+  line-height : 1;
+}
+
+.mini-stat-label {
+  font-size   : 10px;
+  color       : rgba(255, 255, 255, 0.55);
+  margin-top  : 2px;
+  white-space : nowrap;
+}
+
+.mini-stat-divider {
+  width      : 1px;
+  height     : 28px;
+  background : rgba(255, 255, 255, 0.15);
+}
+
+
+/* ============================================================
+   07. PANEL KANAN — FORM
+   overflow-y: auto dengan scrollbar disembunyikan secara visual,
+   sehingga konten tetap dapat dicapai di layar sangat kecil,
+   tapi tidak terlihat ada scrollbar.
+   ============================================================ */
+
+.form-panel {
+  display         : flex;
+  align-items     : center;
+  justify-content : center;
+  padding         : 20px 32px;       /* dikurangi dari 48px 40px */
+  background      : var(--bg);
+  overflow-y      : auto;
+  scrollbar-width : none;            /* Firefox — sembunyikan scrollbar */
+}
+
+.form-panel::-webkit-scrollbar {
+  display: none;                     /* Chrome/Safari — sembunyikan scrollbar */
+}
+
+.form-shell {
+  width     : 100%;
+  max-width : 440px;
+}
+
+
+/* ── 07a. Role Switcher ── */
+
+.role-switch {
+  margin-bottom: 14px;
+}
+
+.role-switch-label {
+  font-size      : 11px;
+  font-weight    : 700;
+  color          : var(--text-light);
+  text-transform : uppercase;
+  letter-spacing : 0.08em;
+  margin-bottom  : 8px;
+  padding-left   : 2px;
+  text-align     : center;
+}
+
+.role-grid {
+  display         : flex;
+  flex-wrap       : wrap;
+  justify-content : center;
+  gap             : 7px;
+}
+
+.role-btn {
+  display         : flex;
+  flex-direction  : column;
+  align-items     : center;
+  gap             : 5px;
+  padding         : 10px 4px;
+  width           : calc(33.333% - 5px);
+  background      : white;
+  border          : 1.5px solid var(--border);
+  border-radius   : var(--radius-md);
+  cursor          : pointer;
+  transition      : var(--transition);
+  font-family     : var(--font-body);
+}
+
+.role-btn:hover {
+  border-color : var(--accent);
+  transform    : translateY(-2px);
+  box-shadow   : var(--shadow-sm);
+}
+
+.role-btn-icon {
+  font-size   : 20px;
+  line-height : 1;
+}
+
+.role-btn-label {
+  font-size   : 10px;
+  font-weight : 700;
+  color       : var(--text-muted);
+  text-align  : center;
+  line-height : 1.2;
+}
+
+.role-btn.active {
+  border-color : var(--accent);
+  background   : var(--accent-soft);
+  box-shadow   : 0 0 0 3px var(--accent-ring);
+}
+
+.role-btn.active .role-btn-label {
+  color: var(--accent-dark);
+}
+
+
+/* ── 07b. Kartu Login ── */
+
+.login-card {
+  width         : 100%;
+  background    : white;
+  border-radius : var(--radius-xl);
+  padding       : 28px 32px 32px;   /* dikurangi dari 36px 40px 40px */
+  box-shadow    : var(--shadow-lg);
+  border        : 1px solid var(--border);
+  position      : relative;
+  overflow      : hidden;
+  animation     : cardSlide 0.5s ease-out;
+}
+
+/* Garis aksen warna di atas kartu */
+.login-card::before {
+  content    : '';
+  position   : absolute;
+  top        : 0;
+  left       : 0;
+  right      : 0;
+  height     : 4px;
+  background : var(--accent);
+  transition : background 0.4s ease;
+}
+
+@keyframes cardSlide {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.form-header {
+  text-align    : center;
+  margin-bottom : 20px;             /* dikurangi dari 26px */
+}
+
+.form-logo {
+  width         : 52px;             /* dikurangi dari 60px */
+  height        : 52px;
+  margin        : 0 auto 10px;
+  border-radius : 16px;
+  display       : grid;
+  place-items   : center;
+  font-size     : 26px;
+  background    : var(--accent-soft);
+  transition    : background 0.4s ease;
+}
+
+.form-title {
+  font-family    : var(--font-display);
+  font-size      : 22px;            /* dikurangi dari 25px */
+  font-weight    : 700;
+  color          : var(--text);
+  margin-bottom  : 4px;
+  letter-spacing : -0.02em;
+}
+
+.form-subtitle {
+  font-size : 13px;
+  color     : var(--text-muted);
+}
+
+
+/* ── 07c. Form Groups ── */
+
+.form-group {
+  display        : flex;
+  flex-direction : column;
+  gap            : 5px;
+  margin-bottom  : 14px;            /* dikurangi dari 18px */
+}
+
+.form-group label {
+  font-size   : 13px;
+  font-weight : 600;
+  color       : var(--text);
+}
+
+.input-wrapper {
+  position    : relative;
+  display     : flex;
+  align-items : center;
+}
+
+.input-icon {
+  position       : absolute;
+  left           : 13px;
+  color          : var(--text-light);
+  display        : flex;
+  align-items    : center;
+  pointer-events : none;
+}
+
+.input-icon svg {
+  width  : 15px;
+  height : 15px;
+}
+
+.input-wrapper input {
+  width         : 100%;
+  padding       : 11px 42px 11px 40px;  /* dikurangi dari 12px */
+  border        : 1.5px solid var(--border);
+  border-radius : var(--radius-sm);
+  font-family   : var(--font-body);
+  font-size     : 14px;
+  color         : var(--text);
+  background    : var(--bg);
+  transition    : var(--transition);
+  outline       : none;
+}
+
+.input-wrapper input:focus {
+  border-color : var(--accent);
+  background   : white;
+  box-shadow   : 0 0 0 3px var(--accent-ring);
+}
+
+.input-wrapper input.error {
+  border-color : var(--coral);
+  box-shadow   : 0 0 0 3px rgba(251, 113, 133, 0.12);
+}
+
+.input-wrapper input::placeholder {
+  color: var(--text-light);
+}
+
+.toggle-pwd {
+  position      : absolute;
+  right         : 12px;
+  background    : none;
+  border        : none;
+  cursor        : pointer;
+  color         : var(--text-light);
+  padding       : 4px;
+  display       : flex;
+  align-items   : center;
+  transition    : var(--transition);
+  border-radius : 4px;
+}
+
+.toggle-pwd:hover {
+  color      : var(--text-muted);
+  background : var(--bg);
+}
+
+.toggle-pwd svg {
+  width  : 15px;
+  height : 15px;
+}
+
+.field-error {
+  font-size   : 12px;
+  color       : #be123c;
+  font-weight : 500;
+  min-height  : 14px;
+}
+
+.form-options {
+  display         : flex;
+  align-items     : center;
+  justify-content : space-between;
+  margin-bottom   : 18px;           /* dikurangi dari 22px */
+}
+
+/* Checkbox "Ingat saya" */
+.checkbox-label {
+  display     : flex;
+  align-items : center;
+  gap         : 7px;
+  cursor      : pointer;
+  font-size   : 13px;
+  color       : var(--text-muted);
+  font-weight : 500;
+}
+
+.checkbox-label input[type="checkbox"] {
+  display: none;
+}
+
+.checkbox-custom {
+  width         : 16px;
+  height        : 16px;
+  border        : 1.5px solid var(--border);
+  border-radius : 5px;
+  display       : grid;
+  place-items   : center;
+  transition    : var(--transition);
+  background    : white;
+}
+
+.checkbox-label input:checked ~ .checkbox-custom {
+  background   : var(--accent);
+  border-color : var(--accent);
+}
+
+.checkbox-custom::after {
+  content      : '';
+  width        : 5px;
+  height       : 8px;
+  border       : 2px solid white;
+  border-top   : none;
+  border-left  : none;
+  transform    : rotate(45deg) translateY(-1px);
+  opacity      : 0;
+  transition   : opacity 0.15s;
+}
+
+.checkbox-label input:checked ~ .checkbox-custom::after {
+  opacity: 1;
+}
+
+/* Link lupa password */
+.forgot-link {
+  font-size   : 13px;
+  font-weight : 600;
+  color       : var(--accent);
+  transition  : var(--transition);
+  background  : none;
+  border      : none;
+  cursor      : pointer;
+  font-family : var(--font-body);
+}
+
+.forgot-link:hover {
+  color           : var(--accent-dark);
+  text-decoration : underline;
+}
+
+
+/* ── 07d. Tombol Submit ── */
+
+.btn-submit {
+  width           : 100%;
+  padding         : 13px 24px;       /* dikurangi dari 14px */
+  background      : linear-gradient(135deg, var(--accent), var(--accent-dark));
+  color           : white;
+  border          : none;
+  border-radius   : var(--radius-sm);
+  font-family     : var(--font-body);
+  font-size       : 15px;
+  font-weight     : 700;
+  cursor          : pointer;
+  transition      : var(--transition);
+  display         : flex;
+  align-items     : center;
+  justify-content : center;
+  gap             : 10px;
+  box-shadow      : 0 4px 16px var(--accent-ring);
+}
+
+.btn-submit:hover:not(:disabled) {
+  transform  : translateY(-2px);
+  box-shadow : 0 8px 24px var(--accent-ring);
+}
+
+.btn-submit:disabled {
+  opacity   : 0.7;
+  cursor    : not-allowed;
+  transform : none;
+}
+
+.btn-arrow {
+  width      : 16px;
+  height     : 16px;
+  flex-shrink: 0;
+}
+
+.btn-loader {
+  display     : flex;
+  align-items : center;
+  gap         : 8px;
+}
+
+.spinner {
+  width     : 16px;
+  height    : 16px;
+  animation : spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+
+/* ── 07e. Misc ── */
+
+.form-message {
+  padding       : 10px 13px;
+  border-radius : var(--radius-sm);
+  font-size     : 13px;
+  font-weight   : 500;
+  display       : none;
+  margin-top    : 12px;
+}
+
+.form-message.success {
+  display     : flex;
+  align-items : center;
+  gap         : 8px;
+  background  : var(--mint-soft);
+  color       : #047857;
+  border      : 1px solid #6ee7b7;
+}
+
+.form-message.error {
+  display     : flex;
+  align-items : center;
+  gap         : 8px;
+  background  : var(--coral-soft);
+  color       : #be123c;
+  border      : 1px solid #fca5a5;
+}
+
+/* Hint akun demo */
+.demo-hint {
+  margin-top    : 12px;
+  padding       : 10px 12px;
+  background    : var(--bg);
+  border        : 1px dashed var(--border);
+  border-radius : var(--radius-sm);
+  font-size     : 12px;
+  color         : var(--text-muted);
+  line-height   : 1.6;
+}
+
+.demo-hint strong {
+  color: var(--accent-dark);
+}
+
+.demo-hint code {
+  font-family   : ui-monospace, 'SF Mono', Menlo, monospace;
+  background    : white;
+  padding       : 1px 6px;
+  border-radius : 5px;
+  border        : 1px solid var(--border);
+  font-size     : 11px;
+  color         : var(--text);
+}
+
+
+/* ============================================================
+   08. MODAL
+   ============================================================ */
+
+.modal {
+  position        : fixed;
+  inset           : 0;
+  z-index         : 200;
+  display         : none;
+  align-items     : center;
+  justify-content : center;
+  padding         : 20px;
+}
+
+.modal.active {
+  display: flex;
+}
+
+.modal-overlay {
+  position         : absolute;
+  inset            : 0;
+  background       : rgba(15, 23, 42, 0.52);
+  backdrop-filter  : blur(8px);
+  animation        : fadeIn 0.3s;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+}
+
+.modal-box {
+  position      : relative;
+  background    : white;
+  border-radius : var(--radius-xl);
+  padding       : 36px 40px;
+  max-width     : 420px;
+  width         : 100%;
+  z-index       : 1;
+  box-shadow    : 0 30px 80px rgba(0, 0, 0, 0.22);
+  animation     : modalUp 0.32s ease-out;
+}
+
+@keyframes modalUp {
+  from { opacity: 0; transform: translateY(18px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.modal-close {
+  position      : absolute;
+  top           : 14px;
+  right         : 14px;
+  width         : 32px;
+  height        : 32px;
+  background    : var(--bg);
+  border        : none;
+  border-radius : 50%;
+  font-size     : 19px;
+  cursor        : pointer;
+  color         : var(--text-muted);
+  transition    : var(--transition);
+  line-height   : 1;
+}
+
+.modal-close:hover {
+  background : var(--coral-soft);
+  color      : var(--coral);
+}
+
+.modal-header {
+  text-align    : center;
+  margin-bottom : 24px;
+}
+
+.modal-icon {
+  font-size     : 36px;
+  margin-bottom : 10px;
+}
+
+.modal-header h3 {
+  font-family   : var(--font-display);
+  font-size     : 22px;
+  font-weight   : 700;
+  margin-bottom : 5px;
+}
+
+.modal-header p {
+  font-size  : 13px;
+  color      : var(--text-muted);
+  line-height: 1.6;
+}
+
+
+/* ============================================================
+   09. RESPONSIVE
+   ============================================================ */
+
+/* Tablet — sembunyikan panel kiri */
+@media (max-width: 900px) {
+  .main-wrapper {
+    grid-template-columns : 1fr;
+  }
+
+  .info-panel {
+    display: none;
+  }
+
+  .form-panel {
+    padding: 16px 20px;
+  }
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+  .form-panel {
+    padding : 14px 14px;
+  }
+
+  .login-card {
+    padding : 22px 18px 26px;
+  }
+
+  .role-btn-label {
+    font-size: 9px;
+  }
+
+  .role-btn {
+    padding: 8px 4px;
+  }
+
+  .form-title {
+    font-size: 20px;
+  }
+
+  .modal-box {
+    padding: 28px 18px;
+  }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration        : 0.01ms !important;
+    animation-iteration-count : 1 !important;
+    transition-duration       : 0.01ms !important;
+  }
+}

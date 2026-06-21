@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Penetapan Penerima — Beasiswa Kampus Staff</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,800;9..144,900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js"></script>
+  <link rel="stylesheet" href="penetapanPenerima.css" />
+</head>
+<body>
+
+  <canvas id="bgCanvas"></canvas>
+  <div class="particles" id="particles"></div>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <a href="../beranda.html" class="logo">
+        <span class="logo-mark">B</span>
+        <span class="logo-text">Beasiswa<strong>Kampus</strong></span>
+      </a>
+      <button class="sidebar-close" id="sidebarClose">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <div class="sidebar-user">
+      <div class="user-avatar" id="sidebarAvatar">S</div>
+      <div class="user-info">
+        <div class="user-name" id="sidebarName">Staff Admin</div>
+        <span class="user-role-tag">
+          <iconify-icon icon="solar:folder-with-files-bold-duotone" width="11"></iconify-icon>
+          Staff Admin
+        </span>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Operasional</div>
+      <a href="../dashboardStaffAdmin.html" class="nav-item">
+        <span class="nav-icon"><iconify-icon icon="solar:home-2-bold-duotone"></iconify-icon></span>
+        <span>Dashboard</span>
+      </a>
+      <a href="../sponsorDanBeasiswa/manajemenSponsorBeasiswa.html" class="nav-item">
+        <span class="nav-icon"><iconify-icon icon="solar:buildings-2-bold-duotone"></iconify-icon></span>
+        <span>Sponsor &amp; Beasiswa</span>
+      </a>
+      <a href="../verifikasiPendaftaran/verifikasiPendaftar.html" class="nav-item">
+        <span class="nav-icon"><iconify-icon icon="solar:check-circle-bold-duotone"></iconify-icon></span>
+        <span>Verifikasi Pendaftar</span>
+      </a>
+      <a href="../inputHasilSeleksi/inputHasilSeleksi.html" class="nav-item">
+        <span class="nav-icon"><iconify-icon icon="solar:document-add-bold-duotone"></iconify-icon></span>
+        <span>Input Hasil Seleksi</span>
+      </a>
+      <a href="penetapanPenerima.html" class="nav-item active">
+        <span class="nav-icon"><iconify-icon icon="solar:cup-star-bold-duotone"></iconify-icon></span>
+        <span>Penetapan Penerima</span>
+      </a>
+      <a href="../PencairanDana/pencairanDana.html" class="nav-item">
+        <span class="nav-icon"><iconify-icon icon="solar:transfer-horizontal-bold-duotone"></iconify-icon></span>
+        <span>Pencairan Dana</span>
+      </a>
+      <div class="nav-section-label">Lainnya</div>
+      <a href="../pusatLaporanKendala/pusatLaporanKendala.html" class="nav-item">
+        <span class="nav-icon"><iconify-icon icon="solar:chat-round-like-bold-duotone"></iconify-icon></span>
+        <span>Pusat Laporan Kendala</span>
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="btn-logout" id="btnLogout">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Keluar
+      </button>
+    </div>
+  </aside>
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <!-- MAIN -->
+  <div class="main-content">
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="hamburger-btn" id="hamburgerBtn">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M3 12h18M3 6h18M3 18h18" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
+        </button>
+        <div class="page-title">
+          <h1>Penetapan Penerima</h1>
+          <p>Tetapkan atau batalkan status lolos final penerima beasiswa</p>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <div class="topbar-search">
+          <svg viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2"/><path d="M21 21l-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          <input type="text" id="searchInput" placeholder="Cari nama mahasiswa atau beasiswa..." />
+        </div>
+        <a href="../pusatLaporanKendala/pusatLaporanKendala.html" class="topbar-notif">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+        <a href="#" class="topbar-avatar" id="topbarAvatar">S</a>
+      </div>
+    </header>
+
+    <div class="page-body">
+
+      <!-- BANNER -->
+      <div class="welcome-banner">
+        <div class="welcome-text">
+          <h2>🏆 Penetapan Penerima Beasiswa</h2>
+          <p id="bannerSubtitle">Tetapkan mahasiswa sebagai penerima resmi setelah semua nilai seleksi terpenuhi.</p>
+        </div>
+        <div class="banner-stats-wrap">
+          <div class="banner-stat">
+            <span id="bannerSiap" style="font-family:var(--font-display);font-size:28px;font-weight:900;color:white">0</span>
+            <span style="font-size:11px;color:rgba(255,255,255,.8)">Siap Ditetapkan</span>
+          </div>
+          <div class="banner-stat">
+            <span id="bannerDitetapkan" style="font-family:var(--font-display);font-size:28px;font-weight:900;color:#fbbf24">0</span>
+            <span style="font-size:11px;color:rgba(255,255,255,.8)">Sudah Ditetapkan</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- STATS -->
+      <div class="stats-grid">
+        <div class="stat-card stat-amber">
+          <div class="stat-icon"><iconify-icon icon="solar:hourglass-bold-duotone" style="color:#d97706"></iconify-icon></div>
+          <div class="stat-info">
+            <div class="stat-num" id="statSiap">—</div>
+            <div class="stat-label">Siap Ditetapkan</div>
+          </div>
+          <span class="stat-tag">Antre</span>
+        </div>
+        <div class="stat-card stat-green">
+          <div class="stat-icon"><iconify-icon icon="solar:cup-star-bold-duotone" style="color:#059669"></iconify-icon></div>
+          <div class="stat-info">
+            <div class="stat-num" id="statLolos">—</div>
+            <div class="stat-label">Penerima Ditetapkan</div>
+          </div>
+          <span class="stat-tag">Final</span>
+        </div>
+        <div class="stat-card stat-blue">
+          <div class="stat-icon"><iconify-icon icon="solar:close-circle-bold-duotone" style="color:#2563eb"></iconify-icon></div>
+          <div class="stat-info">
+            <div class="stat-num" id="statTidakLolos">—</div>
+            <div class="stat-label">Tidak Lolos Final</div>
+          </div>
+          <span class="stat-tag">Ditolak</span>
+        </div>
+        <div class="stat-card stat-purple">
+          <div class="stat-icon"><iconify-icon icon="solar:wallet-money-bold-duotone" style="color:#7c3aed"></iconify-icon></div>
+          <div class="stat-info">
+            <div class="stat-num" id="statTotalDana">—</div>
+            <div class="stat-label">Total Dana Dicairkan</div>
+          </div>
+          <span class="stat-tag">Dana</span>
+        </div>
+      </div>
+
+      <!-- TAB FILTER -->
+      <div class="tab-bar">
+        <button class="tab-btn active" data-tab="siap">
+          <iconify-icon icon="solar:hourglass-bold-duotone" width="14"></iconify-icon>
+          Siap Ditetapkan
+          <span class="tab-count" id="tcSiap">0</span>
+        </button>
+        <button class="tab-btn" data-tab="lolos_final">
+          <iconify-icon icon="solar:cup-star-bold-duotone" width="14"></iconify-icon>
+          Sudah Ditetapkan
+          <span class="tab-count" id="tcLolos">0</span>
+        </button>
+        <button class="tab-btn" data-tab="tidak_lolos_final">
+          <iconify-icon icon="solar:close-circle-bold-duotone" width="14"></iconify-icon>
+          Tidak Lolos
+          <span class="tab-count" id="tcTidakLolos">0</span>
+        </button>
+        <button class="tab-btn" data-tab="all">
+          Semua
+          <span class="tab-count" id="tcAll">0</span>
+        </button>
+      </div>
+
+      <!-- TOOLBAR -->
+      <div class="panel-toolbar">
+        <span class="panel-count" id="panelCount">0 peserta</span>
+        <div style="display:flex;gap:10px;align-items:center">
+          <select class="filter-select" id="filterBeasiswa">
+            <option value="all">Semua Beasiswa</option>
+          </select>
+          <select class="filter-select" id="sortSelect">
+            <option value="nilai_desc">Nilai Tertinggi</option>
+            <option value="nilai_asc">Nilai Terendah</option>
+            <option value="nama_asc">Nama A–Z</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- LIST -->
+      <div class="list-area">
+        <div class="penerima-list" id="penerimaList"></div>
+        <div class="empty-state" id="emptyState" style="display:none">
+          <iconify-icon icon="solar:cup-star-bold-duotone" width="52" style="color:var(--text-4);display:block;margin-bottom:12px"></iconify-icon>
+          <h3>Tidak ada data</h3>
+          <p>Tidak ada peserta pada kategori ini.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- MODAL KONFIRMASI PENETAPAN -->
+  <div class="modal" id="modalKonfirmasi">
+    <div class="modal-overlay" id="modalKonfirmasiOverlay"></div>
+    <div class="modal-box">
+      <div class="modal-icon-wrap" id="konfirmasiIcon"></div>
+      <h3 id="konfirmasiTitle">Konfirmasi</h3>
+      <p id="konfirmasiDesc">Pastikan keputusan sudah tepat.</p>
+      <div class="form-group" style="margin-bottom:18px;text-align:left">
+        <label style="font-size:12px;font-weight:700;color:var(--text-2)">
+          Catatan Staff (akan dilihat mahasiswa)
+        </label>
+        <textarea
+          id="catatanPenetapan"
+          rows="2"
+          placeholder="Catatan opsional untuk mahasiswa..."
+          style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:10px;font-family:var(--font-body);font-size:13px;resize:none;outline:none;margin-top:4px"
+        ></textarea>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-cancel" id="cancelKonfirmasi">Batal</button>
+        <button class="btn-konfirmasi" id="confirmPenetapan">Konfirmasi</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL DETAIL PESERTA -->
+  <div class="modal" id="modalDetail">
+    <div class="modal-overlay" id="modalDetailOverlay"></div>
+    <div class="modal-box modal-wide">
+      <button class="modal-close" id="modalDetailClose">×</button>
+      <div id="modalDetailContent"></div>
+    </div>
+  </div>
+
+  <!-- LOGOUT MODAL -->
+  <div class="modal" id="logoutModal">
+    <div class="modal-overlay" id="logoutOverlay"></div>
+    <div class="modal-box">
+      <div class="modal-icon-wrap">
+        <iconify-icon icon="solar:door-open-bold-duotone" style="color:#be123c" width="48"></iconify-icon>
+      </div>
+      <h3>Keluar dari Portal?</h3>
+      <p>Kamu akan keluar dari sesi staff. Pastikan pekerjaan sudah tersimpan.</p>
+      <div class="modal-actions">
+        <button class="btn-cancel" id="cancelLogout">Batal</button>
+        <button class="btn-danger" id="confirmLogout">Ya, Keluar</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="penetapanPenerima.js"></script>
+</body>
+</html>

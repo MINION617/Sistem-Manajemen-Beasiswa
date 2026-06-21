@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Beasiswa Kampus — Wujudkan Mimpimu</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,800;9..144,900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="beranda.css" />
+</head>
+<body>
+
+  <!-- ========== NAVBAR ========== -->
+  <header class="navbar" id="navbar">
+    <div class="nav-container">
+      <a href="#beranda" class="logo">
+        <span class="logo-mark">B</span>
+        <span class="logo-text">Beasiswa<strong>Kampus</strong></span>
+      </a>
+
+      <nav class="nav-links" id="navLinks">
+        <a href="#beranda" class="nav-link active">Beranda</a>
+        <a href="#beasiswa" class="nav-link">Beasiswa</a>
+        <a href="daftarBeasiswa/daftarBeasiswa.html" class="nav-link">Pendaftaran</a>
+        <a href="#status" class="nav-link">Cek Status</a>
+        <a href="#sponsor" class="nav-link">Sponsor</a>
+        <a href="LOGIN/login.html" class="btn-login">Masuk / Daftar</a>
+      </nav>
+
+      <button class="hamburger" id="hamburger" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ========== HERO ========== -->
+  <section class="hero" id="beranda">
+    <div class="hero-bg">
+      <div class="blob blob-1"></div>
+      <div class="blob blob-2"></div>
+      <div class="blob blob-3"></div>
+      <div class="dot-grid"></div>
+    </div>
+
+    <div class="hero-container">
+      <div class="hero-content">
+        <span class="badge">
+          <span class="badge-dot"></span>
+          Pendaftaran Periode 2026/2027 Dibuka!
+        </span>
+        <h1 class="hero-title">
+          Wujudkan <span class="title-highlight">Mimpimu<svg class="underline-svg" viewBox="0 0 200 12" preserveAspectRatio="none"><path d="M2 8 Q50 2 100 6 T198 8" stroke="currentColor" stroke-width="4" fill="none" stroke-linecap="round"/></svg></span>
+          Bersama <br/>Beasiswa Kampus.
+        </h1>
+        <p class="hero-subtitle">
+          Platform pendaftaran beasiswa terlengkap untuk mahasiswa berprestasi.
+          Daftar sekali, peluang tanpa batas. ✨
+        </p>
+
+        <div class="hero-cta">
+          <a href="daftarBeasiswa/daftarBeasiswa.html" class="btn btn-primary">
+            Daftar Sekarang
+            <svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </a>
+          <a href="#beasiswa" class="btn btn-secondary">Lihat Beasiswa</a>
+        </div>
+
+        <div class="hero-stats">
+          <div class="stat">
+            <div class="stat-number" data-count="48">0</div>
+            <div class="stat-label">Beasiswa Aktif</div>
+          </div>
+          <div class="stat-divider"></div>
+          <div class="stat">
+            <div class="stat-number" data-count="1240">0</div>
+            <div class="stat-label">Mahasiswa Terdaftar</div>
+          </div>
+          <div class="stat-divider"></div>
+          <div class="stat">
+            <div class="stat-number" data-count="32">0</div>
+            <div class="stat-label">Sponsor Mitra</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-visual">
+        <div class="floating-card card-1">
+          <div class="card-icon icon-yellow">🎓</div>
+          <div>
+            <div class="card-title">IPK 3.85</div>
+            <div class="card-sub">Berkas diverifikasi</div>
+          </div>
+          <div class="status-pill status-approved">Lolos Final</div>
+        </div>
+        <div class="floating-card card-2">
+          <div class="card-icon icon-coral">📚</div>
+          <div>
+            <div class="card-title">Beasiswa Bank Mandiri</div>
+            <div class="card-sub">Tahun 2026/2027</div>
+          </div>
+        </div>
+        <div class="floating-card card-3">
+          <div class="card-icon icon-mint">✓</div>
+          <div>
+            <div class="card-title">Sertifikat TOEFL</div>
+            <div class="card-sub">Score 580 — diterima</div>
+          </div>
+        </div>
+        <div class="hero-circle">
+          <svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="48" fill="none" stroke="currentColor" stroke-width="0.5" stroke-dasharray="2 3"/></svg>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== DAFTAR BEASISWA ========== -->
+  <section class="section beasiswa-section" id="beasiswa">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-eyebrow">📌 Beasiswa Tersedia</span>
+        <h2 class="section-title">Pilih Beasiswa yang <em>Cocok</em> Untukmu</h2>
+        <p class="section-desc">Berbagai program beasiswa dari sponsor terpercaya, dengan kuota terbatas setiap tahunnya.</p>
+      </div>
+
+      <div class="filter-bar">
+        <button class="filter-chip active" data-filter="all">Semua</button>
+        <button class="filter-chip" data-filter="prestasi">Prestasi</button>
+        <button class="filter-chip" data-filter="riset">Riset</button>
+        <button class="filter-chip" data-filter="afirmasi">Afirmasi</button>
+        <button class="filter-chip" data-filter="industri">Industri</button>
+      </div>
+
+      <div class="beasiswa-grid" id="beasiswaGrid"></div>
+    </div>
+  </section>
+
+  <!-- ========== CEK STATUS ========== -->
+  <section class="section status-section" id="status">
+    <div class="container">
+      <div class="status-card">
+        <div class="status-card-left">
+          <span class="section-eyebrow">🔍 Cek Status</span>
+          <h2 class="section-title">Sudah Daftar? <em>Cek Statusmu</em> di Sini.</h2>
+          <p class="section-desc">Masukkan NIM kamu untuk melihat progress verifikasi pendaftaran beasiswa.</p>
+          <div class="status-input-group">
+            <input type="text" id="nimCek" placeholder="Masukkan NIM kamu" />
+            <button class="btn btn-primary" id="btnCekStatus">Cek</button>
+          </div>
+          <p class="status-hint">💡 Coba: <code>2150001</code> atau <code>2150042</code></p>
+        </div>
+        <div class="status-card-right" id="statusResult">
+          <div class="status-empty">
+            <div class="status-icon">📋</div>
+            <p>Hasil pendaftaranmu akan tampil di sini</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== SPONSOR ========== -->
+  <section class="section sponsor-section" id="sponsor">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-eyebrow">🤝 Sponsor & Mitra</span>
+        <h2 class="section-title">Didukung Perusahaan <em>Terpercaya</em></h2>
+        <p class="section-desc">Sponsor terbaik dari berbagai industri yang berkomitmen mendukung pendidikan Indonesia.</p>
+      </div>
+      <div class="sponsor-grid" id="sponsorGrid"></div>
+    </div>
+  </section>
+
+  <!-- ========== FOOTER ========== -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-top">
+        <div class="footer-brand">
+          <div class="logo">
+            <span class="logo-mark">B</span>
+            <span class="logo-text">Beasiswa<strong>Kampus</strong></span>
+          </div>
+          <p>Platform pendaftaran beasiswa resmi kampus.<br/>Wujudkan mimpimu, raih masa depanmu.</p>
+        </div>
+        <div class="footer-col">
+          <h4>Navigasi</h4>
+          <a href="#beranda">Beranda</a>
+          <a href="#beasiswa">Beasiswa</a>
+          <a href="daftarBeasiswa/daftarBeasiswa.html">Pendaftaran</a>
+          <a href="#status">Cek Status</a>
+        </div>
+        <div class="footer-col">
+          <h4>Mahasiswa</h4>
+          <a href="LOGIN/login.html">Masuk ke Portal</a>
+          <a href="LOGIN/login.html">Daftar Akun</a>
+          <a href="#status">Cek Status Beasiswa</a>
+        </div>
+        <div class="footer-col">
+          <h4>Kontak</h4>
+          <a href="mailto:beasiswa@kampus.ac.id">beasiswa@kampus.ac.id</a>
+          <a href="#">+62 812 3456 7890</a>
+          <a href="#">Senin – Jumat, 08.00 – 16.00</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>© 2026 Beasiswa Kampus. Made with 💙 for mahasiswa Indonesia.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="beranda.js"></script>
+</body>
+</html>

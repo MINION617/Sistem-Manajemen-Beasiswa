@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pencairan Dana — Beasiswa Kampus Staff</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,800;9..144,900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js"></script>
+  <link rel="stylesheet" href="pencairanDana.css" />
+</head>
+<body>
+
+  <canvas id="bgCanvas"></canvas>
+  <div class="particles" id="particles"></div>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <a href="../beranda.html" class="logo">
+        <span class="logo-mark">B</span>
+        <span class="logo-text">Beasiswa<strong>Kampus</strong></span>
+      </a>
+      <button class="sidebar-close" id="sidebarClose">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <div class="sidebar-user">
+      <div class="user-avatar" id="sidebarAvatar">S</div>
+      <div class="user-info">
+        <div class="user-name" id="sidebarName">Staff Admin</div>
+        <span class="user-role-tag">
+          <iconify-icon icon="solar:folder-with-files-bold-duotone" width="11"></iconify-icon>
+          Staff Admin
+        </span>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Operasional</div>
+      <a href="../dashboardStaffAdmin.html" class="nav-item">
+        <span class="nav-icon"><iconify-icon icon="solar:home-2-bold-duotone"></iconify-icon></span>
+        <span>Dashboard</span>
+      </a>
+      <a href="../sponsorDanBeasiswa/manajemenSponsorBeasiswa.html" class="nav-item">
+        <span class="nav-icon"><iconify-icon icon="solar:buildings-2-bold-duotone"></iconify-icon></span>
+        <span>Sponsor &amp; Beasiswa</span>
+      </a>
+      <a href="../verifikasiPendaftaran/verifikasiPendaftar.html" class="nav-item">
+        <span class="nav-icon"><iconify-icon icon="solar:check-circle-bold-duotone"></iconify-icon></span>
+        <span>Verifikasi Pendaftar</span>
+      </a>
+      <a href="../inputHasilSeleksi/inputHasilSeleksi.html" class="nav-item">
+        <span class="nav-icon"><iconify-icon icon="solar:document-add-bold-duotone"></iconify-icon></span>
+        <span>Input Hasil Seleksi</span>
+      </a>
+      <a href="../penetapanPenerima/penetapanPenerima.html" class="nav-item">
+        <span class="nav-icon"><iconify-icon icon="solar:cup-star-bold-duotone"></iconify-icon></span>
+        <span>Penetapan Penerima</span>
+      </a>
+      <a href="pencairanDana.html" class="nav-item active">
+        <span class="nav-icon"><iconify-icon icon="solar:transfer-horizontal-bold-duotone"></iconify-icon></span>
+        <span>Pencairan Dana</span>
+      </a>
+      <div class="nav-section-label">Lainnya</div>
+      <a href="../pusatLaporanKendala/pusatLaporanKendala.html" class="nav-item">
+        <span class="nav-icon"><iconify-icon icon="solar:chat-round-like-bold-duotone"></iconify-icon></span>
+        <span>Pusat Laporan Kendala</span>
+        <span class="nav-badge" id="badgeLaporan"></span>
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="btn-logout" id="btnLogout">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Keluar
+      </button>
+    </div>
+  </aside>
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <!-- MAIN -->
+  <div class="main-content">
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="hamburger-btn" id="hamburgerBtn">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M3 12h18M3 6h18M3 18h18" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
+        </button>
+        <div class="page-title">
+          <h1>Pencairan Dana</h1>
+          <p>Upload bukti transfer &amp; kelola status pencairan dana penerima beasiswa</p>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <div class="topbar-search">
+          <svg viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2"/><path d="M21 21l-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          <input type="text" id="searchInput" placeholder="Cari nama penerima atau beasiswa..." />
+        </div>
+        <a href="../pusatLaporanKendala/pusatLaporanKendala.html" class="topbar-notif">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="notif-dot" id="notifDot" style="display:none"></span>
+        </a>
+        <a href="#" class="topbar-avatar" id="topbarAvatar">S</a>
+      </div>
+    </header>
+
+    <div class="page-body">
+
+      <!-- BANNER -->
+      <div class="welcome-banner">
+        <div class="welcome-text">
+          <h2>Kelola Pencairan Dana Beasiswa</h2>
+          <p id="bannerSubtitle">Upload bukti transfer dan perbarui status pencairan agar penerima dapat memantau dananya.</p>
+        </div>
+        <div class="banner-stats-wrap">
+          <div class="banner-stat">
+            <span id="bannerPending" style="font-family:var(--font-display);font-size:28px;font-weight:900;color:#fbbf24">0</span>
+            <span style="font-size:11px;color:rgba(255,255,255,.8)">Menunggu Cair</span>
+          </div>
+          <div class="banner-stat">
+            <span id="bannerTotal" style="font-family:var(--font-display);font-size:22px;font-weight:900;color:white">Rp 0</span>
+            <span style="font-size:11px;color:rgba(255,255,255,.8)">Total Sudah Cair</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- STATS -->
+      <div class="stats-grid">
+        <div class="stat-card stat-amber">
+          <div class="stat-icon"><iconify-icon icon="solar:hourglass-bold-duotone" style="color:#d97706"></iconify-icon></div>
+          <div class="stat-info">
+            <div class="stat-num" id="statPending">—</div>
+            <div class="stat-label">Menunggu Pencairan</div>
+          </div>
+          <span class="stat-tag">Pending</span>
+        </div>
+        <div class="stat-card stat-blue">
+          <div class="stat-icon"><iconify-icon icon="solar:transfer-horizontal-bold-duotone" style="color:#2563eb"></iconify-icon></div>
+          <div class="stat-info">
+            <div class="stat-num" id="statProses">—</div>
+            <div class="stat-label">Sedang Diproses</div>
+          </div>
+          <span class="stat-tag">Proses</span>
+        </div>
+        <div class="stat-card stat-green">
+          <div class="stat-icon"><iconify-icon icon="solar:check-circle-bold-duotone" style="color:#059669"></iconify-icon></div>
+          <div class="stat-info">
+            <div class="stat-num" id="statCair">—</div>
+            <div class="stat-label">Sudah Cair</div>
+          </div>
+          <span class="stat-tag">Selesai</span>
+        </div>
+        <div class="stat-card stat-purple">
+          <div class="stat-icon"><iconify-icon icon="solar:banknote-bold-duotone" style="color:#7c3aed"></iconify-icon></div>
+          <div class="stat-info">
+            <div class="stat-num" id="statTotalDana">—</div>
+            <div class="stat-label">Total Dana Tersalurkan</div>
+          </div>
+          <span class="stat-tag">Dana</span>
+        </div>
+      </div>
+
+      <!-- TAB FILTER -->
+      <div class="tab-bar">
+        <button class="tab-btn active" data-tab="pending">
+          <iconify-icon icon="solar:hourglass-bold-duotone" width="14"></iconify-icon>
+          Menunggu
+          <span class="tab-count" id="tcPending">0</span>
+        </button>
+        <button class="tab-btn" data-tab="sedang_diproses">
+          <iconify-icon icon="solar:transfer-horizontal-bold-duotone" width="14"></iconify-icon>
+          Diproses
+          <span class="tab-count" id="tcProses">0</span>
+        </button>
+        <button class="tab-btn" data-tab="sudah_cair">
+          <iconify-icon icon="solar:check-circle-bold-duotone" width="14"></iconify-icon>
+          Sudah Cair
+          <span class="tab-count" id="tcCair">0</span>
+        </button>
+        <button class="tab-btn" data-tab="all">
+          Semua
+          <span class="tab-count" id="tcAll">0</span>
+        </button>
+      </div>
+
+      <!-- TOOLBAR -->
+      <div class="panel-toolbar">
+        <span class="panel-count" id="panelCount">0 penerima</span>
+        <div style="display:flex;gap:10px">
+          <select class="filter-select" id="filterBeasiswa">
+            <option value="all">Semua Beasiswa</option>
+          </select>
+          <select class="filter-select" id="filterBulan">
+            <option value="all">Semua Periode</option>
+            <option value="2026-06">Juni 2026</option>
+            <option value="2026-07">Juli 2026</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- LIST -->
+      <div class="list-area">
+        <div class="pencairan-list" id="pencairanList"></div>
+        <div class="empty-state" id="emptyState" style="display:none">
+          <iconify-icon icon="solar:banknote-bold-duotone" width="52" style="color:var(--text-4);display:block;margin-bottom:12px"></iconify-icon>
+          <h3>Tidak ada data</h3>
+          <p>Tidak ada penerima dengan status ini saat ini.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- MODAL UPLOAD BUKTI TRANSFER -->
+  <div class="modal" id="modalUpload">
+    <div class="modal-overlay" id="modalUploadOverlay"></div>
+    <div class="modal-box modal-wide">
+      <button class="modal-close" id="modalUploadClose">×</button>
+      <h3 id="modalUploadTitle">Upload Bukti Transfer</h3>
+      <p class="modal-sub">
+        Bukti transfer akan tersimpan di tabel <code>penyaluran_dana</code> dan
+        terlihat di halaman <strong>Penerimaan Dana</strong> mahasiswa.
+      </p>
+
+      <!-- Info penerima -->
+      <div id="uploadPenerimaInfo"></div>
+
+      <form id="formUpload" novalidate>
+        <div class="form-grid">
+
+          <!-- penyaluran_dana.nominal_transfer — sinkron penerimaBeasiswa.js mahasiswa -->
+          <div class="form-group">
+            <label>Nominal Transfer (Rp) <span class="req">*</span></label>
+            <input type="number" id="fNominal" name="nominal_transfer"
+              placeholder="5000000" min="0" required />
+          </div>
+
+          <!-- penyaluran_dana.tanggal_transfer -->
+          <div class="form-group">
+            <label>Tanggal Transfer <span class="req">*</span></label>
+            <input type="date" id="fTanggalTransfer" name="tanggal_transfer" required />
+          </div>
+
+          <!-- penyaluran_dana.periode_bulan -->
+          <div class="form-group">
+            <label>Periode Bulan</label>
+            <input type="month" id="fPeriodeBulan" name="periode_bulan" />
+          </div>
+
+          <!-- penyaluran_dana.no_rekening_tujuan — sinkron penerimaBeasiswa.js -->
+          <div class="form-group">
+            <label>No. Rekening Tujuan</label>
+            <input type="text" id="fRekening" name="no_rekening_tujuan"
+              placeholder="1234567890" maxlength="30" />
+          </div>
+
+          <!-- penyaluran_dana.bank_tujuan -->
+          <div class="form-group">
+            <label>Bank Tujuan</label>
+            <select id="fBank" name="bank_tujuan">
+              <option value="">-- Pilih Bank --</option>
+              <option value="BCA">BCA</option>
+              <option value="BNI">BNI</option>
+              <option value="BRI">BRI</option>
+              <option value="Mandiri">Bank Mandiri</option>
+              <option value="BSI">BSI</option>
+              <option value="CIMB">CIMB Niaga</option>
+            </select>
+          </div>
+
+          <!-- penyaluran_dana.no_referensi -->
+          <div class="form-group">
+            <label>No. Referensi / Kode Transfer</label>
+            <input type="text" id="fReferensi" name="no_referensi"
+              placeholder="TRF-20260620-001" maxlength="100" />
+          </div>
+
+          <!-- penyaluran_dana.bukti_transfer_url — file upload -->
+          <div class="form-group form-group-full">
+            <label>Upload Bukti Transfer <span class="req">*</span></label>
+            <div class="file-upload-zone" id="fileDropZone">
+              <iconify-icon icon="solar:upload-minimalistic-bold-duotone" width="32" style="color:var(--blue-400);margin-bottom:8px;display:block"></iconify-icon>
+              <p class="file-upload-text">Klik atau drag &amp; drop file di sini</p>
+              <p class="file-upload-hint">PNG, JPG, atau PDF · Maks. 5MB</p>
+              <input type="file" id="fBuktiFile" name="bukti_transfer"
+                accept="image/*,.pdf" style="display:none" />
+            </div>
+            <div class="file-preview" id="filePreview" style="display:none">
+              <iconify-icon icon="solar:file-check-bold-duotone" width="20" style="color:#059669"></iconify-icon>
+              <span id="filePreviewName">file.png</span>
+              <button type="button" class="file-remove" id="fileRemove">×</button>
+            </div>
+          </div>
+
+          <!-- penyaluran_dana.catatan -->
+          <div class="form-group form-group-full">
+            <label>Catatan (opsional)</label>
+            <textarea id="fCatatanTransfer" name="catatan" rows="2"
+              placeholder="Catatan tambahan untuk penerima..."></textarea>
+          </div>
+
+          <!-- penyaluran_dana.status — sinkron penerimaBeasiswa.js mahasiswa -->
+          <div class="form-group form-group-full">
+            <label>Status Pencairan <span class="req">*</span></label>
+            <div class="status-radio-group">
+              <label class="status-radio">
+                <input type="radio" name="status_pencairan" value="sedang_diproses" />
+                <span class="status-radio-label status-proses-label">
+                  <iconify-icon icon="solar:transfer-horizontal-bold-duotone" width="14"></iconify-icon>
+                  Sedang Diproses
+                </span>
+              </label>
+              <label class="status-radio">
+                <input type="radio" name="status_pencairan" value="sudah_cair" checked />
+                <span class="status-radio-label status-cair-label">
+                  <iconify-icon icon="solar:check-circle-bold-duotone" width="14"></iconify-icon>
+                  Sudah Cair
+                </span>
+              </label>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="form-message" id="formUploadMsg"></div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn-cancel" id="cancelUpload">Batal</button>
+          <button type="submit" class="btn-save" id="btnSimpanUpload">
+            <span class="btn-text">
+              <iconify-icon icon="solar:upload-minimalistic-bold-duotone" width="15"></iconify-icon>
+              Simpan &amp; Upload
+            </span>
+            <span class="btn-loader" id="loaderUpload" style="display:none">
+              <svg class="spinner" viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" stroke-dasharray="31.4" stroke-dashoffset="10"/>
+              </svg>
+              Menyimpan...
+            </span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL DETAIL PENCAIRAN -->
+  <div class="modal" id="modalDetail">
+    <div class="modal-overlay" id="modalDetailOverlay"></div>
+    <div class="modal-box modal-wide">
+      <button class="modal-close" id="modalDetailClose">×</button>
+      <div id="modalDetailContent"></div>
+    </div>
+  </div>
+
+  <!-- LOGOUT MODAL -->
+  <div class="modal" id="logoutModal">
+    <div class="modal-overlay" id="logoutOverlay"></div>
+    <div class="modal-box">
+      <div class="modal-icon-wrap">
+        <iconify-icon icon="solar:door-open-bold-duotone" style="color:#be123c" width="48"></iconify-icon>
+      </div>
+      <h3>Keluar dari Portal?</h3>
+      <p>Kamu akan keluar dari sesi staff. Pastikan pekerjaan sudah tersimpan.</p>
+      <div class="modal-actions">
+        <button class="btn-cancel" id="cancelLogout">Batal</button>
+        <button class="btn-danger" id="confirmLogout">Ya, Keluar</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="pencairanDana.js"></script>
+</body>
+</html>
