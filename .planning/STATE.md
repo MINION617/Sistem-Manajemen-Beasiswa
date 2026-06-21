@@ -31,7 +31,7 @@ See: .planning/PROJECT.md (updated 2026-06-17)
 
 - **KD-1 = Opsi A (Supabase nyata sekarang).** SUPERSEDES D-12 (dummy-first). Phase 1 builds a real Supabase schema + RLS + storage; dummy data is seed/fallback only.
 - **KD-2:** role model = {mahasiswa, staff, kabag, wabag} (+ kabag_wabag login mode), not binary admin.
-- **KD-3 (open):** approval owner ambiguity (Kabag ACC vs Staff SELE-02) — to resolve before Phase 3.
+- **KD-3 (resolved 2026-06-21):** recipient decision is a **two-step flow** — Staff marks `lolos_final`, Kabag gives final ACC. Both actions recorded for audit. Applies in Phase 3 (SELE-02).
 - **KD-4:** canonical status vocabulary = snake_case enums (menunggu_verifikasi, lolos_berkas, ditolak_berkas, wawancara, lolos_final, tidak_lolos_final, …) + display-label map.
 
 ## Phase 1 Plan Set (4 plans)
@@ -41,10 +41,11 @@ See: .planning/PROJECT.md (updated 2026-06-17)
 - **01-02** (wave 3): mahasiswa readiness gate + real persisted submission + connected tracking.
 - **01-03** (wave 3): harden existing manajemenSponsorBeasiswa.js (persist + role guard); remove dead SPONSOR files.
 
-## Follow-ups Recommended (not yet applied)
+## Follow-ups (applied 2026-06-21)
 
-- Update `01-CONTEXT.md` D-12 and `PROJECT.md` to record that KD-1=A supersedes dummy-first.
-- Confirm KD-3 (who approves recipients) before Phase 3.
+- ✅ `01-CONTEXT.md` D-12 marked SUPERSEDED by KD-1; `PROJECT.md` + `ROADMAP.md` updated with KD-1/KD-3.
+- ✅ KD-3 resolved (two-step Staff→Kabag ACC).
+- ✅ Repo hygiene applied: `.gitignore` added, `BACKEND/.env` untracked, `BACKEND/.env.example` added.
 
 ## Next Command
 

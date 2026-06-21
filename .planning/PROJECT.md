@@ -55,6 +55,8 @@ Setiap pihak harus bisa melihat status dan keputusan beasiswa secara akurat, tra
 | Bangun di atas pola web app dengan frontend HTML/CSS/JS dan layanan backend Supabase | Sudah ada prototipe dan helper client Supabase di repo, sehingga lebih cepat dilanjutkan daripada memulai stack baru | - Pending |
 | Struktur roadmap mengikuti alur operasional beasiswa end-to-end | Brief sudah membagi kebutuhan ke fase intake, verifikasi, seleksi, dan pencairan | - Pending |
 | Anggap proyek ini sebagai brownfield yang perlu dirapikan, bukan greenfield murni | Repo sudah mengandung UI, skema data, dan integrasi awal yang harus diakui dalam perencanaan | - Pending |
+| **KD-1 (2026-06-21): Bangun Supabase nyata mulai Phase 1**, menggantikan rencana dummy-first (D-12) | Audit menemukan tidak ada schema/RLS/storage nyata; UI Phase 1-4 sudah ada tapi tanpa backend. Menunda Supabase memperbesar utang teknis | - Locked |
+| **KD-3 (2026-06-21): Penetapan penerima = 2 langkah (Staff usul `lolos_final` → Kabag ACC final)** | Merekonsiliasi brief (Kabag memberi ACC) dengan SELE-02 (aksi Staff); memberi jejak audit siapa yang memutuskan | - Locked |
 
 ---
-*Last updated: 2026-06-17 after initial project bootstrap*
+*Last updated: 2026-06-21 after Phase 1 audit — see `.planning/AUDIT-PHASE1.md` (KD-1 supersedes D-12; KD-3 locked).*

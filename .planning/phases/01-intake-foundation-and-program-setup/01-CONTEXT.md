@@ -33,7 +33,7 @@ Phase 1 delivers the initial working scholarship intake flow: mahasiswa log in w
 
 ### Data and UI Direction
 - **D-11:** Scholarship browsing should keep the current card-based presentation, but filtering and search should be prioritized over decorative presentation.
-- **D-12:** For Phase 1 planning and implementation, use JavaScript dummy data as the starting source for functional development rather than assuming the current MySQL dump or live Supabase data is authoritative on day one.
+- **D-12:** ~~For Phase 1 planning and implementation, use JavaScript dummy data as the starting source for functional development rather than assuming the current MySQL dump or live Supabase data is authoritative on day one.~~ **[SUPERSEDED 2026-06-21 by KD-1 — see `.planning/AUDIT-PHASE1.md`]** Phase 1 now builds a real Supabase backend (schema + RLS + storage) per KD-1 = Opsi A; dummy JS data is downgraded to seed/fallback only.
 
 ### the agent's Discretion
 - Exact data shape for dummy JS seed data may be normalized so it can later map cleanly onto Supabase tables and role-based screens.

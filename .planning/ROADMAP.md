@@ -63,5 +63,13 @@ All v1 requirements are mapped to exactly one phase.
 | 3 | Evaluation and Plenary Decisions | Capture scoring and final recipient decisions with management review | 4 | 4 |
 | 4 | Disbursement, Audit, and Executive Reporting | Finalize payout operations and finance reporting | 5 | 4 |
 
+## Post-Audit Decisions (2026-06-21)
+
+See `.planning/AUDIT-PHASE1.md`. These affect how phases are executed (scope unchanged):
+
+- **KD-1:** Real Supabase backend starts in Phase 1 (supersedes dummy-first D-12). A new wave-1 plan `01-04` delivers canonical schema + RLS + storage.
+- **KD-3:** Phase 3 recipient decision (SELE-02 / Success Criterion 3) uses a **two-step flow**: Staff marks `lolos_final`, Kabag gives final ACC. Both roles' actions are recorded for audit.
+- **Note:** Phase 2-4 UI already exists as prototype; downstream phases are primarily *backend enablement*, not new UI. Recommended Phase 2 framing = "Backend Foundation + Verification vertical slice" (Opsi A in the audit).
+
 ---
-*Last updated: 2026-06-17 after initial roadmap creation*
+*Last updated: 2026-06-21 after Phase 1 audit and re-plan*
