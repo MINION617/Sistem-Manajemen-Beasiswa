@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Laporan Kendala — Beasiswa Kampus</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,800;9..144,900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <!-- Iconify web component -->
+  <script src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js"></script>
+  <link rel="stylesheet" href="laporanKendala.css" />
+</head>
+<body>
+
+  <canvas id="bgCanvas"></canvas>
+  <div class="particles" id="particles"></div>
+
+  <!-- NAVBAR -->
+  <header class="navbar" id="navbar">
+    <div class="navbar-inner">
+      <a href="../beranda.html" class="nav-logo">
+        <div class="nav-logo-mark">B</div>
+        <span class="nav-logo-text">Beasiswa<strong>Kampus</strong></span>
+      </a>
+      <nav class="nav-menu">
+        <a href="../dashboard/dashboard.html" class="nav-link">
+          <span class="nav-link-icon"><iconify-icon icon="solar:home-2-bold-duotone" width="15"></iconify-icon></span><span>Dashboard</span>
+        </a>
+        <a href="../daftarBeasiswa/daftarBeasiswa.html" class="nav-link">
+          <span class="nav-link-icon"><iconify-icon icon="solar:diploma-bold-duotone" width="15"></iconify-icon></span><span>Daftar Beasiswa</span>
+        </a>
+        <a href="../pendaftaranSaya/pendaftaranSaya.html" class="nav-link">
+          <span class="nav-link-icon"><iconify-icon icon="solar:document-text-bold-duotone" width="15"></iconify-icon></span><span>Pendaftaran Saya</span>
+        </a>
+        <a href="../penerimaBeasiswa/penerimaBeasiswa.html" class="nav-link">
+          <span class="nav-link-icon"><iconify-icon icon="solar:wallet-money-bold-duotone" width="15"></iconify-icon></span><span>Penerimaan Dana</span>
+        </a>
+        <a href="../kumpulanPerusahaanBeasiswa/kumpulanPerusahaanBeasiswa.html" class="nav-link">
+          <span class="nav-link-icon"><iconify-icon icon="solar:buildings-2-bold-duotone" width="15"></iconify-icon></span><span>Perusahaan</span>
+        </a>
+        <a href="laporanKendala.html" class="nav-link active">
+          <span class="nav-link-icon"><iconify-icon icon="solar:chat-round-like-bold-duotone" width="15"></iconify-icon></span><span>Laporan</span>
+        </a>
+        <a href="../historyBeasiswa/historyBeasiswa.html" class="nav-link">
+          <span class="nav-link-icon"><iconify-icon icon="solar:calendar-bold-duotone" width="15"></iconify-icon></span><span>Riwayat</span>
+        </a>
+      </nav>
+      <div class="nav-actions">
+        <a href="../notifikasi/notifikasi.html" class="nav-notif-btn" title="Notifikasi">
+          <svg viewBox="0 0 24 24" fill="none" width="20" height="20"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="notif-dot" id="notifDot"></span>
+        </a>
+        <div class="nav-user-chip">
+          <div class="nav-avatar" id="topbarAvatar">A</div>
+          <span class="nav-username" id="navUsername">Mahasiswa</span>
+          <svg viewBox="0 0 24 24" fill="none" width="14" height="14"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          <div class="user-dropdown">
+            <a href="../profilMahasiswa/profilMahasiswa.html" class="dropdown-item">
+              <iconify-icon icon="solar:user-bold-duotone" width="16"></iconify-icon> Profil Saya
+            </a>
+            <a href="../notifikasi/notifikasi.html" class="dropdown-item">
+              <iconify-icon icon="solar:bell-bold-duotone" width="16"></iconify-icon> Notifikasi
+            </a>
+            <div class="dropdown-divider"></div>
+            <button class="dropdown-item danger" id="btnLogout">
+              <iconify-icon icon="solar:logout-2-bold-duotone" width="16"></iconify-icon> Keluar
+            </button>
+          </div>
+        </div>
+        <button class="hamburger" id="hamburgerBtn" aria-label="Menu"><span></span><span></span><span></span></button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Mobile Nav -->
+  <div class="mobile-nav" id="mobileNav">
+    <div class="mobile-nav-inner">
+      <div class="mobile-user-info">
+        <div class="mobile-avatar" id="mobileAvatar">A</div>
+        <div><div class="mobile-name" id="mobileName">Mahasiswa</div><div class="mobile-nim" id="mobileNim">NIM: —</div></div>
+      </div>
+      <nav class="mobile-nav-links">
+        <a href="../dashboard/dashboard.html" class="mobile-nav-item">
+          <iconify-icon icon="solar:home-2-bold-duotone" width="18"></iconify-icon> Dashboard
+        </a>
+        <a href="../daftarBeasiswa/daftarBeasiswa.html" class="mobile-nav-item">
+          <iconify-icon icon="solar:diploma-bold-duotone" width="18"></iconify-icon> Daftar Beasiswa
+        </a>
+        <a href="../pendaftaranSaya/pendaftaranSaya.html" class="mobile-nav-item">
+          <iconify-icon icon="solar:document-text-bold-duotone" width="18"></iconify-icon> Pendaftaran Saya
+        </a>
+        <a href="../penerimaBeasiswa/penerimaBeasiswa.html" class="mobile-nav-item">
+          <iconify-icon icon="solar:wallet-money-bold-duotone" width="18"></iconify-icon> Penerimaan Dana
+        </a>
+        <a href="../kumpulanPerusahaanBeasiswa/kumpulanPerusahaanBeasiswa.html" class="mobile-nav-item">
+          <iconify-icon icon="solar:buildings-2-bold-duotone" width="18"></iconify-icon> Profil Perusahaan
+        </a>
+        <a href="laporanKendala.html" class="mobile-nav-item active">
+          <iconify-icon icon="solar:chat-round-like-bold-duotone" width="18"></iconify-icon> Laporan Kendala
+        </a>
+        <a href="../notifikasi/notifikasi.html" class="mobile-nav-item">
+          <iconify-icon icon="solar:bell-bold-duotone" width="18"></iconify-icon> Notifikasi
+        </a>
+        <a href="../historyBeasiswa/historyBeasiswa.html" class="mobile-nav-item">
+          <iconify-icon icon="solar:calendar-bold-duotone" width="18"></iconify-icon> Riwayat Beasiswa
+        </a>
+        <a href="../profilMahasiswa/profilMahasiswa.html" class="mobile-nav-item">
+          <iconify-icon icon="solar:user-bold-duotone" width="18"></iconify-icon> Profil Saya
+        </a>
+      </nav>
+      <button class="mobile-logout-btn" id="mobileBtnLogout">
+        <iconify-icon icon="solar:logout-2-bold-duotone" width="18"></iconify-icon> Keluar dari Portal
+      </button>
+    </div>
+  </div>
+  <div class="mobile-nav-overlay" id="mobileNavOverlay"></div>
+
+  <!-- MAIN -->
+  <main class="page-main">
+
+    <!-- HERO -->
+    <section class="hero-section">
+      <div class="hero-content">
+        <div class="hero-eyebrow"><span class="hero-dot"></span>Pusat Bantuan</div>
+        <h1 class="hero-title">Laporan Kendala 📣</h1>
+        <p class="hero-sub">Sampaikan masalah dan kendala beasiswamu. Tim kami siap membantu dan akan merespons dalam 1–2 hari kerja.</p>
+        <div class="hero-ctas">
+          <a href="#formLaporan" class="btn-hero-primary">
+            Buat Laporan
+            <svg viewBox="0 0 24 24" fill="none" width="16" height="16"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </a>
+          <a href="../dashboard/dashboard.html" class="btn-hero-ghost">Kembali ke Dashboard →</a>
+        </div>
+      </div>
+      <div class="hero-visual">
+        <div class="hero-card-stack">
+          <div class="hero-badge">
+            <span class="hero-badge-num" id="heroBadgeNum">—</span>
+            <span class="hero-badge-label">Laporan</span>
+          </div>
+          <div class="floating-card fc-1">
+            <span class="fc-emoji">
+              <iconify-icon icon="solar:check-circle-bold-duotone" width="22" style="color:#059669"></iconify-icon>
+            </span>
+            <div><div class="fc-label">Selesai</div><div class="fc-val">Upload Berkas</div></div>
+          </div>
+          <div class="floating-card fc-2">
+            <span class="fc-emoji">
+              <iconify-icon icon="solar:settings-bold-duotone" width="22" style="color:#2563eb"></iconify-icon>
+            </span>
+            <div><div class="fc-label">Diproses</div><div class="fc-val">Status Pending</div></div>
+          </div>
+          <div class="floating-card fc-3">
+            <span class="fc-emoji">
+              <iconify-icon icon="solar:inbox-in-bold-duotone" width="22" style="color:#d97706"></iconify-icon>
+            </span>
+            <div><div class="fc-label">Masuk</div><div class="fc-val">Dana Belum Cair</div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- LAPORAN LAYOUT -->
+    <div class="laporan-layout">
+
+      <!-- FORM BUAT LAPORAN -->
+      <div class="form-card" id="formLaporan">
+        <div class="form-card-header">
+          <div class="form-card-icon">
+            <iconify-icon icon="solar:chat-round-like-bold-duotone" width="22" style="color:#2563eb"></iconify-icon>
+          </div>
+          <div>
+            <h2 class="form-card-title">Buat Laporan Baru</h2>
+            <p class="form-card-sub">Jelaskan kendala yang kamu hadapi, tim kami akan merespons dalam 1–2 hari kerja.</p>
+          </div>
+        </div>
+        <form id="formLaporanEl" novalidate>
+          <div class="form-group">
+            <label>Judul Laporan <span class="req">*</span></label>
+            <input type="text" id="judulLaporan" placeholder="Contoh: Berkas saya tidak bisa diupload" maxlength="255" required />
+            <span class="field-error" id="errJudul"></span>
+          </div>
+          <div class="form-group">
+            <label>Terkait Beasiswa <span class="opt">(opsional)</span></label>
+            <select id="beasiswaSelect"><option value="">-- Pilih beasiswa (jika ada) --</option></select>
+          </div>
+          <div class="form-group">
+            <label>Deskripsi Masalah <span class="req">*</span></label>
+            <textarea id="deskripsiLaporan" rows="5" placeholder="Ceritakan detail kendala yang kamu alami. Semakin detail semakin mudah kami bantu." maxlength="2000" required></textarea>
+            <div class="char-count"><span id="charCount">0</span>/2000</div>
+            <span class="field-error" id="errDeskripsi"></span>
+          </div>
+          <button type="submit" class="btn-kirim" id="btnKirim">
+            <span class="btn-text" style="display:flex;align-items:center;gap:8px;">
+              <svg viewBox="0 0 24 24" fill="none" width="16" height="16"><path d="M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Kirim Laporan
+            </span>
+            <span class="btn-loader" id="kirimLoader" style="display:none">
+              <svg class="spinner" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" stroke-dasharray="31.4" stroke-dashoffset="10"/></svg>
+              Mengirim...
+            </span>
+          </button>
+        </form>
+      </div>
+
+      <!-- RIWAYAT LAPORAN -->
+      <div class="riwayat-panel">
+        <div class="riwayat-header">
+          <h3 class="riwayat-title">Riwayat Laporan</h3>
+          <div class="filter-tabs" id="filterTabs">
+            <button class="filter-tab active" data-filter="all">Semua</button>
+            <button class="filter-tab" data-filter="masuk">
+              <iconify-icon icon="solar:inbox-in-bold-duotone" width="13"></iconify-icon> Masuk
+            </button>
+            <button class="filter-tab" data-filter="diproses">
+              <iconify-icon icon="solar:settings-bold-duotone" width="13"></iconify-icon> Diproses
+            </button>
+            <button class="filter-tab" data-filter="selesai">
+              <iconify-icon icon="solar:check-circle-bold-duotone" width="13"></iconify-icon> Selesai
+            </button>
+          </div>
+        </div>
+        <div id="listLaporan"></div>
+        <div class="empty-state" id="emptyState" style="display:none">
+          <div class="empty-icon">
+            <iconify-icon icon="solar:inbox-bold-duotone" width="52" style="color:#94a3b8"></iconify-icon>
+          </div>
+          <p>Belum ada laporan. Buat laporan jika kamu punya kendala.</p>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- MODAL DETAIL LAPORAN -->
+  <div class="modal" id="modalLaporan">
+    <div class="modal-overlay" id="modalOverlay"></div>
+    <div class="modal-box">
+      <button class="modal-close" id="modalClose">×</button>
+      <div id="modalContent"></div>
+    </div>
+  </div>
+
+  <!-- MODAL SUKSES -->
+  <div class="modal" id="modalSukses">
+    <div class="modal-overlay" id="suksesOverlay"></div>
+    <div class="modal-box modal-sm">
+      <div style="font-size:52px;margin-bottom:14px">
+        <iconify-icon icon="solar:confetti-bold-duotone" width="52" style="color:#2563eb"></iconify-icon>
+      </div>
+      <h3>Laporan Terkirim!</h3>
+      <p>Tim kami akan merespons laporan kamu dalam 1–2 hari kerja.</p>
+      <button class="btn-close-sm" id="btnTutupSukses">Oke, Mengerti</button>
+    </div>
+  </div>
+
+  <!-- LOGOUT MODAL -->
+  <div class="modal" id="logoutModal">
+    <div class="modal-overlay" id="logoutOverlay"></div>
+    <div class="modal-box modal-sm">
+      <div style="font-size:48px;margin-bottom:14px">
+        <iconify-icon icon="solar:door-open-bold-duotone" width="48" style="color:#be123c"></iconify-icon>
+      </div>
+      <h3>Keluar dari Portal?</h3>
+      <p>Kamu akan keluar dari sesi ini.</p>
+      <div class="modal-actions">
+        <button class="btn-cancel" id="cancelLogout">Batal</button>
+        <button class="btn-danger" id="confirmLogout">Ya, Keluar</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="laporanKendala.js"></script>
+</body>
+</html>

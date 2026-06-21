@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sponsor &amp; Beasiswa — Beasiswa Kampus Staff</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,800;9..144,900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet"
+  />
+  <!-- Iconify -->
+  <script src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js"></script>
+  <link rel="stylesheet" href="manajemenSponsorBeasiswa.css" />
+</head>
+<body>
+
+  <!-- ========== BG CANVAS ========== -->
+  <canvas id="bgCanvas"></canvas>
+
+  <!-- ========== FLOATING PARTICLES ========== -->
+  <div class="particles" id="particles"></div>
+
+  <!-- ========== SIDEBAR ========== -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <a href="../beranda.html" class="logo">
+        <span class="logo-mark">B</span>
+        <span class="logo-text">Beasiswa<strong>Kampus</strong></span>
+      </a>
+      <button class="sidebar-close" id="sidebarClose" aria-label="Tutup menu">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="sidebar-user">
+      <div class="user-avatar" id="sidebarAvatar">S</div>
+      <div class="user-info">
+        <div class="user-name" id="sidebarName">Staff Admin</div>
+        <span class="user-role-tag">
+          <iconify-icon icon="solar:folder-with-files-bold-duotone" width="11"></iconify-icon>
+          Staff Admin
+        </span>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Operasional</div>
+
+      <a href="../dashboardStaffAdmin.html" class="nav-item">
+        <span class="nav-icon"><iconify-icon icon="solar:home-2-bold-duotone"></iconify-icon></span>
+        <span>Dashboard</span>
+      </a>
+
+      <a href="manajemenSponsorBeasiswa.html" class="nav-item active">
+        <span class="nav-icon"><iconify-icon icon="solar:buildings-2-bold-duotone"></iconify-icon></span>
+        <span>Sponsor &amp; Beasiswa</span>
+      </a>
+
+      <a href="../verifikasiPendaftaran/verifikasiPendaftar.html" class="nav-item">
+        <span class="nav-icon"><iconify-icon icon="solar:check-circle-bold-duotone"></iconify-icon></span>
+        <span>Verifikasi Pendaftar</span>
+        <span class="nav-badge" id="badgeVerifikasi"></span>
+      </a>
+
+      <a href="../inputHasilSeleksi/inputHasilSeleksi.html" class="nav-item">
+        <span class="nav-icon"><iconify-icon icon="solar:document-add-bold-duotone"></iconify-icon></span>
+        <span>Input Hasil Seleksi</span>
+      </a>
+
+      <a href="../penetapanPenerima/penetapanPenerima.html" class="nav-item">
+        <span class="nav-icon"><iconify-icon icon="solar:cup-star-bold-duotone"></iconify-icon></span>
+        <span>Penetapan Penerima</span>
+      </a>
+
+      <a href="../PencairanDana/pencairanDana.html" class="nav-item">
+        <span class="nav-icon"><iconify-icon icon="solar:transfer-horizontal-bold-duotone"></iconify-icon></span>
+        <span>Pencairan Dana</span>
+      </a>
+
+      <div class="nav-section-label">Lainnya</div>
+
+      <a href="../pusatLaporanKendala/pusatLaporanKendala.html" class="nav-item">
+        <span class="nav-icon"><iconify-icon icon="solar:chat-round-like-bold-duotone"></iconify-icon></span>
+        <span>Pusat Laporan Kendala</span>
+        <span class="nav-badge" id="badgeLaporan"></span>
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <button class="btn-logout" id="btnLogout">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Keluar
+      </button>
+    </div>
+  </aside>
+
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <!-- ========== MAIN CONTENT ========== -->
+  <div class="main-content">
+
+    <!-- TOP BAR -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="hamburger-btn" id="hamburgerBtn" aria-label="Buka menu">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M3 12h18M3 6h18M3 18h18" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+          </svg>
+        </button>
+        <div class="page-title">
+          <h1>Sponsor &amp; Beasiswa</h1>
+          <p>Kelola data sponsor dan program beasiswa aktif</p>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <div class="topbar-search">
+          <svg viewBox="0 0 24 24" fill="none">
+            <circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2"/>
+            <path d="M21 21l-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          <input
+            type="text"
+            id="searchInput"
+            placeholder="Cari sponsor atau beasiswa..."
+          />
+        </div>
+        <a href="../pusatLaporanKendala/pusatLaporanKendala.html" class="topbar-notif" title="Laporan kendala">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span class="notif-dot" id="notifDot" style="display:none"></span>
+        </a>
+        <a href="#" class="topbar-avatar" id="topbarAvatar">S</a>
+      </div>
+    </header>
+
+    <!-- PAGE BODY -->
+    <div class="page-body">
+
+      <!-- WELCOME BANNER -->
+      <div class="welcome-banner">
+        <div class="welcome-text">
+          <h2>Manajemen Sponsor &amp; Beasiswa</h2>
+          <p id="bannerSubtitle">Tambah, edit, atau nonaktifkan data sponsor dan program beasiswa.</p>
+        </div>
+        <button class="btn-primary" id="btnTambahSponsor">
+          <iconify-icon icon="solar:add-circle-bold-duotone" width="18"></iconify-icon>
+          Tambah Sponsor
+        </button>
+      </div>
+
+      <!-- STATS GRID -->
+      <div class="stats-grid">
+        <div class="stat-card stat-blue">
+          <div class="stat-icon">
+            <iconify-icon icon="solar:buildings-2-bold-duotone" style="color:#2563eb"></iconify-icon>
+          </div>
+          <div class="stat-info">
+            <div class="stat-num" id="statSponsor">—</div>
+            <div class="stat-label">Total Sponsor Aktif</div>
+          </div>
+          <span class="stat-tag">Sponsor</span>
+        </div>
+
+        <div class="stat-card stat-green">
+          <div class="stat-icon">
+            <iconify-icon icon="solar:diploma-bold-duotone" style="color:#059669"></iconify-icon>
+          </div>
+          <div class="stat-info">
+            <div class="stat-num" id="statBeasiswa">—</div>
+            <div class="stat-label">Program Beasiswa Aktif</div>
+          </div>
+          <span class="stat-tag">Program</span>
+        </div>
+
+        <div class="stat-card stat-amber">
+          <div class="stat-icon">
+            <iconify-icon icon="solar:users-group-two-rounded-bold-duotone" style="color:#d97706"></iconify-icon>
+          </div>
+          <div class="stat-info">
+            <div class="stat-num" id="statKuota">—</div>
+            <div class="stat-label">Total Kuota Tersedia</div>
+          </div>
+          <span class="stat-tag">Kuota</span>
+        </div>
+
+        <div class="stat-card stat-purple">
+          <div class="stat-icon">
+            <iconify-icon icon="solar:banknote-bold-duotone" style="color:#7c3aed"></iconify-icon>
+          </div>
+          <div class="stat-info">
+            <div class="stat-num" id="statDana">—</div>
+            <div class="stat-label">Total Dana Beasiswa</div>
+          </div>
+          <span class="stat-tag">Dana</span>
+        </div>
+      </div>
+
+      <!-- TAB SWITCH: SPONSOR vs BEASISWA -->
+      <div class="tab-bar">
+        <button class="tab-btn active" data-tab="sponsor">
+          <iconify-icon icon="solar:buildings-2-bold-duotone" width="15"></iconify-icon>
+          Daftar Sponsor
+        </button>
+        <button class="tab-btn" data-tab="beasiswa">
+          <iconify-icon icon="solar:diploma-bold-duotone" width="15"></iconify-icon>
+          Program Beasiswa
+        </button>
+      </div>
+
+      <!-- ===== PANEL SPONSOR ===== -->
+      <div class="tab-panel" id="panelSponsor">
+
+        <div class="panel-toolbar">
+          <span class="panel-count" id="countSponsor">0 sponsor</span>
+          <button class="btn-secondary" id="btnTambahSponsor2">
+            <iconify-icon icon="solar:add-circle-bold-duotone" width="15"></iconify-icon>
+            Tambah Sponsor
+          </button>
+        </div>
+
+        <div class="sponsor-grid" id="sponsorGrid">
+          <!-- Rendered via JS -->
+        </div>
+
+      </div>
+
+      <!-- ===== PANEL BEASISWA ===== -->
+      <div class="tab-panel hidden" id="panelBeasiswa">
+
+        <div class="panel-toolbar">
+          <span class="panel-count" id="countBeasiswa">0 program</span>
+          <button class="btn-secondary" id="btnTambahBeasiswa">
+            <iconify-icon icon="solar:add-circle-bold-duotone" width="15"></iconify-icon>
+            Tambah Beasiswa
+          </button>
+        </div>
+
+        <!-- Filter sponsor -->
+        <div class="filter-row" id="filterSponsorBeasiswa">
+          <button class="filter-chip active" data-sponsor="all">Semua</button>
+          <!-- Chip sponsor dirender JS -->
+        </div>
+
+        <div class="beasiswa-list" id="beasiswaList">
+          <!-- Rendered via JS -->
+        </div>
+
+      </div>
+
+    </div><!-- end page-body -->
+  </div><!-- end main-content -->
+
+
+  <!-- ================================================================
+       MODAL TAMBAH / EDIT SPONSOR
+       ================================================================ -->
+  <div class="modal" id="modalSponsor">
+    <div class="modal-overlay" id="modalSponsorOverlay"></div>
+    <div class="modal-box modal-wide">
+      <button class="modal-close" id="modalSponsorClose">×</button>
+      <h3 id="modalSponsorTitle">Tambah Sponsor</h3>
+      <p class="modal-sub">Data sponsor akan sinkron dengan halaman Perusahaan mahasiswa.</p>
+
+      <form id="formSponsor" novalidate>
+        <div class="form-grid">
+
+          <div class="form-group">
+            <label>
+              Nama Perusahaan
+              <span class="req">*</span>
+            </label>
+            <!-- sponsors.nama_perusahaan -->
+            <input
+              type="text"
+              id="fNamaPerusahaan"
+              name="nama_perusahaan"
+              placeholder="Contoh: Bank Mandiri"
+              required
+              maxlength="255"
+            />
+          </div>
+
+          <div class="form-group">
+            <label>Industri</label>
+            <!-- sponsors.industri -->
+            <input
+              type="text"
+              id="fIndustri"
+              name="industri"
+              placeholder="Contoh: Perbankan"
+              maxlength="100"
+            />
+          </div>
+
+          <div class="form-group form-group-full">
+            <label>Tagline</label>
+            <!-- sponsors.tagline -->
+            <input
+              type="text"
+              id="fTagline"
+              name="tagline"
+              placeholder="Slogan singkat perusahaan..."
+              maxlength="255"
+            />
+          </div>
+
+          <div class="form-group form-group-full">
+            <label>Tentang Perusahaan</label>
+            <!-- sponsors.tentang -->
+            <textarea
+              id="fTentang"
+              name="tentang"
+              rows="3"
+              placeholder="Deskripsi singkat perusahaan..."
+            ></textarea>
+          </div>
+
+          <div class="form-group">
+            <label>Nama Narahubung</label>
+            <!-- sponsors.narahubung -->
+            <input
+              type="text"
+              id="fNarahubung"
+              name="narahubung"
+              placeholder="Nama PIC"
+              maxlength="255"
+            />
+          </div>
+
+          <div class="form-group">
+            <label>Nomor Kontak</label>
+            <!-- sponsors.kontak -->
+            <input
+              type="text"
+              id="fKontak"
+              name="kontak"
+              placeholder="+62 812 xxxx xxxx"
+              maxlength="30"
+            />
+          </div>
+
+          <div class="form-group">
+            <label>Email</label>
+            <!-- sponsors.email -->
+            <input
+              type="email"
+              id="fEmailSponsor"
+              name="email"
+              placeholder="csr@perusahaan.com"
+            />
+          </div>
+
+          <div class="form-group">
+            <label>Alamat Kantor</label>
+            <!-- sponsors.alamat -->
+            <input
+              type="text"
+              id="fAlamatSponsor"
+              name="alamat"
+              placeholder="Jalan, kota..."
+              maxlength="500"
+            />
+          </div>
+
+          <div class="form-group">
+            <label>Warna Brand (hex)</label>
+            <!-- sponsors.warna -->
+            <div class="color-input-wrap">
+              <input
+                type="color"
+                id="fWarna"
+                name="warna"
+                value="#2563eb"
+              />
+              <input
+                type="text"
+                id="fWarnaHex"
+                placeholder="#2563eb"
+                maxlength="7"
+              />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Status</label>
+            <!-- sponsors.is_aktif -->
+            <select id="fStatusSponsor" name="is_aktif">
+              <option value="true">Aktif</option>
+              <option value="false">Nonaktif</option>
+            </select>
+          </div>
+
+        </div><!-- end form-grid -->
+
+        <div class="form-message" id="formSponsorMsg"></div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn-cancel" id="cancelSponsor">Batal</button>
+          <button type="submit" class="btn-save" id="btnSimpanSponsor">
+            <span class="btn-text">
+              <iconify-icon icon="solar:diskette-bold-duotone" width="15"></iconify-icon>
+              Simpan Sponsor
+            </span>
+            <span class="btn-loader" id="loaderSponsor" style="display:none">
+              <svg class="spinner" viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" stroke-dasharray="31.4" stroke-dashoffset="10"/>
+              </svg>
+              Menyimpan...
+            </span>
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+
+  <!-- ================================================================
+       MODAL TAMBAH / EDIT BEASISWA
+       ================================================================ -->
+  <div class="modal" id="modalBeasiswa">
+    <div class="modal-overlay" id="modalBeasiswaOverlay"></div>
+    <div class="modal-box modal-wide">
+      <button class="modal-close" id="modalBeasiswaClose">×</button>
+      <h3 id="modalBeasiswaTitle">Tambah Program Beasiswa</h3>
+      <p class="modal-sub">Data beasiswa akan tampil di halaman Daftar Beasiswa mahasiswa.</p>
+
+      <form id="formBeasiswa" novalidate>
+        <div class="form-grid">
+
+          <div class="form-group">
+            <label>
+              Nama Program
+              <span class="req">*</span>
+            </label>
+            <!-- beasiswa.nama_program -->
+            <input
+              type="text"
+              id="fNamaProgram"
+              name="nama_program"
+              placeholder="Contoh: Beasiswa Mandiri Prestasi"
+              required
+              maxlength="255"
+            />
+          </div>
+
+          <div class="form-group">
+            <label>
+              Sponsor
+              <span class="req">*</span>
+            </label>
+            <!-- beasiswa.sponsor_id (FK → sponsors.id) -->
+            <select id="fSponsorId" name="sponsor_id" required>
+              <option value="">-- Pilih Sponsor --</option>
+              <!-- Diisi JS -->
+            </select>
+          </div>
+
+          <div class="form-group form-group-full">
+            <label>Deskripsi Program</label>
+            <!-- beasiswa.deskripsi -->
+            <textarea
+              id="fDeskripsi"
+              name="deskripsi"
+              rows="3"
+              placeholder="Jelaskan syarat, manfaat, dan informasi penting lainnya..."
+            ></textarea>
+          </div>
+
+          <div class="form-group">
+            <label>
+              Nominal Dana (Rp/bulan)
+              <span class="req">*</span>
+            </label>
+            <!-- beasiswa.nominal_dana -->
+            <input
+              type="number"
+              id="fNominalDana"
+              name="nominal_dana"
+              placeholder="5000000"
+              min="0"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label>
+              Kuota Penerima
+              <span class="req">*</span>
+            </label>
+            <!-- beasiswa.kuota_penerima -->
+            <input
+              type="number"
+              id="fKuota"
+              name="kuota_penerima"
+              placeholder="25"
+              min="1"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label>Tanggal Buka Pendaftaran</label>
+            <!-- beasiswa.tanggal_buka -->
+            <input
+              type="date"
+              id="fTanggalBuka"
+              name="tanggal_buka"
+            />
+          </div>
+
+          <div class="form-group">
+            <label>Tanggal Tutup Pendaftaran</label>
+            <!-- beasiswa.tanggal_tutup -->
+            <input
+              type="date"
+              id="fTanggalTutup"
+              name="tanggal_tutup"
+            />
+          </div>
+
+          <div class="form-group">
+            <label>Kategori</label>
+            <!-- beasiswa.kategori -->
+            <select id="fKategori" name="kategori">
+              <option value="prestasi">Prestasi</option>
+              <option value="afirmasi">Afirmasi</option>
+              <option value="riset">Riset</option>
+              <option value="industri">Industri</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Status Pendaftaran</label>
+            <!-- beasiswa.status -->
+            <select id="fStatusBeasiswa" name="status">
+              <option value="buka">Buka</option>
+              <option value="tutup">Tutup</option>
+            </select>
+          </div>
+
+        </div><!-- end form-grid -->
+
+        <div class="form-message" id="formBeasiswaMsg"></div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn-cancel" id="cancelBeasiswa">Batal</button>
+          <button type="submit" class="btn-save" id="btnSimpanBeasiswa">
+            <span class="btn-text">
+              <iconify-icon icon="solar:diskette-bold-duotone" width="15"></iconify-icon>
+              Simpan Beasiswa
+            </span>
+            <span class="btn-loader" id="loaderBeasiswa" style="display:none">
+              <svg class="spinner" viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" stroke-dasharray="31.4" stroke-dashoffset="10"/>
+              </svg>
+              Menyimpan...
+            </span>
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+
+  <!-- ================================================================
+       MODAL KONFIRMASI HAPUS
+       ================================================================ -->
+  <div class="modal" id="modalHapus">
+    <div class="modal-overlay" id="modalHapusOverlay"></div>
+    <div class="modal-box">
+      <div class="modal-icon-wrap">
+        <iconify-icon icon="solar:trash-bin-2-bold-duotone" width="48" style="color:#be123c"></iconify-icon>
+      </div>
+      <h3 id="hapusTitle">Hapus Data?</h3>
+      <p id="hapusDesc">Tindakan ini tidak dapat dibatalkan.</p>
+      <div class="modal-actions">
+        <button class="btn-cancel" id="cancelHapus">Batal</button>
+        <button class="btn-danger" id="confirmHapus">Ya, Hapus</button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- LOGOUT MODAL -->
+  <div class="modal" id="logoutModal">
+    <div class="modal-overlay" id="logoutOverlay"></div>
+    <div class="modal-box">
+      <div class="modal-icon-wrap">
+        <iconify-icon icon="solar:door-open-bold-duotone" style="color:#be123c" width="48"></iconify-icon>
+      </div>
+      <h3>Keluar dari Portal?</h3>
+      <p>Kamu akan keluar dari sesi staff. Pastikan pekerjaan sudah tersimpan.</p>
+      <div class="modal-actions">
+        <button class="btn-cancel" id="cancelLogout">Batal</button>
+        <button class="btn-danger" id="confirmLogout">Ya, Keluar</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="manajemenSponsorBeasiswa.js"></script>
+</body>
+</html>

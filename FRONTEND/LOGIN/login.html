@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login — Beasiswa Kampus</title>
+
+  <!-- ── Fonts ── -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,800;9..144,900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet"
+  />
+
+  <!-- ── Stylesheet ── -->
+  <link rel="stylesheet" href="login.css" />
+</head>
+<body data-role="mahasiswa">
+
+  <!-- ================================================================
+       BACKGROUND DEKORATIF
+       ================================================================ -->
+  <div class="page-bg">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+    <div class="dot-grid"></div>
+  </div>
+
+
+  <!-- ================================================================
+       NAVBAR
+       ================================================================ -->
+  <header class="navbar">
+    <div class="nav-container">
+
+      <!-- Logo -->
+      <a href="../beranda.html" class="logo">
+        <span class="logo-mark">B</span>
+        <span class="logo-text">Beasiswa<strong>Kampus</strong></span>
+      </a>
+
+      <!-- Tombol kembali -->
+      <a href="../beranda.html" class="btn-back">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path
+            d="M19 12H5M5 12l7 7M5 12l7-7"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+        Kembali ke Beranda
+      </a>
+
+    </div>
+  </header>
+
+
+  <!-- ================================================================
+       MAIN WRAPPER — split dua kolom
+       ================================================================ -->
+  <main class="main-wrapper">
+
+
+    <!-- ── PANEL KIRI : Info adaptif per role (diisi JS) ── -->
+    <div class="info-panel">
+      <div class="info-content">
+
+        <!-- Badge status -->
+        <span class="badge">
+          <span class="badge-dot"></span>
+          <span id="infoBadge">Portal Mahasiswa 2026/2027</span>
+        </span>
+
+        <!-- Judul besar -->
+        <h1 class="info-title" id="infoTitle">
+          Masuk dan Kelola <span class="title-highlight">Beasiswa</span> Kamu Disini.
+        </h1>
+
+        <!-- Deskripsi -->
+        <p class="info-desc" id="infoDesc">
+          Daftar beasiswa, pantau status, dan terima notifikasi real-time — semua dalam satu platform.
+        </p>
+
+        <!-- Fitur (diisi JS) -->
+        <ul class="feature-list" id="infoFeatures"></ul>
+
+        <!-- Mini statistik (diisi JS) -->
+        <div class="mini-stats" id="infoStats"></div>
+
+      </div>
+    </div>
+
+
+    <!-- ── PANEL KANAN : Pemilih Role + Form ── -->
+    <div class="form-panel">
+      <div class="form-shell">
+
+
+        <!-- ===========================================================
+             PEMILIH ROLE
+             =========================================================== -->
+        <div class="role-switch">
+          <div class="role-switch-label">Masuk sebagai</div>
+          <div class="role-grid" id="roleGrid" style="justify-content:center">
+
+            <button type="button" class="role-btn active" data-role="mahasiswa">
+              <span class="role-btn-icon">🎓</span>
+              <span class="role-btn-label">Mahasiswa</span>
+            </button>
+
+            <button type="button" class="role-btn" data-role="staff">
+              <span class="role-btn-icon">🗂️</span>
+              <span class="role-btn-label">Staff Admin</span>
+            </button>
+
+            <button type="button" class="role-btn" data-role="kabag_wabag">
+              <span class="role-btn-icon">📊</span>
+              <span class="role-btn-label">Kabag / Wabag</span>
+            </button>
+
+          </div>
+        </div>
+
+
+        <!-- ===========================================================
+             KARTU LOGIN
+             =========================================================== -->
+        <div class="login-card">
+
+          <!-- Header kartu (logo + judul) -->
+          <div class="form-header">
+            <div class="form-logo" id="formLogo">🎓</div>
+            <h2 class="form-title" id="formTitle">Selamat Datang!</h2>
+            <p class="form-subtitle" id="formSubtitle">
+              Masuk ke portal mahasiswa Beasiswa Kampus
+            </p>
+          </div>
+
+          <!-- Form login -->
+          <form id="loginForm" novalidate>
+
+            <!-- NIM / NIP -->
+            <div class="form-group">
+              <label for="identifierInput" id="identifierLabel">NIM</label>
+              <div class="input-wrapper">
+                <span class="input-icon">
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <path
+                      d="M20 4H4a2 2 0 00-2 2v12a2 2 0 002 2h16a2 2 0 002-2V6a2 2 0 00-2-2zM4 8l8 5 8-5"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                  </svg>
+                </span>
+                <input
+                  type="text"
+                  id="identifierInput"
+                  placeholder="Masukkan NIM kamu"
+                  autocomplete="username"
+                  required
+                />
+              </div>
+              <span class="field-error" id="identifierError"></span>
+            </div>
+
+            <!-- Password -->
+            <div class="form-group">
+              <label for="passwordInput">Password</label>
+              <div class="input-wrapper">
+                <span class="input-icon">
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <rect x="3" y="11" width="18" height="11" rx="2" stroke="currentColor" stroke-width="2"/>
+                    <path d="M7 11V7a5 5 0 0110 0v4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                  </svg>
+                </span>
+                <input
+                  type="password"
+                  id="passwordInput"
+                  placeholder="••••••••"
+                  autocomplete="current-password"
+                  required
+                />
+                <!-- Toggle tampil/sembunyikan password -->
+                <button
+                  type="button"
+                  class="toggle-pwd"
+                  id="togglePwd"
+                  aria-label="Tampilkan password"
+                >
+                  <svg class="eye-open" viewBox="0 0 24 24" fill="none">
+                    <path
+                      d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    />
+                    <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/>
+                  </svg>
+                  <svg class="eye-closed" viewBox="0 0 24 24" fill="none" style="display:none">
+                    <path
+                      d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94
+                         M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19
+                         m-6.72-1.07a3 3 0 11-4.24-4.24M1 1l22 22"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                    />
+                  </svg>
+                </button>
+              </div>
+              <span class="field-error" id="passwordError"></span>
+            </div>
+
+            <!-- Ingat saya + Lupa password -->
+            <div class="form-options">
+              <label class="checkbox-label">
+                <input type="checkbox" id="rememberMe" />
+                <span class="checkbox-custom"></span>
+                Ingat saya
+              </label>
+              <button
+                type="button"
+                class="forgot-link"
+                id="btnForgotPwd"
+              >
+                Lupa password?
+              </button>
+            </div>
+
+            <!-- Tombol submit -->
+            <button type="submit" class="btn-submit" id="btnLogin">
+              <span class="btn-text">Masuk ke Portal</span>
+              <span class="btn-loader" id="btnLoader" style="display:none">
+                <svg class="spinner" viewBox="0 0 24 24" fill="none">
+                  <circle
+                    cx="12" cy="12" r="10"
+                    stroke="currentColor"
+                    stroke-width="3"
+                    stroke-dasharray="31.4"
+                    stroke-dashoffset="10"
+                  />
+                </svg>
+                Memproses...
+              </span>
+              <svg class="btn-arrow" viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M5 12h14M13 6l6 6-6 6"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </button>
+
+            <!-- Pesan sukses / error -->
+            <div class="form-message" id="formMessage"></div>
+
+            <!-- Hint akun demo (diisi JS) -->
+            <div class="demo-hint" id="demoHint"></div>
+
+          </form>
+          <!-- end form#loginForm -->
+
+          <!--
+            NOTE: Blok "Daftar sekarang" DIHAPUS.
+            Sistem ini tidak mendukung registrasi mandiri.
+            Akun mahasiswa dibuat oleh admin kampus dari data
+            akademik yang sudah ada (NIM + password diberikan
+            oleh pihak kampus).
+          -->
+
+        </div>
+        <!-- end .login-card -->
+
+
+      </div>
+      <!-- end .form-shell -->
+    </div>
+    <!-- end .form-panel -->
+
+
+  </main>
+  <!-- end .main-wrapper -->
+
+
+  <!-- ================================================================
+       MODAL — Lupa Password
+       ================================================================ -->
+  <div class="modal" id="forgotModal">
+    <div class="modal-overlay" id="forgotOverlay"></div>
+    <div class="modal-box">
+
+      <button class="modal-close" id="forgotClose">×</button>
+
+      <div class="modal-header">
+        <div class="modal-icon">🔑</div>
+        <h3>Reset Password</h3>
+        <p>
+          Masukkan NIM / NIP kamu. Kami akan kirimkan link reset
+          password ke email terdaftar di sistem kampus.
+        </p>
+      </div>
+
+      <form id="forgotForm">
+        <div class="form-group">
+          <label for="forgotIdentifier">NIM / NIP</label>
+          <div class="input-wrapper">
+            <input
+              type="text"
+              id="forgotIdentifier"
+              placeholder="Masukkan NIM atau NIP"
+              required
+            />
+          </div>
+        </div>
+        <button type="submit" class="btn-submit" style="margin-top:8px">
+          Kirim Link Reset
+        </button>
+        <div class="form-message" id="forgotMessage" style="margin-top:12px"></div>
+      </form>
+
+    </div>
+  </div>
+  <!-- end #forgotModal -->
+
+
+  <!-- ── Script ── -->
+  <script src="login.js"></script>
+</body>
+</html>
