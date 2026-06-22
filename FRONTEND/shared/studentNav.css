@@ -1,0 +1,146 @@
+/* ============================================================
+   studentNav.css — shared SIDEBAR for all mahasiswa pages
+   Paired with studentNav.js (which injects the markup).
+   Mirrors the staff/kabag/wabag sidebar look (264px, white,
+   blue active rail). Self-contained tokens; no page CSS needed.
+   ============================================================ */
+:root {
+  --mhs-sb-w: 264px;
+  --mhs-blue: #2563eb;
+  --mhs-blue-700: #1d4ed8;
+  --mhs-blue-50: #eff6ff;
+  --mhs-blue-100: #dbeafe;
+  --mhs-ink: #0f172a;
+  --mhs-muted: #64748b;
+  --mhs-border: #e1e9f8;
+}
+
+/* ---------- Sidebar ---------- */
+.mhs-sidebar {
+  position: fixed; top: 0; left: 0;
+  width: var(--mhs-sb-w); height: 100vh;
+  background: #fff; border-right: 1px solid var(--mhs-border);
+  display: flex; flex-direction: column;
+  z-index: 1000; overflow-y: auto;
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  box-shadow: 4px 0 24px rgba(30, 58, 138, 0.04);
+  transition: transform 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.mhs-sb-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 20px 18px; border-bottom: 1px solid var(--mhs-border);
+}
+.mhs-logo { display: flex; align-items: center; gap: 9px; text-decoration: none; color: var(--mhs-ink); font-weight: 800; }
+.mhs-logo-mark {
+  width: 34px; height: 34px; border-radius: 10px;
+  background: var(--mhs-blue); color: #fff; font-weight: 800;
+  display: grid; place-items: center; font-size: 18px;
+}
+.mhs-logo span { font-size: 16px; }
+.mhs-logo strong { color: var(--mhs-blue); }
+.mhs-sb-close {
+  display: none; border: 0; background: transparent; cursor: pointer;
+  color: var(--mhs-muted); font-size: 20px; line-height: 1;
+}
+
+.mhs-sb-user {
+  display: flex; align-items: center; gap: 11px;
+  padding: 16px 18px; border-bottom: 1px solid var(--mhs-border);
+}
+.mhs-avatar {
+  width: 40px; height: 40px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--mhs-blue), #60a5fa);
+  color: #fff; font-weight: 800; display: grid; place-items: center; flex: none;
+}
+.mhs-uname { font-weight: 700; color: var(--mhs-ink); font-size: 14px; line-height: 1.2; }
+.mhs-role {
+  display: inline-flex; align-items: center; gap: 4px; margin-top: 3px;
+  font-size: 11px; font-weight: 600; color: var(--mhs-blue-700);
+  background: var(--mhs-blue-50); padding: 2px 8px; border-radius: 20px;
+}
+
+.mhs-nav { padding: 12px 10px; flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.mhs-nav-label {
+  font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
+  color: #94a3b8; padding: 10px 12px 6px;
+}
+.mhs-item {
+  position: relative; display: flex; align-items: center; gap: 11px;
+  padding: 10px 12px; border-radius: 10px; text-decoration: none;
+  color: #475569; font-weight: 600; font-size: 14px;
+  transition: background .15s, color .15s;
+}
+.mhs-item iconify-icon { font-size: 20px; color: #94a3b8; transition: color .15s; }
+.mhs-item:hover { background: var(--mhs-blue-50); color: var(--mhs-ink); }
+.mhs-item:hover iconify-icon { color: var(--mhs-blue); }
+.mhs-item.active { background: var(--mhs-blue-100); color: var(--mhs-blue-700); font-weight: 700; }
+.mhs-item.active iconify-icon { color: var(--mhs-blue); }
+.mhs-item.active::before {
+  content: ''; position: absolute; left: 0; top: 8px; bottom: 8px;
+  width: 3px; background: var(--mhs-blue); border-radius: 0 3px 3px 0;
+}
+
+.mhs-sb-footer { padding: 14px 12px; border-top: 1px solid var(--mhs-border); }
+.mhs-logout {
+  width: 100%; display: flex; align-items: center; gap: 10px; justify-content: center;
+  padding: 11px; border-radius: 10px; border: 1px solid #fecaca;
+  background: #fff; color: #be123c; font-weight: 700; font-size: 14px; cursor: pointer;
+  transition: background .15s;
+}
+.mhs-logout:hover { background: #fef2f2; }
+.mhs-logout iconify-icon { font-size: 18px; }
+
+/* ---------- Content offset ---------- */
+.page-main { margin-left: var(--mhs-sb-w) !important; }
+
+/* ---------- Topbar (sidebar-offset; bell + user) ---------- */
+.mhs-topbar {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  position: sticky; top: 0; z-index: 900; margin-left: var(--mhs-sb-w);
+  background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--mhs-border); padding: 10px 22px; min-height: 56px;
+}
+.mhs-tb-left { display: flex; align-items: center; gap: 12px; }
+.mhs-tb-right { display: flex; align-items: center; gap: 14px; }
+.mhs-burger { display: none; border: 0; background: transparent; cursor: pointer; color: var(--mhs-ink); place-items: center; }
+.mhs-burger iconify-icon { font-size: 26px; }
+.mhs-topbar .mhs-logo { display: none; }
+.mhs-topbar .mhs-logo span { font-size: 15px; }
+.mhs-bell { position: relative; color: #475569; display: grid; place-items: center; }
+.mhs-bell iconify-icon { font-size: 22px; }
+.mhs-chip { display: flex; align-items: center; gap: 8px; }
+.mhs-avatar.sm { width: 32px; height: 32px; font-size: 13px; }
+.mhs-chip-name { font-weight: 700; font-size: 14px; color: var(--mhs-ink); }
+
+.mhs-overlay {
+  position: fixed; inset: 0; background: rgba(15, 23, 42, .45);
+  z-index: 999; opacity: 0; visibility: hidden; transition: opacity .25s;
+}
+.mhs-overlay.active { opacity: 1; visibility: visible; }
+
+@media (max-width: 900px) {
+  .mhs-sidebar { transform: translateX(-100%); }
+  .mhs-sidebar.open { transform: translateX(0); }
+  .mhs-sb-close { display: block; }
+  .page-main { margin-left: 0 !important; }
+  .mhs-topbar { margin-left: 0; }
+  .mhs-burger { display: grid; }
+  .mhs-topbar .mhs-logo { display: flex; }
+  .mhs-chip-name { display: none; }
+}
+
+/* ---------- Logout modal (self-contained) ---------- */
+.mhs-modal { position: fixed; inset: 0; z-index: 1100; display: none; place-items: center; }
+.mhs-modal.active { display: grid; }
+.mhs-modal-ov { position: absolute; inset: 0; background: rgba(15, 23, 42, .5); }
+.mhs-modal-box {
+  position: relative; background: #fff; border-radius: 18px; padding: 26px;
+  width: min(380px, 90vw); text-align: center; box-shadow: 0 24px 60px rgba(0,0,0,.2);
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+}
+.mhs-modal-box h3 { margin: 10px 0 6px; color: var(--mhs-ink); }
+.mhs-modal-box p { color: var(--mhs-muted); font-size: 14px; margin: 0 0 18px; }
+.mhs-modal-actions { display: flex; gap: 10px; }
+.mhs-modal-actions button { flex: 1; padding: 11px; border-radius: 10px; font-weight: 700; cursor: pointer; border: 1px solid var(--mhs-border); }
+.mhs-btn-cancel { background: #fff; color: var(--mhs-ink); }
+.mhs-btn-danger { background: #be123c; color: #fff; border-color: #be123c; }
