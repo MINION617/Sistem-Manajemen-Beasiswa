@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Penetapan Penerima — Beasiswa Kampus</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,800;9..144,900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js"></script>
+  <link rel="stylesheet" href="../SHARED/shared.css" />
+</head>
+<body>
+
+  <canvas id="bgCanvas"></canvas>
+  <div class="particles" id="particles"></div>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <a href="../../beranda.html" class="logo">
+        <span class="logo-mark">B</span>
+        <span class="logo-text">Beasiswa<strong>Kampus</strong></span>
+      </a>
+      <button class="sidebar-close" id="sidebarClose" aria-label="Tutup menu">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+
+    <div class="sidebar-user">
+      <div class="user-avatar" id="sidebarAvatar">K</div>
+      <div class="user-info">
+        <div class="user-name" id="sidebarName">Kepala Bagian</div>
+        <span class="user-role-tag">
+          <iconify-icon icon="solar:star-bold-duotone" width="11"></iconify-icon>
+          Kabag
+        </span>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Menu</div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <button class="btn-logout" id="btnLogout">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Keluar
+      </button>
+    </div>
+  </aside>
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <!-- MAIN -->
+  <div class="main-content">
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="hamburger-btn" id="hamburgerBtn" aria-label="Buka menu">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M3 12h18M3 6h18M3 18h18" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
+        </button>
+        <div class="page-title">
+          <h1>Penetapan Penerima</h1>
+          <p>Sahkan penerima beasiswa hasil seleksi (ACC final)</p>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <div class="topbar-search">
+          <svg viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2"/><path d="M21 21l-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          <input type="text" id="searchInput" placeholder="Cari kandidat..." />
+        </div>
+        <a href="../SHARED/laporanKendala.html" class="topbar-notif" title="Laporan kendala">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+        <a href="#" class="topbar-avatar" id="topbarAvatar">K</a>
+      </div>
+    </header>
+
+    <div class="page-body">
+
+      <div class="stats-grid">
+        <div class="stat-card stat-amber">
+          <div class="stat-icon"><iconify-icon icon="solar:clipboard-list-bold-duotone" style="color:#d97706"></iconify-icon></div>
+          <div class="stat-info">
+            <div class="stat-num" id="statDiusulkan">—</div>
+            <div class="stat-label">Diusulkan Staff</div>
+          </div>
+          <span class="stat-tag">Usulan</span>
+        </div>
+        <div class="stat-card stat-green">
+          <div class="stat-icon"><iconify-icon icon="solar:verified-check-bold-duotone" style="color:#059669"></iconify-icon></div>
+          <div class="stat-info">
+            <div class="stat-num" id="statDisahkan">—</div>
+            <div class="stat-label">Disahkan (ACC)</div>
+          </div>
+          <span class="stat-tag">ACC</span>
+        </div>
+        <div class="stat-card stat-coral">
+          <div class="stat-icon"><iconify-icon icon="solar:close-circle-bold-duotone" style="color:#e11d48"></iconify-icon></div>
+          <div class="stat-info">
+            <div class="stat-num" id="statDibatalkan">—</div>
+            <div class="stat-label">Dibatalkan</div>
+          </div>
+          <span class="stat-tag">Batal</span>
+        </div>
+      </div>
+
+      <div class="section-wrap">
+        <div class="section-head">
+          <h3 class="section-title">
+            <iconify-icon icon="solar:clipboard-check-bold-duotone" style="color:var(--accent)"></iconify-icon>
+            Kandidat Lolos Final (usulan Staff)
+          </h3>
+          <span class="hint">Sahkan untuk menjadikan penerima resmi</span>
+        </div>
+        <div class="pendaftar-list" id="listKandidat"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- LOGOUT MODAL -->
+  <div class="modal" id="logoutModal">
+    <div class="modal-overlay" id="logoutOverlay"></div>
+    <div class="modal-box">
+      <div class="modal-icon-wrap">
+        <iconify-icon icon="solar:door-open-bold-duotone" style="color:#be123c" width="48"></iconify-icon>
+      </div>
+      <h3>Keluar dari Portal?</h3>
+      <p>Kamu akan keluar dari sesi Kabag. Pastikan pekerjaan sudah tersimpan.</p>
+      <div class="modal-actions">
+        <button class="btn-cancel" id="cancelLogout">Batal</button>
+        <button class="btn-danger" id="confirmLogout">Ya, Keluar</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../SHARED/shared.js"></script>
+  <script src="../SHARED/roleNav.js"></script>
+  <script src="penetapanPenerima.js"></script>
+</body>
+</html>
