@@ -551,20 +551,28 @@ function initBgCanvas() {
 function initParticles() {
   const container=document.getElementById('particles');
   if(!container) return;
-  const icons=[
-    ['solar:chat-round-like-bold-duotone','rgba(234,88,12,.20)'],
-    ['solar:chat-round-unread-bold-duotone','rgba(225,29,72,.18)'],
-    ['solar:plain-bold-duotone','rgba(234,88,12,.18)'],
-    ['solar:check-circle-bold-duotone','rgba(5,150,105,.18)'],
-    ['solar:document-text-bold-duotone','rgba(37,99,235,.16)'],
-    ['solar:bell-bold-duotone','rgba(234,88,12,.16)'],
-  ];
-  for(let i=0;i<18;i++){
-    const[icon,color]=icons[i%icons.length];
-    const p=document.createElement('iconify-icon');
-    p.setAttribute('icon',icon);p.className='particle';
-    const dur=7+Math.random()*8,dl=Math.random()*10;
-    p.style.cssText=`left:${Math.random()*100}%;bottom:-40px;font-size:${12+Math.random()*10}px;color:${color};--dur:${dur}s;--delay:${dl}s;animation-delay:${dl}s`;
+
+  const symbols = ['🎓', '📋', '✅', '📊', '🏆', '📝', '💼', '🔍', '📑', '⭐'];
+  const COUNT   = 18;
+
+  for (let i = 0; i < COUNT; i++) {
+    const p       = document.createElement('div');
+    p.className   = 'particle';
+    p.textContent = symbols[i % symbols.length];
+
+    const dur   = 7 + Math.random() * 8;
+    const delay = Math.random() * 10;
+    const left  = Math.random() * 100;
+    const size  = 12 + Math.random() * 10;
+
+    p.style.cssText = `
+      left:            ${left}%;
+      bottom:          -40px;
+      font-size:       ${size}px;
+      --dur:           ${dur}s;
+      --delay:         ${delay}s;
+      animation-delay: ${delay}s;
+    `;
     container.appendChild(p);
   }
 }

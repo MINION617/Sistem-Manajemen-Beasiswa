@@ -1015,36 +1015,25 @@ function initParticles() {
   const container = document.getElementById('particles');
   if (!container) return;
 
-  const iconSet = [
-    ['solar:buildings-2-bold-duotone',  'rgba(37,99,235,0.22)'],
-    ['solar:diploma-bold-duotone',      'rgba(37,99,235,0.18)'],
-    ['solar:cup-star-bold-duotone',     'rgba(251,191,36,0.22)'],
-    ['solar:star-bold-duotone',         'rgba(251,191,36,0.20)'],
-    ['solar:users-group-two-rounded-bold-duotone', 'rgba(37,99,235,0.18)'],
-    ['solar:banknote-bold-duotone',     'rgba(124,58,237,0.18)'],
-    ['solar:pen-bold-duotone',          'rgba(37,99,235,0.16)'],
-    ['solar:check-circle-bold-duotone', 'rgba(5,150,105,0.18)'],
-  ];
-  const count = 18;
+  const symbols = ['🎓', '📋', '✅', '📊', '🏆', '📝', '💼', '🔍', '📑', '⭐'];
+  const COUNT   = 18;
 
-  for (let i = 0; i < count; i++) {
-    const [iconName, color] = iconSet[i % iconSet.length];
-    const p                 = document.createElement('iconify-icon');
-    p.setAttribute('icon', iconName);
-    p.className             = 'particle';
+  for (let i = 0; i < COUNT; i++) {
+    const p       = document.createElement('div');
+    p.className   = 'particle';
+    p.textContent = symbols[i % symbols.length];
 
-    const dur   = 7  + Math.random() * 8;
+    const dur   = 7 + Math.random() * 8;
     const delay = Math.random() * 10;
     const left  = Math.random() * 100;
     const size  = 12 + Math.random() * 10;
 
     p.style.cssText = `
-      left: ${left}%;
-      bottom: -40px;
-      font-size: ${size}px;
-      color: ${color};
-      --dur: ${dur}s;
-      --delay: ${delay}s;
+      left:            ${left}%;
+      bottom:          -40px;
+      font-size:       ${size}px;
+      --dur:           ${dur}s;
+      --delay:         ${delay}s;
       animation-delay: ${delay}s;
     `;
     container.appendChild(p);

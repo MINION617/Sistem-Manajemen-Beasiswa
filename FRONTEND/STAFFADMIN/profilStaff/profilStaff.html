@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Profil Saya — Beasiswa Kampus Staff</title>
+
+  <!-- ── Fonts ── -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap"
+    rel="stylesheet"
+  />
+
+  <!-- ── Iconify ── -->
+  <script src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js"></script>
+
+  <!-- ── Stylesheet ── -->
+  <link rel="stylesheet" href="profilStaff.css" />
+</head>
+<body>
+
+  <!-- BG CANVAS + PARTICLES -->
+  <canvas id="bgCanvas"></canvas>
+  <div class="particles" id="particles"></div>
+
+  <!-- ================================================================
+       SIDEBAR
+       ================================================================ -->
+  <aside class="sidebar" id="sidebar">
+
+    <div class="sidebar-header">
+      <a href="../beranda.html" class="logo">
+        <span class="logo-mark">B</span>
+        <span class="logo-text">Beasiswa<strong>Kampus</strong></span>
+      </a>
+      <button class="sidebar-close" id="sidebarClose" aria-label="Tutup menu">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="sidebar-user">
+      <div class="user-avatar" id="sidebarAvatar">R</div>
+      <div class="user-info">
+        <div class="user-name" id="sidebarName">Rangga Adi Nugroho</div>
+        <span class="user-role-tag">
+          <iconify-icon icon="solar:folder-with-files-bold-duotone" width="11"></iconify-icon>
+          Staff Admin
+        </span>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Operasional</div>
+
+      <a href="../dashboardStaffAdmin.html" class="nav-item">
+        <span class="nav-icon"><iconify-icon icon="solar:home-2-bold-duotone"></iconify-icon></span>
+        <span>Dashboard</span>
+      </a>
+
+      <a href="../sponsorDanBeasiswa/manajemenSponsorBeasiswa.html" class="nav-item">
+        <span class="nav-icon"><iconify-icon icon="solar:buildings-2-bold-duotone"></iconify-icon></span>
+        <span>Sponsor &amp; Beasiswa</span>
+      </a>
+
+      <a href="../verifikasiPendaftaran/verifikasiPendaftar.html" class="nav-item">
+        <span class="nav-icon"><iconify-icon icon="solar:check-circle-bold-duotone"></iconify-icon></span>
+        <span>Verifikasi Pendaftar</span>
+      </a>
+
+      <a href="../inputHasilSeleksi/inputHasilSeleksi.html" class="nav-item">
+        <span class="nav-icon"><iconify-icon icon="solar:document-add-bold-duotone"></iconify-icon></span>
+        <span>Input Hasil Seleksi</span>
+      </a>
+
+      <a href="../penetapanPenerima/penetapanPenerima.html" class="nav-item">
+        <span class="nav-icon"><iconify-icon icon="solar:cup-star-bold-duotone"></iconify-icon></span>
+        <span>Penetapan Penerima</span>
+      </a>
+
+      <a href="../PencairanDana/pencairanDana.html" class="nav-item">
+        <span class="nav-icon"><iconify-icon icon="solar:transfer-horizontal-bold-duotone"></iconify-icon></span>
+        <span>Pencairan Dana</span>
+      </a>
+
+      <div class="nav-section-label">Lainnya</div>
+
+      <a href="../pusatLaporanKendala/pusatLaporanKendala.html" class="nav-item">
+        <span class="nav-icon"><iconify-icon icon="solar:chat-round-like-bold-duotone"></iconify-icon></span>
+        <span>Pusat Laporan Kendala</span>
+      </a>
+
+      <a href="profilStaff.html" class="nav-item active">
+        <span class="nav-icon"><iconify-icon icon="solar:user-circle-bold-duotone"></iconify-icon></span>
+        <span>Profil Saya</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <button class="btn-logout" id="btnLogout">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Keluar
+      </button>
+    </div>
+
+  </aside>
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+
+  <!-- ================================================================
+       MAIN CONTENT
+       ================================================================ -->
+  <div class="main-content">
+
+    <!-- TOP BAR -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="hamburger-btn" id="hamburgerBtn" aria-label="Buka menu">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M3 12h18M3 6h18M3 18h18" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+          </svg>
+        </button>
+        <div class="page-title">
+          <h1>Profil Saya</h1>
+          <p>Kelola informasi akun dan keamanan</p>
+        </div>
+      </div>
+
+      <div class="topbar-right">
+        <div class="topbar-search">
+          <svg viewBox="0 0 24 24" fill="none">
+            <circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2"/>
+            <path d="M21 21l-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          <input type="text" placeholder="Cari pengaturan..." />
+        </div>
+        <a href="../pusatLaporanKendala/pusatLaporanKendala.html" class="topbar-notif" title="Laporan kendala">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </a>
+        <a href="profilStaff.html" class="topbar-avatar" id="topbarAvatar">R</a>
+      </div>
+    </header>
+
+
+    <!-- PAGE BODY -->
+    <div class="page-body">
+
+      <!-- ── PROFILE HERO ── -->
+      <div class="profile-hero">
+        <div class="hero-bg-blur"></div>
+
+        <div class="hero-avatar-wrap">
+          <div class="hero-avatar" id="heroAvatar">R</div>
+          <button class="avatar-change-btn" id="btnChangeAvatar" title="Ganti foto">
+            <iconify-icon icon="solar:camera-bold-duotone" width="16"></iconify-icon>
+          </button>
+        </div>
+
+        <div class="hero-info">
+          <h2 class="hero-name" id="heroName">Rangga Adi Nugroho</h2>
+          <div class="hero-meta">
+            <span class="hero-badge">
+              <iconify-icon icon="solar:folder-with-files-bold-duotone" width="12"></iconify-icon>
+              Staff Admin
+            </span>
+            <span class="hero-divider">·</span>
+            <span class="hero-unit" id="heroUnit">Bagian Kemahasiswaan</span>
+          </div>
+          <div class="hero-nip">
+            <iconify-icon icon="solar:card-bold-duotone" width="13"></iconify-icon>
+            NIP <span id="heroNip">198801</span>
+          </div>
+        </div>
+
+        <div class="hero-actions">
+          <button class="btn-edit-hero" id="btnEditProfil">
+            <iconify-icon icon="solar:pen-bold-duotone" width="15"></iconify-icon>
+            Edit Profil
+          </button>
+        </div>
+      </div>
+
+
+      <!-- ── 2-KOLOM: INFO + KEAMANAN ── -->
+      <div class="profil-grid">
+
+        <!-- KOLOM KIRI — Info Pribadi -->
+        <div class="profil-card reveal" id="cardInfoPribadi">
+          <div class="profil-card-header">
+            <h3 class="profil-card-title">
+              <iconify-icon icon="solar:user-bold-duotone" style="color:var(--accent)"></iconify-icon>
+              Informasi Pribadi
+            </h3>
+            <button class="btn-card-edit" id="btnToggleEditInfo">
+              <iconify-icon icon="solar:pen-bold-duotone" width="14"></iconify-icon>
+              Edit
+            </button>
+          </div>
+
+          <!-- Mode tampil -->
+          <div id="viewInfo">
+            <div class="info-row-list" id="infoRowList">
+              <!-- dirender JS -->
+            </div>
+          </div>
+
+          <!-- Mode edit -->
+          <form id="formEditInfo" class="edit-form" style="display:none" novalidate>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Nama Lengkap</label>
+                <div class="input-wrap">
+                  <iconify-icon icon="solar:user-bold" width="15"></iconify-icon>
+                  <input type="text" id="editNama" placeholder="Nama lengkap" />
+                </div>
+              </div>
+              <div class="form-group">
+                <label>NIP</label>
+                <div class="input-wrap">
+                  <iconify-icon icon="solar:card-bold" width="15"></iconify-icon>
+                  <input type="text" id="editNip" placeholder="NIP" />
+                </div>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Email</label>
+                <div class="input-wrap">
+                  <iconify-icon icon="solar:letter-bold" width="15"></iconify-icon>
+                  <input type="email" id="editEmail" placeholder="email@kampus.ac.id" />
+                </div>
+              </div>
+              <div class="form-group">
+                <label>No. WhatsApp</label>
+                <div class="input-wrap">
+                  <iconify-icon icon="solar:phone-bold" width="15"></iconify-icon>
+                  <input type="tel" id="editWa" placeholder="08xxxxxxxxxx" />
+                </div>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Jabatan</label>
+                <div class="input-wrap">
+                  <iconify-icon icon="solar:buildings-bold" width="15"></iconify-icon>
+                  <input type="text" id="editJabatan" placeholder="Jabatan" />
+                </div>
+              </div>
+              <div class="form-group">
+                <label>Unit Kerja</label>
+                <div class="input-wrap">
+                  <iconify-icon icon="solar:folder-with-files-bold" width="15"></iconify-icon>
+                  <input type="text" id="editUnit" placeholder="Unit kerja" />
+                </div>
+              </div>
+            </div>
+            <div class="form-actions">
+              <button type="button" class="btn-cancel-edit" id="btnCancelInfo">Batal</button>
+              <button type="submit" class="btn-save-edit" id="btnSaveInfo">
+                <iconify-icon icon="solar:check-circle-bold-duotone" width="15"></iconify-icon>
+                Simpan Perubahan
+              </button>
+            </div>
+            <div class="form-msg" id="msgInfo"></div>
+          </form>
+        </div>
+
+
+        <!-- KOLOM KANAN — Keamanan & Aktivitas -->
+        <div class="profil-right-col">
+
+          <!-- Card Ganti Password -->
+          <div class="profil-card reveal" id="cardPassword">
+            <div class="profil-card-header">
+              <h3 class="profil-card-title">
+                <iconify-icon icon="solar:lock-keyhole-bold-duotone" style="color:#7c3aed"></iconify-icon>
+                Keamanan Akun
+              </h3>
+              <button class="btn-card-edit" id="btnToggleEditPwd">
+                <iconify-icon icon="solar:pen-bold-duotone" width="14"></iconify-icon>
+                Ubah Password
+              </button>
+            </div>
+
+            <!-- Info keamanan -->
+            <div id="viewSecurity">
+              <div class="security-info-list">
+                <div class="security-info-row">
+                  <span class="sec-label">
+                    <iconify-icon icon="solar:lock-bold-duotone" width="14" style="color:#7c3aed"></iconify-icon>
+                    Status Password
+                  </span>
+                  <span class="sec-val sec-ok">
+                    <iconify-icon icon="solar:check-circle-bold-duotone" width="13"></iconify-icon>
+                    Aktif
+                  </span>
+                </div>
+                <div class="security-info-row">
+                  <span class="sec-label">
+                    <iconify-icon icon="solar:calendar-bold-duotone" width="14" style="color:#7c3aed"></iconify-icon>
+                    Terakhir Diubah
+                  </span>
+                  <span class="sec-val" id="lastPwdChange">Belum pernah diubah</span>
+                </div>
+                <div class="security-info-row">
+                  <span class="sec-label">
+                    <iconify-icon icon="solar:shield-bold-duotone" width="14" style="color:#7c3aed"></iconify-icon>
+                    Kekuatan Password
+                  </span>
+                  <div class="pwd-strength-bar">
+                    <div class="pwd-strength-fill" id="pwdStrengthFill" style="width:60%"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Form ganti password -->
+            <form id="formEditPwd" class="edit-form" style="display:none" novalidate>
+              <div class="form-group">
+                <label>Password Lama</label>
+                <div class="input-wrap">
+                  <iconify-icon icon="solar:lock-bold" width="15"></iconify-icon>
+                  <input type="password" id="pwdLama" placeholder="••••••••" />
+                  <button type="button" class="toggle-eye" data-target="pwdLama">
+                    <iconify-icon icon="solar:eye-bold" width="14" class="eye-show"></iconify-icon>
+                    <iconify-icon icon="solar:eye-closed-bold" width="14" class="eye-hide" style="display:none"></iconify-icon>
+                  </button>
+                </div>
+              </div>
+              <div class="form-group">
+                <label>Password Baru</label>
+                <div class="input-wrap">
+                  <iconify-icon icon="solar:lock-keyhole-bold" width="15"></iconify-icon>
+                  <input type="password" id="pwdBaru" placeholder="Min. 8 karakter" />
+                  <button type="button" class="toggle-eye" data-target="pwdBaru">
+                    <iconify-icon icon="solar:eye-bold" width="14" class="eye-show"></iconify-icon>
+                    <iconify-icon icon="solar:eye-closed-bold" width="14" class="eye-hide" style="display:none"></iconify-icon>
+                  </button>
+                </div>
+                <div class="pwd-meter">
+                  <div class="pwd-meter-bar">
+                    <div class="pwd-meter-fill" id="pwdMeterFill"></div>
+                  </div>
+                  <span class="pwd-meter-label" id="pwdMeterLabel"></span>
+                </div>
+              </div>
+              <div class="form-group">
+                <label>Konfirmasi Password Baru</label>
+                <div class="input-wrap">
+                  <iconify-icon icon="solar:lock-keyhole-bold" width="15"></iconify-icon>
+                  <input type="password" id="pwdKonfirmasi" placeholder="Ulangi password baru" />
+                  <button type="button" class="toggle-eye" data-target="pwdKonfirmasi">
+                    <iconify-icon icon="solar:eye-bold" width="14" class="eye-show"></iconify-icon>
+                    <iconify-icon icon="solar:eye-closed-bold" width="14" class="eye-hide" style="display:none"></iconify-icon>
+                  </button>
+                </div>
+              </div>
+              <div class="form-actions">
+                <button type="button" class="btn-cancel-edit" id="btnCancelPwd">Batal</button>
+                <button type="submit" class="btn-save-edit btn-purple" id="btnSavePwd">
+                  <iconify-icon icon="solar:lock-keyhole-bold-duotone" width="15"></iconify-icon>
+                  Simpan Password
+                </button>
+              </div>
+              <div class="form-msg" id="msgPwd"></div>
+            </form>
+          </div>
+
+
+          <!-- Card Sesi Login -->
+          <div class="profil-card reveal" id="cardSesi">
+            <div class="profil-card-header">
+              <h3 class="profil-card-title">
+                <iconify-icon icon="solar:history-bold-duotone" style="color:var(--orange)"></iconify-icon>
+                Aktivitas Sesi
+              </h3>
+            </div>
+            <div class="sesi-list" id="sesiList">
+              <!-- dirender JS -->
+            </div>
+          </div>
+
+        </div>
+        <!-- end .profil-right-col -->
+
+      </div>
+      <!-- end .profil-grid -->
+
+    </div>
+    <!-- end .page-body -->
+  </div>
+  <!-- end .main-content -->
+
+
+  <!-- ================================================================
+       MODAL LOGOUT
+       ================================================================ -->
+  <div class="modal" id="logoutModal">
+    <div class="modal-overlay" id="logoutOverlay"></div>
+    <div class="modal-box">
+      <div class="modal-icon-wrap">
+        <iconify-icon icon="solar:door-open-bold-duotone" style="color:#be123c" width="48"></iconify-icon>
+      </div>
+      <h3>Keluar dari Portal?</h3>
+      <p>Kamu akan keluar dari sesi staff. Pastikan pekerjaan sudah tersimpan.</p>
+      <div class="modal-actions">
+        <button class="btn-cancel" id="cancelLogout">Batal</button>
+        <button class="btn-danger" id="confirmLogout">Ya, Keluar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL GANTI AVATAR -->
+  <div class="modal" id="avatarModal">
+    <div class="modal-overlay" id="avatarOverlay"></div>
+    <div class="modal-box">
+      <button class="modal-close" id="avatarClose">×</button>
+      <div class="modal-icon-wrap">
+        <iconify-icon icon="solar:camera-bold-duotone" style="color:var(--accent)" width="44"></iconify-icon>
+      </div>
+      <h3>Ganti Foto Profil</h3>
+      <p>Pilih inisial warna avatar atau unggah foto baru.</p>
+
+      <!-- Pilih warna avatar -->
+      <div class="avatar-color-grid" id="avatarColorGrid">
+        <!-- dirender JS -->
+      </div>
+
+      <div class="avatar-preview-wrap">
+        <div class="avatar-preview" id="avatarPreview">R</div>
+      </div>
+
+      <div class="modal-actions" style="margin-top:16px">
+        <button class="btn-cancel" id="cancelAvatar">Batal</button>
+        <button class="btn-primary-modal" id="confirmAvatar">
+          <iconify-icon icon="solar:check-circle-bold-duotone" width="15"></iconify-icon>
+          Terapkan
+        </button>
+      </div>
+      <div class="form-msg" id="msgAvatar"></div>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFIKASI -->
+  <div class="toast" id="toast">
+    <iconify-icon icon="solar:check-circle-bold-duotone" width="18" class="toast-icon"></iconify-icon>
+    <span class="toast-msg" id="toastMsg">Berhasil disimpan!</span>
+  </div>
+
+  <script src="profilStaff.js"></script>
+</body>
+</html>
