@@ -41,6 +41,16 @@ const SUPABASE_ANON_KEY = 'YOUR_ANON_KEY';
 
 
 /* ============================================================
+   HELPER: buat markup Iconify (SVG Framework v2)
+   Format: <span class="iconify" data-icon="..." data-width="..." data-height="..."></span>
+   ============================================================ */
+
+function iconify(name, size = 20) {
+  return `<span class="iconify" data-icon="${name}" data-width="${size}" data-height="${size}"></span>`;
+}
+
+
+/* ============================================================
    02. KONFIGURASI ROLE
    Mengatur tampilan panel kiri + form sesuai role yang dipilih.
    ============================================================ */
@@ -48,7 +58,7 @@ const SUPABASE_ANON_KEY = 'YOUR_ANON_KEY';
 const ROLE_CONFIG = {
 
   mahasiswa: {
-    logo        : '🎓',
+    logo        : 'solar:square-academic-cap-bold-duotone',
     badge       : 'Portal Mahasiswa 2026/2027',
     title       : 'Masuk dan Kelola <span class="title-highlight">Beasiswa</span> Kamu Disini.',
     desc        : 'Pantau status seleksi, cek pencairan dana, dan terima notifikasi real-time — semua dalam satu platform.',
@@ -59,10 +69,10 @@ const ROLE_CONFIG = {
     redirect    : '../dashboard/dashboard.html',
     demoHint    : 'Akun demo — NIM <code>2150001</code> · Password <code>demo1234</code>',
     features: [
-      { icon: '🎓', title: 'Daftar Beasiswa',       sub: '9+ beasiswa aktif dari sponsor terpercaya' },
-      { icon: '📊', title: 'Pantau Status Seleksi',  sub: 'Tracking real-time setiap tahap seleksi' },
-      { icon: '🔔', title: 'Notifikasi Langsung',    sub: 'Update otomatis saat status berubah' },
-      { icon: '💰', title: 'Cek Pencairan Dana',     sub: 'Lihat status transfer & riwayat penerimaan' },
+      { icon: 'solar:square-academic-cap-bold-duotone', title: 'Daftar Beasiswa',       sub: '9+ beasiswa aktif dari sponsor terpercaya' },
+      { icon: 'solar:chart-square-bold-duotone',        title: 'Pantau Status Seleksi',  sub: 'Tracking real-time setiap tahap seleksi' },
+      { icon: 'solar:bell-bing-bold-duotone',           title: 'Notifikasi Langsung',    sub: 'Update otomatis saat status berubah' },
+      { icon: 'solar:wallet-money-bold-duotone',        title: 'Cek Pencairan Dana',     sub: 'Lihat status transfer & riwayat penerimaan' },
     ],
     stats: [
       { num: '1.240', label: 'Mahasiswa aktif' },
@@ -72,7 +82,7 @@ const ROLE_CONFIG = {
   },
 
   staff: {
-    logo        : '🗂️',
+    logo        : 'solar:folder-with-files-bold-duotone',
     badge       : 'Portal Staff Admin · Pelaksana',
     title       : 'Kelola Seluruh <span class="title-highlight">Proses</span> Beasiswa Kampus.',
     desc        : 'Atur sponsor, verifikasi pendaftar, input hasil seleksi, hingga kelola pencairan dana — dari satu dashboard terpadu.',
@@ -83,10 +93,10 @@ const ROLE_CONFIG = {
     redirect    : '../STAFFADMIN/dashboardStaffAdmin.html',
     demoHint    : 'Akun demo — NIP <code>198801</code> · Password <code>demo1234</code>',
     features: [
-      { icon: '🏢', title: 'Manajemen Sponsor & Beasiswa', sub: 'Tambah, ubah, hapus program & sponsor' },
-      { icon: '✅', title: 'Verifikasi Pendaftar',          sub: 'Periksa berkas & seleksi administrasi' },
-      { icon: '📝', title: 'Input Hasil Seleksi',           sub: 'Catat nilai tes & hasil wawancara' },
-      { icon: '💸', title: 'Kelola Pencairan Dana',         sub: 'Unggah bukti transfer & ubah status' },
+      { icon: 'solar:buildings-3-bold-duotone',     title: 'Manajemen Sponsor & Beasiswa', sub: 'Tambah, ubah, hapus program & sponsor' },
+      { icon: 'solar:check-circle-bold-duotone',    title: 'Verifikasi Pendaftar',          sub: 'Periksa berkas & seleksi administrasi' },
+      { icon: 'solar:clipboard-text-bold-duotone',  title: 'Input Hasil Seleksi',           sub: 'Catat nilai tes & hasil wawancara' },
+      { icon: 'solar:cash-out-bold-duotone',        title: 'Kelola Pencairan Dana',         sub: 'Unggah bukti transfer & ubah status' },
     ],
     stats: [
       { num: '326', label: 'Pendaftar masuk' },
@@ -96,7 +106,7 @@ const ROLE_CONFIG = {
   },
 
   kabag: {
-    logo        : '📊',
+    logo        : 'solar:chart-square-bold-duotone',
     badge       : 'Portal Kabag · Monitoring & Keputusan',
     title       : 'Pantau & Putuskan <span class="title-highlight">Seleksi</span> Dengan Data.',
     desc        : 'Lihat statistik pendaftar, telaah kualifikasi mahasiswa, dan pantau penerima beasiswa untuk mendukung keputusan rapat.',
@@ -107,10 +117,10 @@ const ROLE_CONFIG = {
     redirect    : '../KABAGWABAG/KABAG/dashboardKabag.html',
     demoHint    : 'Akun demo — NIP <code>197505</code> · Password <code>demo1234</code>',
     features: [
-      { icon: '👀', title: 'Monitoring Pendaftar Aktif', sub: 'Statistik peserta seleksi berjalan' },
-      { icon: '🏅', title: 'Review Kualifikasi',         sub: 'IPK, nilai tes, wawancara, sertifikat' },
-      { icon: '🎯', title: 'E-Monitoring Penerima',      sub: 'Daftar final penerima & sponsornya' },
-      { icon: '📋', title: 'Ringkasan Laporan Kendala',  sub: 'Rekap pengaduan & status penanganan' },
+      { icon: 'solar:eye-bold-duotone',              title: 'Monitoring Pendaftar Aktif', sub: 'Statistik peserta seleksi berjalan' },
+      { icon: 'solar:medal-ribbons-star-bold-duotone', title: 'Review Kualifikasi',       sub: 'IPK, nilai tes, wawancara, sertifikat' },
+      { icon: 'solar:target-bold-duotone',            title: 'E-Monitoring Penerima',      sub: 'Daftar final penerima & sponsornya' },
+      { icon: 'solar:clipboard-list-bold-duotone',    title: 'Ringkasan Laporan Kendala',  sub: 'Rekap pengaduan & status penanganan' },
     ],
     stats: [
       { num: '1.240', label: 'Total pendaftar' },
@@ -120,7 +130,7 @@ const ROLE_CONFIG = {
   },
 
   wabag: {
-    logo        : '💵',
+    logo        : 'solar:dollar-bold-duotone',
     badge       : 'Portal Wakil Keuangan · Finansial',
     title       : 'Transparansi Penuh <span class="title-highlight">Dana</span> Beasiswa.',
     desc        : 'Awasi perputaran dana beasiswa, telusuri alokasi per sponsor, dan verifikasi bukti penyaluran secara transparan.',
@@ -131,10 +141,10 @@ const ROLE_CONFIG = {
     redirect    : '../KABAGWABAG/WABAG/dashboardWabag.html',
     demoHint    : 'Akun demo — NIP <code>198003</code> · Password <code>demo1234</code>',
     features: [
-      { icon: '📈', title: 'Ringkasan Keuangan',       sub: 'Grafik & total perputaran dana' },
-      { icon: '🧾', title: 'Detail Alokasi & Sponsor', sub: 'Rincian dana per penerima & sponsor' },
-      { icon: '🔍', title: 'Audit Bukti Penyaluran',   sub: 'Verifikasi bukti transfer dari staff' },
-      { icon: '💼', title: 'Laporan Eksekutif',        sub: 'Rangkuman alokasi budget beasiswa' },
+      { icon: 'solar:graph-up-bold-duotone',           title: 'Ringkasan Keuangan',       sub: 'Grafik & total perputaran dana' },
+      { icon: 'solar:bill-list-bold-duotone',          title: 'Detail Alokasi & Sponsor', sub: 'Rincian dana per penerima & sponsor' },
+      { icon: 'solar:magnifer-bold-duotone',           title: 'Audit Bukti Penyaluran',   sub: 'Verifikasi bukti transfer dari staff' },
+      { icon: 'solar:case-round-bold-duotone',         title: 'Laporan Eksekutif',        sub: 'Rangkuman alokasi budget beasiswa' },
     ],
     stats: [
       { num: 'Rp 2,4 M', label: 'Dana tersalur' },
@@ -145,7 +155,7 @@ const ROLE_CONFIG = {
 
   /* ── Kabag / Wabag gabungan — dibedakan dari NIP saat login ── */
   kabag_wabag: {
-    logo        : '📊',
+    logo        : 'solar:chart-square-bold-duotone',
     badge       : 'Portal Kabag & Wabag · Monitoring',
     title       : 'Pantau <span class="title-highlight">Seleksi</span> & Dana Beasiswa.',
     desc        : 'Masuk dengan NIP masing-masing. Kabag untuk monitoring seleksi, Wabag untuk monitoring keuangan beasiswa.',
@@ -156,10 +166,10 @@ const ROLE_CONFIG = {
     redirect    : null,
     demoHint    : 'Kabag — NIP <code>197505</code> &nbsp;|&nbsp; Wabag — NIP <code>198003</code> · Password <code>demo1234</code>',
     features: [
-      { icon: '👀', title: 'Monitoring Pendaftar',   sub: 'Statistik peserta seleksi berjalan' },
-      { icon: '🎯', title: 'Monitoring Penerima',    sub: 'Daftar final penerima & sponsornya' },
-      { icon: '📈', title: 'Ringkasan Keuangan',     sub: 'Grafik & total perputaran dana beasiswa' },
-      { icon: '📋', title: 'Laporan Kendala',        sub: 'Rekap pengaduan & status penanganan' },
+      { icon: 'solar:eye-bold-duotone',          title: 'Monitoring Pendaftar',   sub: 'Statistik peserta seleksi berjalan' },
+      { icon: 'solar:target-bold-duotone',       title: 'Monitoring Penerima',    sub: 'Daftar final penerima & sponsornya' },
+      { icon: 'solar:graph-up-bold-duotone',     title: 'Ringkasan Keuangan',     sub: 'Grafik & total perputaran dana beasiswa' },
+      { icon: 'solar:clipboard-list-bold-duotone', title: 'Laporan Kendala',      sub: 'Rekap pengaduan & status penanganan' },
     ],
     stats: [
       { num: '1.240',    label: 'Total pendaftar' },
@@ -299,8 +309,8 @@ function applyRole(role) {
   renderFeatures(cfg.features);
   renderStats(cfg.stats);
 
-  /* Form kanan */
-  setText('formLogo',     cfg.logo);
+  /* Form kanan — logo pakai iconify helper */
+  setHTML('formLogo', iconify(cfg.logo, 28));
   setText('formTitle',    cfg.formTitle);
   setText('formSubtitle', cfg.formSubtitle);
   setText('identifierLabel', cfg.idLabel);
@@ -320,6 +330,11 @@ function applyRole(role) {
   document.querySelectorAll('.role-btn').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.role === role);
   });
+
+  /* Trigger Iconify scan untuk render icon baru yang di-inject via innerHTML */
+  if (typeof Iconify !== 'undefined' && Iconify.scan) {
+    Iconify.scan();
+  }
 }
 
 function renderFeatures(features) {
@@ -329,7 +344,7 @@ function renderFeatures(features) {
   el.innerHTML = features
     .map((f, i) => `
       <li style="animation-delay:${i * 0.07}s">
-        <span class="feature-icon">${f.icon}</span>
+        <span class="feature-icon">${iconify(f.icon, 20)}</span>
         <div>
           <strong>${f.title}</strong>
           <span>${f.sub}</span>
@@ -380,6 +395,8 @@ toggleBtn?.addEventListener('click', () => {
 
   toggleBtn.querySelector('.eye-open').style.display   = show ? 'none' : '';
   toggleBtn.querySelector('.eye-closed').style.display = show ? ''     : 'none';
+
+  toggleBtn.setAttribute('aria-label', show ? 'Sembunyikan password' : 'Tampilkan password');
 });
 
 
@@ -587,7 +604,7 @@ function setLoading(on) {
 
   if (btn)    btn.disabled         = on;
   if (text)   text.style.display   = on ? 'none' : '';
-  if (loader) loader.style.display = on ? 'flex'  : 'none';
+  if (loader) loader.style.display = on ? 'inline-flex' : 'none';
   if (arrow)  arrow.style.display  = on ? 'none' : '';
 }
 

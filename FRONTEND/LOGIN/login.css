@@ -212,6 +212,33 @@ body {
   66%      { transform: translate(-20px, 20px); }
 }
 
+/* ── Eye-candy animations ── */
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes iconBounce {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-3px); }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInScale {
+  from { opacity: 0; transform: scale(0.9); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes underlineGrow {
+  to { width: 100%; }
+}
+
+
+
 .dot-grid {
   position              : absolute;
   inset                 : 0;
@@ -239,6 +266,7 @@ body {
   -webkit-backdrop-filter: blur(16px);
   border-bottom    : 1px solid var(--border);
   box-shadow       : var(--shadow-sm);
+  animation        : fadeInUp 0.4s ease-out both;
 }
 
 .nav-container {
@@ -320,9 +348,11 @@ body {
   transform    : translateX(-2px);
 }
 
-.btn-back svg {
-  width  : 15px;
-  height : 15px;
+.btn-back svg,
+.btn-back .iconify {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
 }
 
 
@@ -398,6 +428,7 @@ body {
   font-weight   : 600;
   color         : rgba(255, 255, 255, 0.9);
   margin-bottom : 18px;               /* dikurangi dari 28px */
+  animation     : fadeInUp 0.5s ease-out both;
 }
 
 .badge-dot {
@@ -432,6 +463,7 @@ body {
   letter-spacing : -0.03em;
   color          : white;
   margin-bottom  : 12px;                         /* dikurangi dari 18px */
+  animation      : fadeInUp 0.5s ease-out 0.1s both;
 }
 
 .title-highlight {
@@ -441,6 +473,20 @@ body {
   display       : inline-block;
 }
 
+.title-highlight::after {
+  content       : '';
+  position      : absolute;
+  bottom        : -2px;
+  left          : 0;
+  width         : 0;
+  height        : 3px;
+  background    : var(--yellow);
+  border-radius : 2px;
+  animation     : underlineGrow 0.8s ease-out 0.6s forwards;
+}
+
+
+
 /* Deskripsi */
 .info-desc {
   font-size     : 13px;             /* dikurangi dari 15px */
@@ -448,6 +494,7 @@ body {
   margin-bottom : 20px;             /* dikurangi dari 32px */
   max-width     : 400px;
   line-height   : 1.6;
+  animation     : fadeInUp 0.5s ease-out 0.2s both;
 }
 
 /* Feature list */
@@ -464,6 +511,14 @@ body {
   align-items : flex-start;
   gap         : 12px;
   animation   : featIn 0.4s ease both;
+  padding     : 6px 8px;
+  border-radius: 10px;
+  transition  : var(--transition);
+  cursor      : default;
+}
+
+.feature-list li:hover {
+  background: rgba(255, 255, 255, 0.05);
 }
 
 @keyframes featIn {
@@ -480,6 +535,13 @@ body {
   display       : grid;
   place-items   : center;
   flex-shrink   : 0;
+  color         : white;
+  transition    : var(--transition);
+}
+
+.feature-list li:hover .feature-icon {
+  background : rgba(255, 255, 255, 0.18);
+  transform  : scale(1.08);
 }
 
 .feature-list li > div {
@@ -503,12 +565,13 @@ body {
 .mini-stats {
   display          : flex;
   align-items      : center;
-  gap              : 16px;
+  gap              : 36px;
   background       : rgba(255, 255, 255, 0.08);
   border           : 1px solid rgba(255, 255, 255, 0.12);
   border-radius    : var(--radius-md);
   padding          : 14px 18px;     /* dikurangi */
   backdrop-filter  : blur(8px);
+  animation        : fadeInUp 0.5s ease-out 0.4s both;
 }
 
 .mini-stat {
@@ -532,7 +595,7 @@ body {
 
 .mini-stat-divider {
   width      : 1px;
-  height     : 28px;
+  height     : 30px;
   background : rgba(255, 255, 255, 0.15);
 }
 
@@ -612,6 +675,17 @@ body {
 .role-btn-icon {
   font-size   : 20px;
   line-height : 1;
+  color       : var(--text-muted);
+  transition  : var(--transition);
+}
+
+.role-btn:hover .role-btn-icon {
+  color     : var(--accent);
+  transform : scale(1.12);
+}
+
+.role-btn.active .role-btn-icon {
+  color : var(--accent-dark);
 }
 
 .role-btn-label {
@@ -625,7 +699,7 @@ body {
 .role-btn.active {
   border-color : var(--accent);
   background   : var(--accent-soft);
-  box-shadow   : 0 0 0 3px var(--accent-ring);
+  box-shadow   : 0 0 0 3px var(--accent-ring), 0 2px 12px var(--accent-ring);
 }
 
 .role-btn.active .role-btn-label {
@@ -655,7 +729,15 @@ body {
   left       : 0;
   right      : 0;
   height     : 4px;
-  background : var(--accent);
+  background : linear-gradient(
+    90deg,
+    var(--accent),
+    var(--blue-400),
+    var(--accent-dark),
+    var(--accent)
+  );
+  background-size: 200% 100%;
+  animation  : shimmer 4s linear infinite;
   transition : background 0.4s ease;
 }
 
@@ -664,10 +746,21 @@ body {
   to   { opacity: 1; transform: translateY(0); }
 }
 
+.login-card:hover {
+  box-shadow: 0 28px 56px rgba(30, 58, 138, 0.16);
+}
+
 .form-header {
   text-align    : center;
   margin-bottom : 20px;             /* dikurangi dari 26px */
+  animation     : fadeInUp 0.45s ease-out both;
 }
+
+/* Staggered entry for form groups */
+.login-card .form-group:nth-child(1) { animation: fadeInUp 0.4s ease-out 0.1s both; }
+.login-card .form-group:nth-child(2) { animation: fadeInUp 0.4s ease-out 0.18s both; }
+.login-card .form-options            { animation: fadeInUp 0.4s ease-out 0.24s both; }
+.login-card .btn-submit              { animation: fadeInUp 0.4s ease-out 0.3s both; }
 
 .form-logo {
   width         : 52px;             /* dikurangi dari 60px */
@@ -679,6 +772,12 @@ body {
   font-size     : 26px;
   background    : var(--accent-soft);
   transition    : background 0.4s ease;
+  color         : var(--accent);
+  animation     : fadeInScale 0.5s ease-out 0.1s both;
+}
+
+.form-logo:hover {
+  animation: iconBounce 0.6s ease;
 }
 
 .form-title {
@@ -724,11 +823,18 @@ body {
   display        : flex;
   align-items    : center;
   pointer-events : none;
+  transition     : var(--transition);
 }
 
-.input-icon svg {
-  width  : 15px;
-  height : 15px;
+/* Color icon on focus */
+.input-wrapper:focus-within .input-icon {
+  color: var(--accent);
+}
+
+.input-icon svg,
+.input-icon .iconify {
+  width: 16px;
+  height: 16px;
 }
 
 .input-wrapper input {
@@ -747,7 +853,7 @@ body {
 .input-wrapper input:focus {
   border-color : var(--accent);
   background   : white;
-  box-shadow   : 0 0 0 3px var(--accent-ring);
+  box-shadow   : 0 0 0 3px var(--accent-ring), 0 2px 12px var(--accent-ring);
 }
 
 .input-wrapper input.error {
@@ -778,9 +884,10 @@ body {
   background : var(--bg);
 }
 
-.toggle-pwd svg {
-  width  : 15px;
-  height : 15px;
+.toggle-pwd svg,
+.toggle-pwd .iconify {
+  width: 16px;
+  height: 16px;
 }
 
 .field-error {
@@ -881,6 +988,32 @@ body {
   justify-content : center;
   gap             : 10px;
   box-shadow      : 0 4px 16px var(--accent-ring);
+  position        : relative;
+  overflow        : hidden;
+}
+
+/* Shine sweep animation */
+.btn-submit::after {
+  content    : '';
+  position   : absolute;
+  top        : 0;
+  left       : -100%;
+  width      : 60%;
+  height     : 100%;
+  background : linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.18),
+    transparent
+  );
+  transition : none;
+  animation  : btnShine 3.5s ease-in-out infinite;
+}
+
+@keyframes btnShine {
+  0%   { left: -100%; }
+  30%  { left: 120%; }
+  100% { left: 120%; }
 }
 
 .btn-submit:hover:not(:disabled) {
@@ -895,25 +1028,18 @@ body {
 }
 
 .btn-arrow {
-  width      : 16px;
-  height     : 16px;
-  flex-shrink: 0;
+  flex-shrink  : 0;
+  transition   : transform 0.3s ease;
+}
+
+.btn-submit:hover .btn-arrow {
+  transform: translateX(3px);
 }
 
 .btn-loader {
-  display     : flex;
+  display     : inline-flex;
   align-items : center;
   gap         : 8px;
-}
-
-.spinner {
-  width     : 16px;
-  height    : 16px;
-  animation : spin 0.8s linear infinite;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
 }
 
 
@@ -1029,11 +1155,11 @@ body {
   background    : var(--bg);
   border        : none;
   border-radius : 50%;
-  font-size     : 19px;
   cursor        : pointer;
   color         : var(--text-muted);
   transition    : var(--transition);
-  line-height   : 1;
+  display       : grid;
+  place-items   : center;
 }
 
 .modal-close:hover {
@@ -1049,6 +1175,8 @@ body {
 .modal-icon {
   font-size     : 36px;
   margin-bottom : 10px;
+  color         : var(--accent);
+  animation     : fadeInScale 0.4s ease-out;
 }
 
 .modal-header h3 {
@@ -1109,6 +1237,34 @@ body {
   .modal-box {
     padding: 28px 18px;
   }
+}
+
+
+
+/* ── Iconify SVG Framework ──
+   Iconify v2 replaces .iconify spans with inline SVGs.
+   These rules ensure proper sizing & alignment. */
+
+.iconify {
+  display        : inline-flex;
+  align-items    : center;
+  vertical-align : middle;
+}
+
+.feature-icon .iconify {
+  color: white;
+}
+
+.form-logo .iconify {
+  color: var(--accent);
+}
+
+.role-btn-icon .iconify {
+  color: inherit;
+}
+
+.modal-icon .iconify {
+  color: var(--accent);
 }
 
 /* Reduced motion */

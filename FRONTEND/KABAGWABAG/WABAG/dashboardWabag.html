@@ -6,7 +6,8 @@
   <title>Dashboard Wabag — Beasiswa Kampus</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,800;9..144,900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <!-- Space Grotesk (display/numbers) + DM Sans (body) -->
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
   <script src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js"></script>
   <link rel="stylesheet" href="dashboardWabag.css" />
 </head>
@@ -63,6 +64,11 @@
         <span>Laporan Kendala</span>
         <span class="nav-badge" id="badgeLaporan"></span>
       </a>
+
+      <a href="../SHARED/profil.html" class="nav-item">
+        <span class="nav-icon"><iconify-icon icon="solar:user-circle-bold-duotone"></iconify-icon></span>
+        <span>Profil Saya</span>
+      </a>
     </nav>
 
     <div class="sidebar-footer">
@@ -95,7 +101,7 @@
           <svg viewBox="0 0 24 24" fill="none"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
           <span class="notif-dot" id="notifDot" style="display:none"></span>
         </a>
-        <a href="#" class="topbar-avatar" id="topbarAvatar">W</a>
+        <a href="../SHARED/profil.html" class="topbar-avatar" id="topbarAvatar">W</a>
       </div>
     </header>
 
@@ -152,8 +158,7 @@
       <!-- RINGKASAN KEUANGAN -->
       <div class="dashboard-grid">
 
-        <!-- Ringkasan per Beasiswa -->
-        <div class="card">
+        <div class="card reveal">
           <div class="card-header">
             <h3 class="card-title">
               <iconify-icon icon="solar:chart-2-bold-duotone" style="color:var(--accent)"></iconify-icon>
@@ -166,8 +171,7 @@
           </div>
         </div>
 
-        <!-- Daftar Sponsor -->
-        <div class="card">
+        <div class="card reveal">
           <div class="card-header">
             <h3 class="card-title">
               <iconify-icon icon="solar:buildings-2-bold-duotone" style="color:var(--accent)"></iconify-icon>
@@ -182,7 +186,7 @@
       </div>
 
       <!-- PENERIMA TERBARU -->
-      <div class="section-wrap">
+      <div class="section-wrap reveal">
         <div class="section-head">
           <h3 class="section-title">
             <iconify-icon icon="solar:cup-star-bold-duotone" style="color:var(--accent)"></iconify-icon>
@@ -227,6 +231,21 @@
     </div>
   </div>
 
+  <!-- SCROLL REVEAL OBSERVER (tidak menyentuh dashboardWabag.js) -->
+  <script>
+  (function(){
+    if(!('IntersectionObserver' in window)) return;
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if(e.isIntersecting){
+          e.target.classList.add('is-visible');
+          io.unobserve(e.target);
+        }
+      });
+    },{threshold:0.07,rootMargin:'0px 0px -20px 0px'});
+    document.querySelectorAll('.reveal').forEach(function(el){ io.observe(el); });
+  })();
+  </script>
   <script src="dashboardWabag.js"></script>
 </body>
 </html>

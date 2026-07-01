@@ -333,10 +333,13 @@ function renderPipeline() {
   const el = document.getElementById('pipeline');
   if (!el) return;
 
+  /* ── Warna per stage (untuk gradient & ring) ── */
+  const stageColors = ['#d97706', '#2563eb', '#059669', '#7c3aed'];
+
   el.innerHTML = dummyPipeline
-    .map(s => `
+    .map((s, i) => `
       <a class="pipeline-stage" href="${s.href}" title="Tindak lanjut ${s.name}">
-        <div class="pipeline-bubble">
+        <div class="pipeline-bubble" style="--ring-color:${stageColors[i]}40">
           <iconify-icon icon="${s.icon}" style="color:${s.color}" width="22"></iconify-icon>
         </div>
         <div class="pipeline-count">${s.count}</div>
@@ -344,6 +347,134 @@ function renderPipeline() {
       </a>
     `)
     .join('');
+
+  /* ── Buat SVG connector overlay ── */
+  requestAnimationFrame(() => {
+    setTimeout(() => {
+      const stages = el.querySelectorAll('.pipeline-stage');
+      if (stages.length < 2) return;
+
+      /* Hapus connector lama jika ada */
+      el.querySelector('.pipeline-connectors')?.remove();
+
+      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      svg.classList.add('pipeline-connectors');
+      svg.setAttribute('width', '100%');
+      svg.setAttribute('height', '100%');
+      svg.style.position = 'absolute';
+      svg.style.top = '0';
+      svg.style.left = '0';
+
+      const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+
+      /* Gradient untuk tiap segmen */
+      for (let i = 0; i < stages.length - 1; i++) {
+        const grad = document.createElementNS('http://www.w3.org/2000/svg', 'linearGradient');
+        grad.id = `pipeGrad${i}`;
+        grad.setAttribute('gradientUnits', 'userSpaceOnUse');
+
+        const stop1 = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
+        stop1.setAttribute('offset', '0%');
+        stop1.setAttribute('stop-color', stageColors[i]);
+
+        const stop2 = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
+        stop2.setAttribute('offset', '100%');
+        stop2.setAttribute('stop-color', stageColors[i + 1]);
+
+        grad.appendChild(stop1);
+        grad.appendChild(stop2);
+        defs.appendChild(grad);
+      }
+      svg.appendChild(defs);
+
+      const containerRect = el.getBoundingClientRect();
+
+      for (let i = 0; i < stages.length - 1; i++) {
+        const bubbleA = stages[i].querySelector('.pipeline-bubble');
+        const bubbleB = stages[i + 1].querySelector('.pipeline-bubble');
+        const rA = bubbleA.getBoundingClientRect();
+        const rB = bubbleB.getBoundingClientRect();
+
+        const x1 = rA.right  - containerRect.left + 2;
+        const x2 = rB.left   - containerRect.left - 2;
+        const y  = rA.top + rA.height / 2 - containerRect.top;
+
+        /* Update gradient positions */
+        const grad = defs.querySelector(`#pipeGrad${i}`);
+        grad.setAttribute('x1', x1);
+        grad.setAttribute('y1', y);
+        grad.setAttribute('x2', x2);
+        grad.setAttribute('y2', y);
+
+        /* Track (garis latar terang) */
+        const track = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        track.classList.add('connector-track');
+        track.setAttribute('x1', x1);
+        track.setAttribute('y1', y);
+        track.setAttribute('x2', x2);
+        track.setAttribute('y2', y);
+        svg.appendChild(track);
+
+        /* Flow (garis animasi gradient) */
+        const flow = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        flow.classList.add('connector-flow');
+        flow.setAttribute('x1', x1);
+        flow.setAttribute('y1', y);
+        flow.setAttribute('x2', x2);
+        flow.setAttribute('y2', y);
+        flow.setAttribute('stroke', `url(#pipeGrad${i})`);
+        flow.style.animationDelay = `${i * -0.35}s`;
+        svg.appendChild(flow);
+
+        /* Partikel mengalir (2 per segmen, staggered) */
+        for (let p = 0; p < 2; p++) {
+          const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+          circle.classList.add('connector-particle');
+          circle.setAttribute('r', '3.5');
+          circle.setAttribute('fill', stageColors[i + 1]);
+
+          /* Animate via SMIL for cross-browser path motion */
+          const animCx = document.createElementNS('http://www.w3.org/2000/svg', 'animate');
+          animCx.setAttribute('attributeName', 'cx');
+          animCx.setAttribute('from', x1);
+          animCx.setAttribute('to', x2);
+          animCx.setAttribute('dur', '2.2s');
+          animCx.setAttribute('begin', `${p * 1.1}s`);
+          animCx.setAttribute('repeatCount', 'indefinite');
+
+          const animCy = document.createElementNS('http://www.w3.org/2000/svg', 'animate');
+          animCy.setAttribute('attributeName', 'cy');
+          animCy.setAttribute('from', y);
+          animCy.setAttribute('to', y);
+          animCy.setAttribute('dur', '2.2s');
+          animCy.setAttribute('begin', `${p * 1.1}s`);
+          animCy.setAttribute('repeatCount', 'indefinite');
+
+          const animOp = document.createElementNS('http://www.w3.org/2000/svg', 'animate');
+          animOp.setAttribute('attributeName', 'opacity');
+          animOp.setAttribute('values', '0;0.85;0.85;0');
+          animOp.setAttribute('keyTimes', '0;0.08;0.88;1');
+          animOp.setAttribute('dur', '2.2s');
+          animOp.setAttribute('begin', `${p * 1.1}s`);
+          animOp.setAttribute('repeatCount', 'indefinite');
+
+          circle.appendChild(animCx);
+          circle.appendChild(animCy);
+          circle.appendChild(animOp);
+          svg.appendChild(circle);
+        }
+      }
+
+      el.appendChild(svg);
+    }, 60);
+  });
+
+  /* ── Recalculate on resize ── */
+  let resizeTimer;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => renderPipeline(), 200);
+  });
 }
 
 
@@ -552,6 +683,11 @@ function initScrollReveal() {
       entries.forEach(e => {
         if (e.isIntersecting) {
           e.target.classList.add('visible');
+          /* Hapus transitionDelay setelah reveal selesai
+             supaya hover tidak kena delay */
+          setTimeout(() => {
+            e.target.style.transitionDelay = '0s';
+          }, (parseFloat(e.target.style.transitionDelay || 0) * 1000) + 650);
           observer.unobserve(e.target);
         }
       });
