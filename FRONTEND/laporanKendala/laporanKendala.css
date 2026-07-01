@@ -13,11 +13,15 @@
   --blue-700:#1d4ed8;
   --blue-800:#1e40af;
   --blue-900:#1e3a8a;
-  --bg:#f0f5ff;
+  --navy-950:#060d1f;
+  --navy-900:#0b1629;
+  --navy-800:#0f2040;
+  --navy-700:#162b55;
+  --bg:#f1f5fb;
   --surface:#fff;
-  --border:#e1e9f8;
+  --border:#e2e8f4;
   --text:#0f172a;
-  --text-2:#334155;
+  --text-2:#1e293b;
   --text-3:#64748b;
   --text-4:#94a3b8;
   --mint:#34d399;
@@ -28,16 +32,19 @@
   --coral-soft:#ffe4e6;
   --orange:#fb923c;
   --orange-soft:#ffedd5;
-  --font-display:'Fraunces',Georgia,serif;
-  --font-body:'Plus Jakarta Sans',system-ui,sans-serif;
+  --sky:#38bdf8;
+  --sky-soft:#e0f2fe;
+  --font-display:'Space Grotesk',system-ui,sans-serif;
+  --font-body:'Inter',system-ui,sans-serif;
   --nav-h:64px;
   --radius-sm:10px;
-  --radius-md:16px;
-  --radius-lg:24px;
-  --radius-xl:32px;
-  --shadow-sm:0 2px 8px rgba(30,58,138,.06);
-  --shadow-md:0 8px 28px rgba(30,58,138,.10);
-  --shadow-lg:0 24px 60px rgba(30,58,138,.15);
+  --radius-md:14px;
+  --radius-lg:20px;
+  --radius-xl:28px;
+  --shadow-xs:0 1px 4px rgba(15,23,42,.06);
+  --shadow-sm:0 2px 10px rgba(15,23,42,.08);
+  --shadow-md:0 8px 30px rgba(15,23,42,.11);
+  --shadow-lg:0 20px 60px rgba(15,23,42,.15);
   --ease:cubic-bezier(.4,0,.2,1);
 }
 
@@ -609,11 +616,12 @@ body {
   grid-template-columns:1fr auto;
   gap:40px;
   align-items:center;
-  background:linear-gradient(135deg,var(--blue-900) 0%,var(--blue-700) 50%,#3b82f6 100%);
+  background:linear-gradient(128deg,var(--navy-900) 0%,#1a3170 52%,var(--blue-700) 100%);
   border-radius:var(--radius-xl);
   padding:48px 52px;
   position:relative;
   overflow:hidden;
+  box-shadow:0 12px 44px rgba(15,23,42,.24);
   animation:fadeSlideUp .7s var(--ease) both;
 }
 
@@ -624,7 +632,7 @@ body {
   right:-60px;
   width:300px;
   height:300px;
-  background:rgba(255,255,255,.05);
+  background:rgba(255,255,255,.04);
   border-radius:50%;
   pointer-events:none;
 }
@@ -636,7 +644,7 @@ body {
   left:40%;
   width:220px;
   height:220px;
-  background:rgba(255,255,255,.04);
+  background:radial-gradient(circle,rgba(59,130,246,.2) 0%,transparent 70%);
   border-radius:50%;
   pointer-events:none;
 }
@@ -710,7 +718,7 @@ body {
   gap:8px;
   padding:12px 22px;
   background:white;
-  color:var(--blue-700);
+  color:var(--blue-800);
   border-radius:100px;
   font-size:14px;
   font-weight:700;

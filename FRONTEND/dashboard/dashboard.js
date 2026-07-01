@@ -154,6 +154,14 @@ function loadStats() {
 
   const bp = document.getElementById('badgePendaftaran');
   if (bp && proses > 0) { bp.textContent = proses; bp.classList.add('show'); }
+
+  /* Shimmer effect saat load — sama seperti dashboard staff admin */
+  document.querySelectorAll('.stat-tile').forEach((tile, i) => {
+    setTimeout(() => {
+      tile.classList.add('shimmer');
+      setTimeout(() => tile.classList.remove('shimmer'), 1100);
+    }, i * 100);
+  });
 }
 
 /* ===== RENDER PENDAFTARAN =====

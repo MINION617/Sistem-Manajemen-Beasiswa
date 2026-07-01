@@ -259,7 +259,7 @@ function renderList() {
           <div class="dana-progress-wrap">
             <div class="dana-progress-bar">
               <div
-                class="dana-progress-fill"
+                class="dana-progress-fill${cfg.progress < 100 ? ' in-progress' : ''}"
                 style="width: ${cfg.progress}%; background: ${cfg.color};"
               ></div>
             </div>
