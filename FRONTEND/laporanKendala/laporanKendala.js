@@ -79,6 +79,16 @@ const dummyLaporan = [
 let activeFilter = 'all';
 let allData = [...dummyLaporan];
 
+// Jumlah notifikasi belum dibaca — dipakai untuk titik merah di lonceng
+// notifikasi & badge di dropdown profil. TODO: ganti dengan hitungan asli
+// dari data notifikasi saat sudah terhubung ke backend.
+const dummyNotifUnread = 2;
+
+// Jumlah pendaftaran yang sedang diproses — dipakai untuk badge
+// "Pendaftaran Saya" di navbar. TODO: ganti dengan hitungan asli dari
+// data pendaftaran saat sudah terhubung ke backend.
+const dummyPendaftaranProses = 2;
+
 // ===== INIT USER INFO =====
 function initUserInfo() {
   const s    = demoSession;
@@ -87,11 +97,25 @@ function initUserInfo() {
   const init = nama.charAt(0).toUpperCase();
   const first = nama.split(' ')[0];
   const el = (id, val) => { const e = document.getElementById(id); if (e) e.textContent = val; };
-  el('navUsername',  first);
+  el('navUsername',  nama);
   el('topbarAvatar', init);
   el('mobileName',   nama);
   el('mobileNim',    'NIM: ' + nim);
   el('mobileAvatar', init);
+}
+
+// ===== INIT NOTIF BADGES (lonceng navbar + dropdown profil) =====
+function initNotifBadges() {
+  const dot   = document.getElementById('notifDot');
+  const badge = document.getElementById('badgeNotif');
+  if (dot && dummyNotifUnread > 0) dot.classList.add('show');
+  if (badge && dummyNotifUnread > 0) { badge.textContent = dummyNotifUnread; badge.classList.add('show'); }
+}
+
+// ===== INIT PENDAFTARAN BADGE (nav-pill "Pendaftaran Saya") =====
+function initPendaftaranBadge() {
+  const bp = document.getElementById('badgePendaftaran');
+  if (bp && dummyPendaftaranProses > 0) { bp.textContent = dummyPendaftaranProses; bp.classList.add('show'); }
 }
 
 // ===== POPULATE BEASISWA SELECT =====
@@ -106,10 +130,23 @@ function populateBeasiswaSelect() {
   });
 }
 
+// ===== ANIMATE NUMBER (easeOutCubic) =====
+function animateNum(elId, target) {
+  const el = document.getElementById(elId);
+  if (!el) return;
+  if (target === 0) { el.textContent = '0'; return; }
+  const dur = 900, t0 = performance.now();
+  const ease = t => 1 - Math.pow(1 - t, 3); // easeOutCubic — melambat di ujung
+  (function tick(now) {
+    const p = Math.min((now - t0) / dur, 1);
+    el.textContent = Math.round(target * ease(p));
+    if (p < 1) requestAnimationFrame(tick);
+  })(t0);
+}
+
 // ===== UPDATE HERO BADGE =====
 function updateBadge() {
-  const el = document.getElementById('heroBadgeNum');
-  if (el) el.textContent = allData.length;
+  animateNum('heroBadgeNum', allData.length);
 }
 
 // ===== CHAR COUNT =====
@@ -146,7 +183,7 @@ function renderList() {
       : '';
 
     return `
-    <div class="laporan-card" onclick="openModal('${d.id}')">
+    <div class="laporan-card reveal" onclick="openModal('${d.id}')">
       <div class="laporan-top">
         <div class="laporan-judul">${d.judul_laporan}</div>
         <span class="status-pill ${cfg.cls}">
@@ -166,6 +203,31 @@ function renderList() {
       </div>
     </div>`;
   }).join('');
+
+  setTimeout(applyScrollReveal, 50);
+}
+
+// ===== SCROLL REVEAL =====
+function applyScrollReveal() {
+  const els = document.querySelectorAll('.reveal:not(.visible)');
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('visible');
+        /* Hapus transitionDelay setelah animasi masuk selesai,
+           supaya hover sesudahnya tidak ikut kena delay */
+        const delay = parseFloat(e.target.style.transitionDelay || 0) * 1000;
+        setTimeout(() => { e.target.style.transitionDelay = '0s'; }, delay + 650);
+        observer.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.08 });
+
+  els.forEach((el, i) => {
+    el.style.transitionDelay = `${(i % 6) * 0.05}s`;
+    observer.observe(el);
+  });
 }
 
 // ===== FILTER =====
@@ -426,16 +488,16 @@ function initParticles() {
   const container = document.getElementById('particles');
   if (!container) return;
   const iconSet = [
-    ['solar:chat-round-like-bold-duotone',  'rgba(37,99,235,0.22)'],
-    ['solar:chat-round-dots-bold-duotone',  'rgba(99,102,241,0.20)'],
-    ['solar:document-text-bold-duotone',    'rgba(37,99,235,0.18)'],
-    ['solar:diploma-bold-duotone',          'rgba(139,92,246,0.18)'],
-    ['solar:check-circle-bold-duotone',     'rgba(16,185,129,0.20)'],
-    ['solar:book-2-bold-duotone',           'rgba(37,99,235,0.18)'],
-    ['solar:target-bold-duotone',           'rgba(239,68,68,0.18)'],
-    ['solar:lightbulb-bold-duotone',        'rgba(251,191,36,0.22)'],
-    ['solar:microscope-bold-duotone',       'rgba(16,185,129,0.18)'],
-    ['solar:pen-bold-duotone',              'rgba(139,92,246,0.18)'],
+    ['solar:chat-round-like-bold-duotone',  'rgba(37,99,235,0.55)'],
+    ['solar:chat-round-dots-bold-duotone',  'rgba(99,102,241,0.50)'],
+    ['solar:document-text-bold-duotone',    'rgba(37,99,235,0.48)'],
+    ['solar:diploma-bold-duotone',          'rgba(139,92,246,0.48)'],
+    ['solar:check-circle-bold-duotone',     'rgba(16,185,129,0.50)'],
+    ['solar:book-2-bold-duotone',           'rgba(37,99,235,0.48)'],
+    ['solar:target-bold-duotone',           'rgba(239,68,68,0.48)'],
+    ['solar:lightbulb-bold-duotone',        'rgba(245,158,11,0.55)'],
+    ['solar:microscope-bold-duotone',       'rgba(16,185,129,0.48)'],
+    ['solar:pen-bold-duotone',              'rgba(139,92,246,0.48)'],
   ];
   for (let i = 0; i < 18; i++) {
     const [iconName, color] = iconSet[i % iconSet.length];
@@ -454,6 +516,8 @@ document.addEventListener('DOMContentLoaded', () => {
   initBgCanvas();
   initParticles();
   initUserInfo();
+  initNotifBadges();
+  initPendaftaranBadge();
   populateBeasiswaSelect();
   updateBadge();
   renderList();

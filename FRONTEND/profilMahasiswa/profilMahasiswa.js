@@ -9,6 +9,16 @@
 const SUPABASE_URL      = 'https://YOUR_PROJECT.supabase.co';
 const SUPABASE_ANON_KEY = 'YOUR_ANON_KEY';
 
+// Jumlah notifikasi belum dibaca — dipakai untuk titik merah di lonceng
+// notifikasi & badge di dropdown profil. TODO: ganti dengan hitungan asli
+// dari data notifikasi saat sudah terhubung ke backend.
+const dummyNotifUnread = 2;
+
+// Jumlah pendaftaran yang sedang diproses — dipakai untuk badge
+// "Pendaftaran Saya" di navbar. TODO: ganti dengan hitungan asli dari
+// data pendaftaran saat sudah terhubung ke backend.
+const dummyPendaftaranProses = 2;
+
 
 /* ============================================================
    SESSION
@@ -63,17 +73,14 @@ function animateNum(elId, target) {
     el.textContent = '0';
     return;
   }
-  let cur        = 0;
-  const step     = Math.ceil(target / 20);
-  const t        = setInterval(() => {
-    cur += step;
-    if (cur >= target) {
-      el.textContent = target;
-      clearInterval(t);
-    } else {
-      el.textContent = cur;
-    }
-  }, 40);
+  const dur  = 900;
+  const t0   = performance.now();
+  const ease = t => 1 - Math.pow(1 - t, 3); // easeOutCubic — melambat di ujung
+  (function tick(now) {
+    const p = Math.min((now - t0) / dur, 1);
+    el.textContent = Math.round(target * ease(p));
+    if (p < 1) requestAnimationFrame(tick);
+  })(t0);
 }
 
 
@@ -93,7 +100,7 @@ function initUserInfo() {
   const first  = nama.split(' ')[0];
 
   /* Navbar */
-  setEl('navUsername',  first);
+  setEl('navUsername',  nama);
   setEl('topbarAvatar', init);
 
   /* Mobile nav */
@@ -138,6 +145,26 @@ function initMiniStats() {
   setEl('heroBadgeDaftar', '4');
   setEl('heroBadgeLolos',  '2');
   setEl('heroBadgeDana',   'Rp 9 jt');
+}
+
+
+/* ============================================================
+   NAVBAR BADGES — notifikasi & pendaftaran diproses
+   ============================================================ */
+function initNavBadges() {
+  const dot = document.getElementById('notifDot');
+  const badge = document.getElementById('badgeNotif');
+  if (dot && dummyNotifUnread > 0) dot.classList.add('show');
+  if (badge && dummyNotifUnread > 0) {
+    badge.textContent = dummyNotifUnread;
+    badge.classList.add('show');
+  }
+
+  const bp = document.getElementById('badgePendaftaran');
+  if (bp && dummyPendaftaranProses > 0) {
+    bp.textContent = dummyPendaftaranProses;
+    bp.classList.add('show');
+  }
 }
 
 
@@ -463,15 +490,16 @@ function initParticles() {
   if (!container) return;
 
   const iconSet = [
-    ['solar:user-bold-duotone',          'rgba(37,99,235,0.22)'],
-    ['solar:pen-bold-duotone',           'rgba(99,102,241,0.20)'],
-    ['solar:diploma-bold-duotone',       'rgba(37,99,235,0.18)'],
-    ['solar:cup-star-bold-duotone',      'rgba(251,191,36,0.22)'],
-    ['solar:star-bold-duotone',          'rgba(251,191,36,0.20)'],
-    ['solar:lightbulb-bold-duotone',     'rgba(251,191,36,0.20)'],
-    ['solar:key-bold-duotone',           'rgba(37,99,235,0.18)'],
-    ['solar:document-text-bold-duotone', 'rgba(37,99,235,0.20)'],
-    ['solar:star-bold-duotone',          'rgba(251,191,36,0.20)'],
+    ['solar:diploma-bold-duotone',           'rgba(37,99,235,0.55)'],
+    ['solar:book-2-bold-duotone',            'rgba(99,102,241,0.50)'],
+    ['solar:pen-bold-duotone',               'rgba(139,92,246,0.48)'],
+    ['solar:cup-star-bold-duotone',          'rgba(245,158,11,0.55)'],
+    ['solar:star-bold-duotone',              'rgba(245,158,11,0.50)'],
+    ['solar:document-text-bold-duotone',     'rgba(37,99,235,0.48)'],
+    ['solar:target-bold-duotone',            'rgba(16,185,129,0.50)'],
+    ['solar:lightbulb-bold-duotone',         'rgba(245,158,11,0.55)'],
+    ['solar:microscope-bold-duotone',        'rgba(16,185,129,0.48)'],
+    ['solar:graduation-cap-bold-duotone',    'rgba(37,99,235,0.52)'],
   ];
   const count = 16;
 
@@ -510,6 +538,8 @@ function initScrollReveal() {
     entries.forEach(e => {
       if (e.isIntersecting) {
         e.target.classList.add('visible');
+        const delay = parseFloat(e.target.style.transitionDelay || 0) * 1000;
+        setTimeout(() => { e.target.style.transitionDelay = '0s'; }, delay + 650);
         observer.unobserve(e.target);
       }
     });
@@ -569,6 +599,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initParticles();
   initUserInfo();
   initMiniStats();
+  initNavBadges();
   initNavbarScroll();
   initMobileNav();
   initLogout();

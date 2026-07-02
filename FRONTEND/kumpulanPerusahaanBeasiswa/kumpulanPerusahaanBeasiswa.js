@@ -89,13 +89,13 @@ function animateNum(elId, target) {
   const el = document.getElementById(elId);
   if (!el) return;
   if (target === 0) { el.textContent = '0'; return; }
-  let cur = 0;
-  const step = Math.ceil(target / 20);
-  const t = setInterval(() => {
-    cur += step;
-    if (cur >= target) { el.textContent = target; clearInterval(t); }
-    else el.textContent = cur;
-  }, 40);
+  const dur = 900, t0 = performance.now();
+  const ease = t => 1 - Math.pow(1 - t, 3); // easeOutCubic — melambat di ujung
+  (function tick(now) {
+    const p = Math.min((now - t0) / dur, 1);
+    el.textContent = Math.round(target * ease(p));
+    if (p < 1) requestAnimationFrame(tick);
+  })(t0);
 }
 function inisial(nama) {
   return nama.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
@@ -107,12 +107,38 @@ function initUserInfo() {
   const nama = s?.nama_lengkap || 'Mahasiswa';
   const nim  = s?.nim_nip      || '—';
   const init = nama.charAt(0).toUpperCase();
-  const first = nama.split(' ')[0];
-  setEl('navUsername',  first);
+  setEl('navUsername',  nama);
   setEl('topbarAvatar', init);
   setEl('mobileName',   nama);
   setEl('mobileNim',    'NIM: ' + nim);
   setEl('mobileAvatar', init);
+}
+
+/* ===== NOTIFIKASI & BADGE NAVBAR ===== */
+// Jumlah notifikasi belum dibaca — dipakai untuk titik merah di lonceng
+// notifikasi & badge di dropdown profil. TODO: ganti dengan hitungan asli
+// dari data notifikasi saat sudah terhubung ke backend.
+const dummyNotifUnread = 2;
+
+// Jumlah pendaftaran yang sedang diproses — dipakai untuk badge
+// "Pendaftaran Saya" di navbar. TODO: ganti dengan hitungan asli dari
+// data pendaftaran saat sudah terhubung ke backend.
+const dummyPendaftaranProses = 2;
+
+function initNavbarBadges() {
+  const dot = document.getElementById('notifDot');
+  const badge = document.getElementById('badgeNotif');
+  if (dot && dummyNotifUnread > 0) dot.classList.add('show');
+  if (badge && dummyNotifUnread > 0) {
+    badge.textContent = dummyNotifUnread;
+    badge.classList.add('show');
+  }
+
+  const bp = document.getElementById('badgePendaftaran');
+  if (bp && dummyPendaftaranProses > 0) {
+    bp.textContent = dummyPendaftaranProses;
+    bp.classList.add('show');
+  }
 }
 
 /* ===== INTRO STATS ===== */
@@ -126,6 +152,14 @@ function renderIntroStats() {
   animateNum('introKuota',      totalKuota);
   animateNum('introIndustri',   industriSet.size);
   animateNum('heroBadgeNum',    perusahaanList.length);
+
+  // Shimmer sweep pas stat tile muncul pertama kali
+  document.querySelectorAll('.intro-stat').forEach((tile, i) => {
+    setTimeout(() => {
+      tile.classList.add('shimmer');
+      setTimeout(() => tile.classList.remove('shimmer'), 1100);
+    }, i * 100);
+  });
 }
 
 /* ===== FILTER TABS ===== */
@@ -227,10 +261,14 @@ function renderGrid() {
     </a>
   `).join('');
 
-  // Staggered reveal animation — identik asli
+  // Staggered reveal animation — identik asli, + reset transitionDelay
+  // biar delay bawaan entrance nggak nempel selamanya & bikin hover jadi lag.
   grid.querySelectorAll('.company-card').forEach((c, i) => {
     c.style.transitionDelay = `${i * 0.06}s`;
-    setTimeout(() => c.classList.add('visible'), i * 60);
+    setTimeout(() => {
+      c.classList.add('visible');
+      setTimeout(() => { c.style.transitionDelay = '0s'; }, 550);
+    }, i * 60);
   });
 }
 
@@ -330,16 +368,16 @@ function initParticles() {
   const container = document.getElementById('particles');
   if (!container) return;
   const iconSet = [
-    ['solar:buildings-2-bold-duotone',  'rgba(37,99,235,0.22)'],
-    ['solar:bag-bold-duotone',          'rgba(99,102,241,0.20)'],
-    ['solar:diploma-bold-duotone',      'rgba(139,92,246,0.18)'],
-    ['solar:star-bold-duotone',         'rgba(251,191,36,0.22)'],
-    ['solar:rocket-bold-duotone',       'rgba(37,99,235,0.18)'],
-    ['solar:lightbulb-bold-duotone',    'rgba(251,191,36,0.22)'],
-    ['solar:wrench-bold-duotone',       'rgba(16,185,129,0.18)'],
-    ['solar:chart-2-bold-duotone',      'rgba(37,99,235,0.20)'],
-    ['solar:target-bold-duotone',       'rgba(239,68,68,0.18)'],
-    ['solar:cup-star-bold-duotone',     'rgba(251,191,36,0.20)'],
+    ['solar:buildings-2-bold-duotone',  'rgba(37,99,235,0.55)'],
+    ['solar:bag-bold-duotone',          'rgba(99,102,241,0.50)'],
+    ['solar:diploma-bold-duotone',      'rgba(139,92,246,0.48)'],
+    ['solar:star-bold-duotone',         'rgba(245,158,11,0.55)'],
+    ['solar:rocket-bold-duotone',       'rgba(37,99,235,0.48)'],
+    ['solar:lightbulb-bold-duotone',    'rgba(245,158,11,0.55)'],
+    ['solar:wrench-bold-duotone',       'rgba(16,185,129,0.48)'],
+    ['solar:chart-2-bold-duotone',      'rgba(37,99,235,0.50)'],
+    ['solar:target-bold-duotone',       'rgba(16,185,129,0.50)'],
+    ['solar:cup-star-bold-duotone',     'rgba(245,158,11,0.50)'],
   ];
   for (let i = 0; i < 18; i++) {
     const [iconName, color] = iconSet[i % iconSet.length];
@@ -358,6 +396,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initBgCanvas();
   initParticles();
   initUserInfo();
+  initNavbarBadges();
   renderIntroStats();
   renderFilterTabs();
   renderGrid();

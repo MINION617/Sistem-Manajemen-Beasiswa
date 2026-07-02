@@ -33,6 +33,16 @@ const demoSession = session || {
   id           : 'demo-uuid',
 };
 
+// Jumlah notifikasi belum dibaca — dipakai untuk titik merah di lonceng
+// notifikasi & badge di dropdown profil. TODO: ganti dengan hitungan asli
+// dari data notifikasi saat sudah terhubung ke backend.
+const dummyNotifUnread = 2;
+
+// Jumlah pendaftaran yang sedang diproses — dipakai untuk badge
+// "Pendaftaran Saya" di navbar. TODO: ganti dengan hitungan asli dari
+// data pendaftaran saat sudah terhubung ke backend.
+const dummyPendaftaranProses = 2;
+
 
 /* ============================================================
    STATUS CONFIG — icon: Iconify icon name + iconColor
@@ -162,17 +172,13 @@ function animateNum(elId, target) {
     el.textContent = '0';
     return;
   }
-  let cur        = 0;
-  const step     = Math.ceil(target / 20);
-  const t        = setInterval(() => {
-    cur += step;
-    if (cur >= target) {
-      el.textContent = target;
-      clearInterval(t);
-    } else {
-      el.textContent = cur;
-    }
-  }, 40);
+  const dur = 900, t0 = performance.now();
+  const ease = t => 1 - Math.pow(1 - t, 3); // easeOutCubic — melambat di ujung
+  (function tick(now) {
+    const p = Math.min((now - t0) / dur, 1);
+    el.textContent = Math.round(target * ease(p));
+    if (p < 1) requestAnimationFrame(tick);
+  })(t0);
 }
 
 
@@ -184,13 +190,32 @@ function initUserInfo() {
   const nama  = s?.nama_lengkap || 'Mahasiswa';
   const nim   = s?.nim_nip      || '—';
   const init  = nama.charAt(0).toUpperCase();
-  const first = nama.split(' ')[0];
 
-  setEl('navUsername',  first);
+  setEl('navUsername',  nama);
   setEl('topbarAvatar', init);
   setEl('mobileName',   nama);
   setEl('mobileNim',    'NIM: ' + nim);
   setEl('mobileAvatar', init);
+}
+
+
+/* ============================================================
+   NOTIFIKASI & BADGE PENDAFTARAN — navbar
+   ============================================================ */
+function initNavbarBadges() {
+  const dot = document.getElementById('notifDot');
+  const badge = document.getElementById('badgeNotif');
+  if (dot && dummyNotifUnread > 0) dot.classList.add('show');
+  if (badge && dummyNotifUnread > 0) {
+    badge.textContent = dummyNotifUnread;
+    badge.classList.add('show');
+  }
+
+  const bp = document.getElementById('badgePendaftaran');
+  if (bp && dummyPendaftaranProses > 0) {
+    bp.textContent = dummyPendaftaranProses;
+    bp.classList.add('show');
+  }
 }
 
 
@@ -207,6 +232,13 @@ function renderStats() {
   animateNum('statProses',   proses.length);
   animateNum('statBeasiswa', allData.length);
   setEl('heroBadgeNum', allData.length);
+
+  document.querySelectorAll('.stat-tile').forEach((tile, i) => {
+    setTimeout(() => {
+      tile.classList.add('shimmer');
+      setTimeout(() => tile.classList.remove('shimmer'), 1100);
+    }, i * 100);
+  });
 }
 
 
@@ -604,16 +636,16 @@ function initParticles() {
   if (!container) return;
 
   const iconSet = [
-    ['solar:wallet-money-bold-duotone',  'rgba(37,99,235,0.22)'],
-    ['solar:banknote-bold-duotone',      'rgba(124,58,237,0.20)'],
-    ['solar:diploma-bold-duotone',       'rgba(37,99,235,0.18)'],
-    ['solar:check-circle-bold-duotone',  'rgba(5,150,105,0.22)'],
-    ['solar:document-text-bold-duotone', 'rgba(37,99,235,0.18)'],
-    ['solar:cup-star-bold-duotone',      'rgba(251,191,36,0.22)'],
-    ['solar:star-bold-duotone',          'rgba(251,191,36,0.20)'],
-    ['solar:lightbulb-bold-duotone',     'rgba(251,191,36,0.20)'],
-    ['solar:target-bold-duotone',        'rgba(239,68,68,0.18)'],
-    ['solar:diploma-bold-duotone',       'rgba(37,99,235,0.20)'],
+    ['solar:wallet-money-bold-duotone',  'rgba(37,99,235,0.55)'],
+    ['solar:banknote-bold-duotone',      'rgba(124,58,237,0.50)'],
+    ['solar:diploma-bold-duotone',       'rgba(37,99,235,0.48)'],
+    ['solar:check-circle-bold-duotone',  'rgba(16,185,129,0.55)'],
+    ['solar:document-text-bold-duotone', 'rgba(37,99,235,0.48)'],
+    ['solar:cup-star-bold-duotone',      'rgba(245,158,11,0.55)'],
+    ['solar:star-bold-duotone',          'rgba(245,158,11,0.50)'],
+    ['solar:lightbulb-bold-duotone',     'rgba(245,158,11,0.52)'],
+    ['solar:target-bold-duotone',        'rgba(16,185,129,0.50)'],
+    ['solar:card-transfer-bold-duotone', 'rgba(37,99,235,0.52)'],
   ];
   const count = 16;
 
@@ -673,6 +705,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initBgCanvas();
   initParticles();
   initUserInfo();
+  initNavbarBadges();
   initFilterTabs();
   initNavbarScroll();
   initMobileNav();
