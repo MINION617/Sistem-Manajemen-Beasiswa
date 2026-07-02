@@ -88,28 +88,61 @@ const dummyNotifikasi = [
 let activeFilter = 'all';
 let allData = [...dummyNotifikasi];
 
+// Jumlah pendaftaran yang sedang diproses — dipakai untuk badge
+// "Pendaftaran Saya" di navbar. TODO: ganti dengan hitungan asli dari
+// data pendaftaran saat sudah terhubung ke backend.
+const dummyPendaftaranProses = 2;
+
 // ===== INIT USER INFO =====
 function initUserInfo() {
   const s    = demoSession;
   const nama = s?.nama_lengkap || 'Mahasiswa';
   const nim  = s?.nim_nip      || '—';
   const init = nama.charAt(0).toUpperCase();
-  const first = nama.split(' ')[0];
   const el = (id, val) => { const e = document.getElementById(id); if (e) e.textContent = val; };
-  el('navUsername',  first);
+  el('navUsername',  nama);
   el('topbarAvatar', init);
   el('mobileName',   nama);
   el('mobileNim',    'NIM: ' + nim);
   el('mobileAvatar', init);
 }
 
+// ===== ANIMATED COUNTER (easeOutCubic) =====
+function animateNum(elId, target) {
+  const el = document.getElementById(elId);
+  if (!el) return;
+  if (target === 0) { el.textContent = '0'; return; }
+  const dur = 900, t0 = performance.now();
+  const ease = t => 1 - Math.pow(1 - t, 3); // easeOutCubic — melambat di ujung
+  (function tick(now) {
+    const p = Math.min((now - t0) / dur, 1);
+    el.textContent = Math.round(target * ease(p));
+    if (p < 1) requestAnimationFrame(tick);
+  })(t0);
+}
+
 // ===== UPDATE HERO BADGE =====
 function updateBadge() {
   const unread = allData.filter(n => !n.is_read).length;
-  const badgeEl = document.getElementById('heroBadgeNum');
-  if (badgeEl) badgeEl.textContent = unread;
+  animateNum('heroBadgeNum', unread);
+
+  // Navbar: notif dot + dropdown badge — pakai unread count asli halaman ini
   const dot = document.getElementById('notifDot');
   if (dot) { if (unread > 0) dot.classList.add('show'); else dot.classList.remove('show'); }
+  const badgeNotif = document.getElementById('badgeNotif');
+  if (badgeNotif) {
+    if (unread > 0) { badgeNotif.textContent = unread; badgeNotif.classList.add('show'); }
+    else { badgeNotif.textContent = ''; badgeNotif.classList.remove('show'); }
+  }
+}
+
+// ===== NAVBAR: BADGE PENDAFTARAN SAYA =====
+function updateBadgePendaftaran() {
+  const bp = document.getElementById('badgePendaftaran');
+  if (bp && dummyPendaftaranProses > 0) {
+    bp.textContent = dummyPendaftaranProses;
+    bp.classList.add('show');
+  }
 }
 
 // ===== RENDER =====
@@ -318,16 +351,16 @@ function initParticles() {
   const container = document.getElementById('particles');
   if (!container) return;
   const iconSet = [
-    ['solar:bell-bold-duotone',             'rgba(37,99,235,0.22)'],
-    ['solar:document-text-bold-duotone',    'rgba(37,99,235,0.20)'],
-    ['solar:diploma-bold-duotone',          'rgba(139,92,246,0.18)'],
-    ['solar:cup-star-bold-duotone',         'rgba(251,191,36,0.22)'],
-    ['solar:star-bold-duotone',             'rgba(251,191,36,0.20)'],
-    ['solar:wallet-money-bold-duotone',     'rgba(16,185,129,0.18)'],
-    ['solar:target-bold-duotone',           'rgba(239,68,68,0.18)'],
-    ['solar:lightbulb-bold-duotone',        'rgba(251,191,36,0.20)'],
-    ['solar:chat-round-like-bold-duotone',  'rgba(99,102,241,0.18)'],
-    ['solar:pen-bold-duotone',              'rgba(139,92,246,0.18)'],
+    ['solar:bell-bold-duotone',             'rgba(37,99,235,0.55)'],
+    ['solar:document-text-bold-duotone',    'rgba(37,99,235,0.48)'],
+    ['solar:diploma-bold-duotone',          'rgba(99,102,241,0.50)'],
+    ['solar:cup-star-bold-duotone',         'rgba(245,158,11,0.55)'],
+    ['solar:star-bold-duotone',             'rgba(245,158,11,0.50)'],
+    ['solar:wallet-money-bold-duotone',     'rgba(16,185,129,0.50)'],
+    ['solar:target-bold-duotone',           'rgba(16,185,129,0.48)'],
+    ['solar:lightbulb-bold-duotone',        'rgba(245,158,11,0.55)'],
+    ['solar:chat-round-like-bold-duotone',  'rgba(139,92,246,0.48)'],
+    ['solar:pen-bold-duotone',              'rgba(139,92,246,0.50)'],
   ];
   for (let i = 0; i < 18; i++) {
     const [iconName, color] = iconSet[i % iconSet.length];
@@ -347,6 +380,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initParticles();
   initUserInfo();
   updateBadge();
+  updateBadgePendaftaran();
   renderList();
   console.log('🔔 notifikasi.js loaded — user:', demoSession?.nama_lengkap);
 });

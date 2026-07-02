@@ -263,6 +263,19 @@ const beasiswaList = [
 ];
 
 
+/* Jumlah pendaftaran yang sedang diproses — dipakai untuk badge
+   "Pendaftaran Saya" di navbar, sama seperti di dashboard.js.
+   TODO: ganti dengan hitungan asli dari data pendaftaran saat sudah
+   terhubung ke backend. */
+const dummyPendaftaranProses = 2;
+
+/* Jumlah notifikasi belum dibaca — dipakai untuk titik merah di lonceng
+   notifikasi & badge di dropdown profil, sama seperti di dashboard.js.
+   TODO: ganti dengan hitungan asli dari data notifikasi saat sudah
+   terhubung ke backend. */
+const dummyNotifUnread = 2;
+
+
 /* =================================================================
    4. STATE
    ================================================================= */
@@ -299,6 +312,28 @@ function deadlineLabel(tanggalTutup) {
 
 function delay(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+/** Animasi angka berjalan naik/turun menuju nilai target */
+function animateNum(elId, target) {
+  const el = document.getElementById(elId);
+  if (!el) return;
+  if (target === 0) { el.textContent = '0'; return; }
+  const dur = 900, t0 = performance.now();
+  const ease = t => 1 - Math.pow(1 - t, 3); // easeOutCubic — melambat di ujung
+  (function tick(now) {
+    const p = Math.min((now - t0) / dur, 1);
+    el.textContent = Math.round(target * ease(p));
+    if (p < 1) requestAnimationFrame(tick);
+  })(t0);
+}
+
+/** Efek shimmer sekali jalan di stats-strip saat data selesai dimuat */
+function triggerStatsShimmer() {
+  const strip = document.querySelector('.stats-strip');
+  if (!strip) return;
+  strip.classList.add('shimmer');
+  setTimeout(() => strip.classList.remove('shimmer'), 1100);
 }
 
 
@@ -339,8 +374,7 @@ async function loadSudahDaftar() {
 }
 
 function updateStripSudahDaftar() {
-  const el = document.getElementById('stripSudahDaftar');
-  if (el) el.textContent = sudahDaftar.size;
+  animateNum('stripSudahDaftar', sudahDaftar.size);
 }
 
 
@@ -397,8 +431,7 @@ function renderGrid() {
   const empty = document.getElementById('emptyState');
   const list  = getFilteredList();
 
-  const stripTotal = document.getElementById('stripTotal');
-  if (stripTotal) stripTotal.textContent = list.length;
+  animateNum('stripTotal', list.length);
 
   if (!list.length) {
     grid.style.display  = 'none';
@@ -740,16 +773,16 @@ function initParticles() {
   if (!container) return;
 
   const iconSet = [
-    ['solar:diploma-bold-duotone',        'rgba(37,99,235,0.22)'],
-    ['solar:book-2-bold-duotone',         'rgba(99,102,241,0.20)'],
-    ['solar:pen-bold-duotone',            'rgba(139,92,246,0.18)'],
-    ['solar:cup-star-bold-duotone',       'rgba(251,191,36,0.22)'],
-    ['solar:star-bold-duotone',           'rgba(251,191,36,0.20)'],
-    ['solar:document-text-bold-duotone',  'rgba(37,99,235,0.18)'],
-    ['solar:target-bold-duotone',         'rgba(239,68,68,0.18)'],
-    ['solar:lightbulb-bold-duotone',      'rgba(251,191,36,0.22)'],
-    ['solar:microscope-bold-duotone',     'rgba(16,185,129,0.18)'],
-    ['solar:document-add-bold-duotone',   'rgba(37,99,235,0.20)'],
+    ['solar:diploma-bold-duotone',           'rgba(37,99,235,0.55)'],
+    ['solar:book-2-bold-duotone',            'rgba(99,102,241,0.50)'],
+    ['solar:pen-bold-duotone',               'rgba(139,92,246,0.48)'],
+    ['solar:cup-star-bold-duotone',          'rgba(245,158,11,0.55)'],
+    ['solar:star-bold-duotone',              'rgba(245,158,11,0.50)'],
+    ['solar:document-text-bold-duotone',     'rgba(37,99,235,0.48)'],
+    ['solar:target-bold-duotone',            'rgba(16,185,129,0.50)'],
+    ['solar:lightbulb-bold-duotone',         'rgba(245,158,11,0.55)'],
+    ['solar:microscope-bold-duotone',        'rgba(16,185,129,0.48)'],
+    ['solar:graduation-cap-bold-duotone',    'rgba(37,99,235,0.52)'],
   ];
   const count = 18;
 
@@ -872,6 +905,10 @@ function applyScrollReveal() {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
           entry.target.classList.add('visible');
+          /* Hapus transitionDelay setelah animasi masuk selesai,
+             supaya hover sesudahnya tidak ikut kena delay */
+          const delay = parseFloat(entry.target.style.transitionDelay || 0) * 1000;
+          setTimeout(() => { entry.target.style.transitionDelay = '0s'; }, delay + 650);
           observer.unobserve(entry.target);
         }
       });
@@ -900,11 +937,25 @@ document.addEventListener('DOMContentLoaded', () => {
   renderGrid();
 
   const total = beasiswaList.reduce((a, b) => a + b.kuota_penerima, 0);
-  const stripKuota = document.getElementById('stripKuota');
-  if (stripKuota) stripKuota.textContent = total;
+  animateNum('stripKuota', total);
+  animateNum('heroBadgeNum', beasiswaList.length);
 
-  const heroBadge = document.getElementById('heroBadgeNum');
-  if (heroBadge) heroBadge.textContent = beasiswaList.length;
+  const bp = document.getElementById('badgePendaftaran');
+  if (bp && dummyPendaftaranProses > 0) {
+    bp.textContent = dummyPendaftaranProses;
+    bp.classList.add('show');
+  }
+
+  const notifDot = document.getElementById('notifDot');
+  if (notifDot && dummyNotifUnread > 0) notifDot.classList.add('show');
+
+  const badgeNotif = document.getElementById('badgeNotif');
+  if (badgeNotif && dummyNotifUnread > 0) {
+    badgeNotif.textContent = dummyNotifUnread;
+    badgeNotif.classList.add('show');
+  }
+
+  setTimeout(triggerStatsShimmer, 500);
 
   initFilterSearch();
   initModalControls();
