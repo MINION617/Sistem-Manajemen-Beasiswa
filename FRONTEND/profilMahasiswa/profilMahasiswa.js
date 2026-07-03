@@ -6,8 +6,6 @@
             Struktur kode vertikal (satu properti per baris).
    ============================================================ */
 
-const SUPABASE_URL      = 'https://YOUR_PROJECT.supabase.co';
-const SUPABASE_ANON_KEY = 'YOUR_ANON_KEY';
 
 // Jumlah notifikasi belum dibaca — dipakai untuk titik merah di lonceng
 // notifikasi & badge di dropdown profil. TODO: ganti dengan hitungan asli
