@@ -55,6 +55,9 @@ Setiap pihak harus bisa melihat status dan keputusan beasiswa secara akurat, tra
 | Bangun di atas pola web app dengan frontend HTML/CSS/JS dan layanan backend Supabase | Sudah ada prototipe dan helper client Supabase di repo, sehingga lebih cepat dilanjutkan daripada memulai stack baru | - Pending |
 | Struktur roadmap mengikuti alur operasional beasiswa end-to-end | Brief sudah membagi kebutuhan ke fase intake, verifikasi, seleksi, dan pencairan | - Pending |
 | Anggap proyek ini sebagai brownfield yang perlu dirapikan, bukan greenfield murni | Repo sudah mengandung UI, skema data, dan integrasi awal yang harus diakui dalam perencanaan | - Pending |
+| Adopsi API tier tipis Node.js + Express (hybrid dengan Supabase) untuk operasi privileged | `backend/server.js` kosong dan frontend memanggil Supabase langsung dari browser tanpa penegakan role server-side; API tier menutup lubang keamanan tanpa merombak frontend & memakai bahasa yang sama (JS) | 2026-07-03 Decided |
+| Reorganisasi roadmap jadi backend-first (Phase 2 backend, Phase 3 fitur+koreksi, Phase 4 perapian kode) | Frontend dibangun mendahului plan sementara backend belum ada; urutan operasional vertikal lama tidak lagi mencerminkan realita | 2026-07-03 Decided |
+| Skema Supabase asli di-version-control ke `DATABASE/schema.sql` + migrations; arsipkan MySQL `beasiswa.sql` | Skema production hanya ada di dashboard; `.sql` di repo adalah dump MySQL basi yang tidak cocok dengan sistem berjalan | 2026-07-03 Decided |
 
 ---
-*Last updated: 2026-06-17 after initial project bootstrap*
+*Last updated: 2026-07-03 after backend-first roadmap reorganization and Express API-tier decision*

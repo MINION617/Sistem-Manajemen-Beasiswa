@@ -20,4 +20,5 @@ This repository is for the `Sistem Informasi Manajemen Beasiswa` project, a web-
 
 ## Next Step
 
-Run `$gsd-discuss-phase 1 --auto` to continue phase execution planning.
+Phase 1 delivered as frontend prototype. Roadmap reorganized backend-first on 2026-07-03.
+Run `$gsd-discuss-phase 2 --auto` to plan Phase 2 (Backend Foundation and Feature Integration).
