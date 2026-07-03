@@ -9,6 +9,9 @@ import { statusRouter } from './modules/status/status.routes.js'
 import { notifikasiRouter } from './modules/notifikasi/notifikasi.routes.js'
 import { laporanRouter } from './modules/laporan/laporan.routes.js'
 import { kabagRouter } from './modules/kabag/kabag.routes.js'
+import { penerimaRouter } from './modules/penerima/penerima.routes.js'
+import { penyaluranRouter } from './modules/penyaluran/penyaluran.routes.js'
+import { financeRouter } from './modules/finance/finance.routes.js'
 
 export const app = express()
 
@@ -26,6 +29,9 @@ app.use('/api/status', statusRouter)
 app.use('/api/notifikasi', notifikasiRouter)
 app.use('/api/laporan', laporanRouter)
 app.use('/api/kabag', kabagRouter)
+app.use('/api/penerima', penerimaRouter)
+app.use('/api/penyaluran', penyaluranRouter)
+app.use('/api/finance', financeRouter)
 
 app.use(notFound)
 app.use(errorHandler)
