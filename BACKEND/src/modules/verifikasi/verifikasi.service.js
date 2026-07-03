@@ -1,9 +1,8 @@
 import { supabaseAdmin } from '../../config/supabase.js'
 
-// Status flow corroborated across 3 frontend files (verifikasiPendaftar.js,
-// penetapanPenerima.js, pendaftaranSaya.js — see DATABASE/SCHEMA_NOTES.md):
+// Status flow — confirmed against the live status_pendaftaran enum
+// (DATABASE/migrations/0000_baseline.sql):
 //   menunggu_verifikasi -> lolos_berkas | ditolak_berkas -> wawancara -> lolos_final | tidak_lolos_final
-// Still unverified against a real schema dump (Phase 2 stabilization step S2).
 export const STATUS_PENDING = 'menunggu_verifikasi'
 export const STATUS_VERIFIED = 'lolos_berkas'
 export const STATUS_REJECTED = 'ditolak_berkas'
@@ -30,16 +29,17 @@ export async function listAntrean() {
 
 /**
  * Move an application to Verified or Rejected. `alasan` is required for rejections
- * so the decision stays auditable (see AGENTS.md working rules). There is no dedicated
- * rejection-reason column — `catatan_staff` is the one staff-facing note field reused
- * at every stage of the pendaftaran workflow (see DATABASE/SCHEMA_NOTES.md).
+ * so the decision stays auditable (see AGENTS.md working rules). Written to
+ * `catatan_verifikasi`, added by DATABASE/migrations/0001_add_pendaftaran_catatan_verifikasi.sql
+ * — the baseline `pendaftaran` table has no notes column of its own
+ * (`hasil_seleksi.catatan_staff` belongs to a later stage of the workflow).
  */
 export async function decide(pendaftaranId, decision, alasan) {
   const newStatus = decision === 'verified' ? STATUS_VERIFIED : STATUS_REJECTED
 
   const updates = { status: newStatus }
   if (decision === 'rejected') {
-    updates.catatan_staff = alasan
+    updates.catatan_verifikasi = alasan
   }
 
   const { data, error } = await supabaseAdmin

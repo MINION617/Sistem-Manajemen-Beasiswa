@@ -1,9 +1,18 @@
 -- ============================================================================
--- RLS POLICY DRAFT — Sistem Manajemen Beasiswa
+-- RLS POLICY DRAFT — SUPERSEDED, DO NOT RUN
 -- ============================================================================
--- Status: DRAFT, NOT YET APPLIED. Written against DATABASE/SCHEMA_NOTES.md
--- (a reconstructed schema — see caveats there). Review column/table names
--- against the real schema before running this in the Supabase SQL editor.
+-- A live schema pull (2026-07-03, see DATABASE/SCHEMA_NOTES.md) showed RLS is
+-- already enabled on every table in the live project, with policies already
+-- defined (names/commands listed in DATABASE/migrations/0000_baseline.sql).
+-- This file was written before that was known, against speculative table/
+-- column names, and its policy names likely collide with the real ones
+-- (`create policy` would fail with "already exists").
+--
+-- Kept only as a design reference for the default-deny reasoning below.
+-- Before touching live RLS, pull the real policies' USING/WITH CHECK logic
+-- (see the open item in SCHEMA_NOTES.md) and diff against this file's intent
+-- rather than running it as-is.
+-- ============================================================================
 --
 -- Design principle (matches ROADMAP.md "Architecture Baseline"):
 --   RLS is the SECOND line of defense. The Express API (service-role key,
