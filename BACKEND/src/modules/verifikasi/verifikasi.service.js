@@ -1,4 +1,5 @@
 import { supabaseAdmin } from '../../config/supabase.js'
+import { notify } from '../notifikasi/notifikasi.service.js'
 
 // Status flow — confirmed against the live status_pendaftaran enum
 // (DATABASE/migrations/0000_baseline.sql):
@@ -52,8 +53,16 @@ export async function decide(pendaftaranId, decision, alasan) {
   if (error) throw Object.assign(new Error(error.message), { status: 502 })
   if (!data) throw Object.assign(new Error('Pendaftaran not found'), { status: 404 })
 
-  // Seam for NOTF-01 (Phase 2 milestone 2C): insert a `notifikasi` row here once that
-  // module lands, so students get realtime updates on verification decisions.
+  const judul = decision === 'verified' ? 'Berkas Diverifikasi' : 'Berkas Ditolak'
+  const pesan =
+    decision === 'verified'
+      ? `Berkas pendaftaran ${data.beasiswa?.nama_program ?? ''} kamu lolos verifikasi.`
+      : `Berkas pendaftaran ${data.beasiswa?.nama_program ?? ''} kamu ditolak. Alasan: ${alasan}`
+  // Best-effort: a failed notification shouldn't roll back a verification decision
+  // that already succeeded. Logged, not thrown.
+  await notify(data.mahasiswa_id, judul, pesan).catch((err) =>
+    console.error('Failed to send verifikasi notification:', err.message)
+  )
 
   return data
 }
