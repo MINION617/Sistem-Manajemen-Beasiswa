@@ -36,3 +36,40 @@ export async function listApplicants() {
   if (error) throw Object.assign(new Error(error.message), { status: 502 })
   return data
 }
+
+/**
+ * MGMT-02: full applicant context for a plenary decision — GPA, certificates
+ * (dokumen_pendaftaran), and scores (hasil_seleksi) in one call.
+ */
+export async function getApplicantDetail(pendaftaranId) {
+  const { data, error } = await supabaseAdmin
+    .from('pendaftaran')
+    .select(`
+      *,
+      profiles!mahasiswa_id(nama_lengkap, nim_nip, program_studi, ipk),
+      beasiswa(nama_program, nominal_dana, sponsors(nama_perusahaan)),
+      dokumen_pendaftaran(*),
+      hasil_seleksi(*),
+      penerima_beasiswa(*)
+    `)
+    .eq('id', pendaftaranId)
+    .single()
+
+  if (error) throw Object.assign(new Error(error.message), { status: 502 })
+  if (!data) throw Object.assign(new Error('Pendaftaran not found'), { status: 404 })
+  return data
+}
+
+/** MGMT-03: complaint counts per status, for the Kabag summary dashboard. */
+export async function getLaporanStatistik() {
+  const { data: rows, error } = await supabaseAdmin.from('laporan_kendala').select('status')
+
+  if (error) throw Object.assign(new Error(error.message), { status: 502 })
+
+  const perStatus = rows.reduce((acc, row) => {
+    acc[row.status] = (acc[row.status] || 0) + 1
+    return acc
+  }, {})
+
+  return { total: rows.length, perStatus }
+}
