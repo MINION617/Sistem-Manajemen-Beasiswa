@@ -34,8 +34,6 @@
    01. KONFIGURASI & SESSION
    ============================================================ */
 
-const SUPABASE_URL      = 'https://YOUR_PROJECT.supabase.co';
-const SUPABASE_ANON_KEY = 'YOUR_ANON_KEY';
 
 function getSession() {
   const s = sessionStorage.getItem('bk_user') || localStorage.getItem('bk_user');

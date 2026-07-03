@@ -7,6 +7,9 @@ node_modules/
 !.env.example
 !*/.env.example
 
+# Frontend Supabase config (project-specific; copy from supabaseConfig.example.js)
+frontend/shared/supabaseConfig.js
+
 # Build output
 dist/
 build/

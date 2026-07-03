@@ -1,11 +1,11 @@
 import { supabaseAdmin } from '../../config/supabase.js'
 
-// TODO(schema): confirm these against the real Postgres enum once DATABASE/schema.sql
-// is dumped from the live Supabase project (Phase 2 stabilization, step S2). Values below
-// mirror backend/supabaseclient.js, which is the closest thing to a source of truth today.
+// Status flow — confirmed against the live status_pendaftaran enum
+// (DATABASE/migrations/0000_baseline.sql):
+//   menunggu_verifikasi -> lolos_berkas | ditolak_berkas -> wawancara -> lolos_final | tidak_lolos_final
 export const STATUS_PENDING = 'menunggu_verifikasi'
-export const STATUS_VERIFIED = 'diverifikasi'
-export const STATUS_REJECTED = 'ditolak'
+export const STATUS_VERIFIED = 'lolos_berkas'
+export const STATUS_REJECTED = 'ditolak_berkas'
 
 const PENDAFTARAN_SELECT = `
   *,
@@ -29,14 +29,17 @@ export async function listAntrean() {
 
 /**
  * Move an application to Verified or Rejected. `alasan` is required for rejections
- * so the decision stays auditable (see AGENTS.md working rules).
+ * so the decision stays auditable (see AGENTS.md working rules). Written to
+ * `catatan_verifikasi`, added by DATABASE/migrations/0001_add_pendaftaran_catatan_verifikasi.sql
+ * — the baseline `pendaftaran` table has no notes column of its own
+ * (`hasil_seleksi.catatan_staff` belongs to a later stage of the workflow).
  */
 export async function decide(pendaftaranId, decision, alasan) {
   const newStatus = decision === 'verified' ? STATUS_VERIFIED : STATUS_REJECTED
 
   const updates = { status: newStatus }
   if (decision === 'rejected') {
-    updates.alasan_penolakan = alasan
+    updates.catatan_verifikasi = alasan
   }
 
   const { data, error } = await supabaseAdmin
