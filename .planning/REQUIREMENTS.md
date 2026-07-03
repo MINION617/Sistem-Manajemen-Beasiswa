@@ -65,35 +65,38 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| AUTH-01 | Phase 1 | Pending |
-| PROF-01 | Phase 1 | Pending |
-| DOCS-01 | Phase 1 | Pending |
-| APPL-01 | Phase 1 | Pending |
-| APPL-02 | Phase 1 | Pending |
-| SPON-01 | Phase 1 | Pending |
-| SCHL-01 | Phase 1 | Pending |
+| AUTH-01 | Phase 1 | UI prototype (wiring in Phase 2) |
+| PROF-01 | Phase 1 | UI prototype (wiring in Phase 2) |
+| DOCS-01 | Phase 1 | UI prototype (wiring in Phase 2) |
+| APPL-01 | Phase 1 | UI prototype (wiring in Phase 2) |
+| APPL-02 | Phase 1 | UI prototype (wiring in Phase 2) |
+| SPON-01 | Phase 1 | UI prototype (wiring in Phase 2) |
+| SCHL-01 | Phase 1 | UI prototype (wiring in Phase 2) |
+| VERI-01 | Phase 2 | Pending |
 | STAT-01 | Phase 2 | Pending |
 | STAT-02 | Phase 2 | Pending |
 | NOTF-01 | Phase 2 | Pending |
 | COMP-01 | Phase 2 | Pending |
-| VERI-01 | Phase 2 | Pending |
 | COMP-02 | Phase 2 | Pending |
 | MGMT-01 | Phase 2 | Pending |
 | SELE-01 | Phase 3 | Pending |
 | SELE-02 | Phase 3 | Pending |
 | MGMT-02 | Phase 3 | Pending |
 | MGMT-03 | Phase 3 | Pending |
-| PAY-01 | Phase 4 | Pending |
-| PAY-02 | Phase 4 | Pending |
-| FIN-01 | Phase 4 | Pending |
-| FIN-02 | Phase 4 | Pending |
-| FIN-03 | Phase 4 | Pending |
+| PAY-01 | Phase 3 | Pending |
+| PAY-02 | Phase 3 | Pending |
+| FIN-01 | Phase 3 | Pending |
+| FIN-02 | Phase 3 | Pending |
+| FIN-03 | Phase 3 | Pending |
+
+> Phase 4 (Hardening and Code Cleanup) carries no functional v1 requirements — it is a
+> quality/tech-debt phase. See ROADMAP.md.
 
 **Coverage:**
 - v1 requirements: 23 total
-- Mapped to phases: 23
+- Mapped to phases: 23 (Phase 1: 7, Phase 2: 7, Phase 3: 9, Phase 4: 0)
 - Unmapped: 0 - complete
 
 ---
 *Requirements defined: 2026-06-17*
-*Last updated: 2026-06-17 after initial definition and roadmap mapping*
+*Last updated: 2026-07-03 after backend-first roadmap reorganization (PAY/FIN moved Phase 4 -> Phase 3; Phase 4 is now cleanup)*
