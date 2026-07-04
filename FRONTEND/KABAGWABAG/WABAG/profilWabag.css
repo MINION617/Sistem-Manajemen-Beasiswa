@@ -1,0 +1,54 @@
+/* ============================================================
+   PROFILWABAG.CSS — Beasiswa Kampus (Wabag)
+   Komponen khusus halaman Profil. Style dasar dari
+   dashboardWabag.css — muat file itu lebih dulu.
+   ============================================================ */
+
+/* ── Kartu identitas ── */
+.profil-hero{display:flex;align-items:center;gap:18px;
+  background:var(--role-gradient);border-radius:var(--radius-lg);
+  padding:26px 28px;margin-bottom:20px;box-shadow:var(--shadow-md)}
+.profil-avatar{width:72px;height:72px;border-radius:50%;flex-shrink:0;
+  background:rgba(255,255,255,.2);border:2.5px solid rgba(255,255,255,.65);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-display);font-weight:700;font-size:30px;color:#fff}
+.profil-hero-info h2{font-family:var(--font-display);font-size:21px;color:#fff;margin-bottom:2px}
+.profil-hero-info p{font-size:13px;color:rgba(255,255,255,.85);margin-bottom:8px}
+.profil-role-chip{display:inline-flex;align-items:center;gap:5px;
+  background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.35);
+  border-radius:99px;padding:3px 11px;font-size:11.5px;font-weight:600;color:#fff}
+
+/* ── Form data diri ── */
+.profil-form{display:flex;flex-direction:column;gap:14px}
+.profil-field{display:flex;flex-direction:column;gap:5px}
+.profil-field span{font-size:12px;font-weight:600;color:var(--text-3)}
+.profil-field input,.profil-field textarea{
+  font-family:var(--font-body);font-size:13.5px;color:var(--text);
+  background:var(--bg);border:1.5px solid var(--border);border-radius:var(--radius-sm);
+  padding:9px 12px;outline:none;resize:vertical;
+  transition:border-color .18s var(--ease)}
+.profil-field input:focus,.profil-field textarea:focus{border-color:var(--navy-400)}
+.profil-form-actions{display:flex;align-items:center;gap:12px;margin-top:2px}
+.btn-simpan{display:inline-flex;align-items:center;gap:6px;
+  padding:9px 16px;border:none;border-radius:99px;cursor:pointer;
+  background:var(--accent);color:#fff;
+  font-family:var(--font-body);font-size:13px;font-weight:600;
+  transition:opacity .18s var(--ease)}
+.btn-simpan:hover{opacity:.9}
+.save-note{font-size:12.5px;font-weight:600;color:var(--emerald)}
+
+/* ── Info kepegawaian ── */
+.info-list{display:flex;flex-direction:column}
+.info-item{display:flex;align-items:center;gap:12px;padding:10px 0;
+  border-bottom:1px solid var(--border)}
+.info-item:last-child{border-bottom:none}
+.info-icon{width:34px;height:34px;border-radius:10px;flex-shrink:0;
+  background:var(--navy-50);color:var(--navy-500);
+  display:flex;align-items:center;justify-content:center}
+.info-label{font-size:11.5px;color:var(--text-4)}
+.info-value{font-size:13.5px;font-weight:600;color:var(--text-2)}
+
+@media(max-width:640px){
+  .profil-hero{flex-direction:column;text-align:center;padding:22px 18px}
+  .profil-hero-info h2{font-size:18px}
+}
