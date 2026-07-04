@@ -9,6 +9,7 @@
   <!-- Space Grotesk (display/numbers) + DM Sans (body) -->
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
   <script src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <link rel="stylesheet" href="dashboardWabag.css" />
 </head>
 <body>
@@ -185,6 +186,50 @@
 
       </div>
 
+      <!-- REALISASI ANGGARAN & ANTRIAN PENCAIRAN -->
+      <div class="dashboard-grid">
+
+        <div class="card reveal">
+          <div class="card-header">
+            <h3 class="card-title">
+              <iconify-icon icon="solar:pie-chart-2-bold-duotone" style="color:var(--accent)"></iconify-icon>
+              Realisasi Anggaran
+            </h3>
+            <span class="card-meta" id="realisasiOverall"></span>
+          </div>
+          <div class="card-body" id="listRealisasi">
+            <!-- Dirender JS -->
+          </div>
+        </div>
+
+        <div class="card reveal">
+          <div class="card-header">
+            <h3 class="card-title">
+              <iconify-icon icon="solar:hourglass-line-bold-duotone" style="color:var(--accent)"></iconify-icon>
+              Antrian Pencairan
+            </h3>
+            <span class="card-meta" id="antrianTotal"></span>
+          </div>
+          <div class="card-body" id="antrianBody">
+            <!-- Dirender JS -->
+          </div>
+        </div>
+
+      </div>
+
+      <!-- TREN DANA TERSALUR -->
+      <div class="section-wrap reveal">
+        <div class="section-head">
+          <h3 class="section-title">
+            <iconify-icon icon="solar:graph-up-bold-duotone" style="color:var(--accent)"></iconify-icon>
+            Tren Dana Tersalur Tahun ke Tahun
+          </h3>
+        </div>
+        <div class="chart-box">
+          <canvas id="chartTrenPenyaluran"></canvas>
+        </div>
+      </div>
+
       <!-- PENERIMA TERBARU -->
       <div class="section-wrap reveal">
         <div class="section-head">
@@ -247,6 +292,8 @@
   })();
   </script>
   <script src="../../shared/supabaseConfig.js"></script>
+  <script src="../../shared/apiClient.js"></script>
+  <script src="../../shared/penyaluranMapper.js"></script>
   <script src="dashboardWabag.js"></script>
 </body>
 </html>

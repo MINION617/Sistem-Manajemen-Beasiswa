@@ -18,6 +18,7 @@ const demoSession = session || {
   role         : 'wabag',
   id           : 'demo-wabag-uuid'
 };
+const isRealSession = !!(session?.access_token && !session.access_token.startsWith('dummy-token-'));
 
 /* ── DUMMY DATA PENERIMA ── */
 const dummyPenerima = [
@@ -40,6 +41,108 @@ const dummyLaporan = [
   { status:'diproses' }, { status:'diproses' },
   { status:'selesai' }, { status:'selesai' },
 ];
+
+const dummyRealisasi = {
+  programs: [
+    { namaProgram:'Beasiswa Mandiri Prestasi', sponsor:'Bank Mandiri', penerimaDisahkan:3, komitmen:15000000, tersalur:10000000, persentase:67 },
+    { namaProgram:'Pertamina Sobat Bumi',      sponsor:'Pertamina',    penerimaDisahkan:2, komitmen:15000000, tersalur:7500000,  persentase:50 },
+    { namaProgram:'Telkom Digital Talent',     sponsor:'Telkom',       penerimaDisahkan:1, komitmen:6000000,  tersalur:0,        persentase:0  },
+  ],
+  overall: { totalKomitmen:36000000, totalTersalur:17500000, persentase:49 },
+};
+
+const dummyAntrian = {
+  totalCount: 3,
+  totalNominal: 18500000,
+  buckets: {
+    '0-7'  : { count:1, nominal:6000000 },
+    '8-14' : { count:1, nominal:5000000 },
+    '15-30': { count:0, nominal:0 },
+    '>30'  : { count:1, nominal:7500000 },
+  },
+  tertua: [
+    { nama:'Gita Safira Dewi',   beasiswa:'Pertamina Sobat Bumi',      nominal:7500000, status:'pending',         umurHari:34 },
+    { nama:'Dimas Surya Atmaja', beasiswa:'Beasiswa Mandiri Prestasi', nominal:5000000, status:'pending',         umurHari:12 },
+    { nama:'Elisa Rahayu Putri', beasiswa:'Telkom Digital Talent',     nominal:6000000, status:'sedang_diproses', umurHari:3  },
+  ],
+};
+
+const dummyTrenPenyaluran = {
+  years: ['2024', '2025', '2026'],
+  byYear: {
+    '2024': { totalNominal:18000000, totalCair:18000000, count:4, perStatus:{ sudah_cair:4 } },
+    '2025': { totalNominal:27500000, totalCair:25000000, count:6, perStatus:{ sudah_cair:5, pending:1 } },
+    '2026': { totalNominal:36000000, totalCair:17500000, count:6, perStatus:{ sudah_cair:3, sedang_diproses:1, pending:2 } },
+  },
+};
+
+/* ── DATA (real backend, falls back to dummy above) ──
+   dashboardWabag.js has no accessible endpoint for laporan_kendala counts
+   (GET /kabag/laporan-statistik is kabag-only) — laporan badge stays mock.
+*/
+const PENYALURAN_STATUS_TO_WABAG = {
+  pending: 'belum_cair',
+  sedang_diproses: 'proses_transfer',
+  sudah_cair: 'sudah_cair',
+};
+
+let penerimaData = dummyPenerima;
+let sponsorData = dummySponsor;
+let financeDashboard = null; // { totalDisbursed, perStatus } from /finance/dashboard, or null → derive from penerimaData
+let realisasiData = dummyRealisasi; // { programs, overall } from /finance/realisasi-anggaran
+let antrianData = dummyAntrian;     // { totalCount, totalNominal, buckets, tertua } from /finance/antrian-pencairan
+let trenPenyaluran = dummyTrenPenyaluran; // { years, byYear } from /finance/tren-penyaluran
+
+async function loadWabagData() {
+  if (isRealSession) {
+    try {
+      const [{ data: penyaluran }, { data: dashboard }, { data: alokasi }, { data: realisasi }, { data: antrian }, { data: tren }] = await Promise.all([
+        api.get('/penyaluran'),
+        api.get('/finance/dashboard'),
+        api.get('/finance/alokasi-sponsor'),
+        api.get('/finance/realisasi-anggaran'),
+        api.get('/finance/antrian-pencairan'),
+        api.get('/finance/tren-penyaluran'),
+      ]);
+      penerimaData = penyaluran.map(mapPenyaluranRow).map(row => ({
+        id: row.id,
+        nama: row.mahasiswa?.nama_lengkap || '—',
+        nim: row.mahasiswa?.nim_nip || '—',
+        beasiswa: row.beasiswa?.nama_program || '—',
+        sponsor: row.beasiswa?.sponsors?.nama_perusahaan || '—',
+        nominal: row.nominal || 0,
+        status: PENYALURAN_STATUS_TO_WABAG[row.status] || 'belum_cair',
+        tgl: row.tanggal_pencairan,
+      }));
+      sponsorData = alokasi.map(s => ({
+        id: s.sponsorId,
+        nama: s.namaPerusahaan,
+        jenis: null,
+        kontribusi: s.total,
+        beasiswa: s.count,
+      }));
+      financeDashboard = dashboard;
+      realisasiData = realisasi;
+      antrianData = antrian;
+      trenPenyaluran = tren;
+    } catch (err) {
+      console.warn('Gagal memuat data keuangan, pakai data contoh:', err);
+      penerimaData = dummyPenerima;
+      sponsorData = dummySponsor;
+      financeDashboard = null;
+      realisasiData = dummyRealisasi;
+      antrianData = dummyAntrian;
+      trenPenyaluran = dummyTrenPenyaluran;
+    }
+  }
+  loadStats();
+  renderRingkasanBeasiswa();
+  renderSponsor();
+  renderRealisasi();
+  renderAntrian();
+  renderTrenPenyaluran();
+  renderTabelPenerima();
+}
 
 /* ── UTILS ── */
 function setEl(id, val) { const e = document.getElementById(id); if (e) e.textContent = val; }
@@ -70,10 +173,10 @@ function initUserInfo() {
 
 /* ── STATS KEUANGAN ── */
 function loadStats() {
-  const totalDana      = dummyPenerima.reduce((sum, d) => sum + d.nominal, 0);
-  const totalPenerima  = dummyPenerima.length;
-  const totalSponsor   = dummySponsor.length;
-  const menungguCair   = dummyPenerima.filter(d => d.status === 'belum_cair').length;
+  const totalDana      = financeDashboard ? financeDashboard.totalDisbursed : penerimaData.reduce((sum, d) => sum + d.nominal, 0);
+  const totalPenerima  = penerimaData.length;
+  const totalSponsor   = sponsorData.length;
+  const menungguCair   = financeDashboard ? (financeDashboard.perStatus.pending || 0) : penerimaData.filter(d => d.status === 'belum_cair').length;
   const laporanMasuk   = dummyLaporan.filter(d => d.status === 'masuk').length;
 
   /* Format total dana ringkas */
@@ -102,7 +205,7 @@ function renderRingkasanBeasiswa() {
 
   /* Group by beasiswa */
   const map = {};
-  dummyPenerima.forEach(d => {
+  penerimaData.forEach(d => {
     if (!map[d.beasiswa]) map[d.beasiswa] = { nama:d.beasiswa, sponsor:d.sponsor, total:0, count:0 };
     map[d.beasiswa].total += d.nominal;
     map[d.beasiswa].count++;
@@ -131,16 +234,176 @@ function renderSponsor() {
   const el = document.getElementById('listSponsor');
   if (!el) return;
 
-  el.innerHTML = dummySponsor.map(s => `
+  el.innerHTML = sponsorData.map(s => `
     <div class="sponsor-item">
       <div class="sponsor-logo">${inisial(s.nama)}</div>
       <div class="sponsor-info">
         <div class="sponsor-nama">${s.nama}</div>
-        <div class="sponsor-jenis">${s.jenis} · ${s.beasiswa} program beasiswa</div>
+        <div class="sponsor-jenis">${s.jenis || '—'} · ${s.beasiswa} penyaluran</div>
       </div>
       <div class="sponsor-kontribusi">${formatRupiah(s.kontribusi)}</div>
     </div>
   `).join('');
+}
+
+/* ── REALISASI ANGGARAN ── */
+function renderRealisasi() {
+  const el = document.getElementById('listRealisasi');
+  if (!el) return;
+
+  const { programs, overall } = realisasiData;
+  const head = document.getElementById('realisasiOverall');
+  if (head) head.textContent = overall.persentase === null ? '' : `Total terealisasi: ${overall.persentase}%`;
+
+  if (!programs.length) {
+    el.innerHTML = '<div class="wabag-empty">Belum ada penerima disahkan — belum ada anggaran yang berjalan.</div>';
+    return;
+  }
+
+  el.innerHTML = programs.map(p => {
+    const pct = p.persentase === null ? 0 : Math.min(100, p.persentase);
+    return `
+      <div class="realisasi-item" title="Tersalur ${formatRupiah(p.tersalur)} dari komitmen ${formatRupiah(p.komitmen)}">
+        <div class="realisasi-top">
+          <div class="realisasi-info">
+            <div class="realisasi-nama">${p.namaProgram}</div>
+            <div class="realisasi-meta">${p.sponsor || '—'} · ${p.penerimaDisahkan} penerima disahkan</div>
+          </div>
+          <div class="realisasi-angka">
+            <span class="realisasi-pct">${p.persentase === null ? '—' : p.persentase + '%'}</span>
+            <span class="realisasi-nominal">${formatRupiah(p.tersalur)} / ${formatRupiah(p.komitmen)}</span>
+          </div>
+        </div>
+        <div class="realisasi-track"><div class="realisasi-fill" style="width:${pct}%"></div></div>
+      </div>
+    `;
+  }).join('');
+}
+
+/* ── ANTRIAN PENCAIRAN (AGING) ── */
+const AGING_LABELS = { '0-7':'0–7 hari', '8-14':'8–14 hari', '15-30':'15–30 hari', '>30':'>30 hari' };
+const AGING_COLORS = { '0-7':'#f59e0b', '8-14':'#d97706', '15-30':'#b45309', '>30':'#92400e' };
+const ANTRIAN_STATUS_LABEL = { pending:'Belum Cair', sedang_diproses:'Proses Transfer' };
+
+function renderAntrian() {
+  const el = document.getElementById('antrianBody');
+  if (!el) return;
+
+  const { totalCount, totalNominal, buckets, tertua } = antrianData;
+  const head = document.getElementById('antrianTotal');
+  if (head) head.textContent = totalCount ? `${totalCount} antrian · ${formatRupiah(totalNominal)} tertahan` : '';
+
+  if (!totalCount) {
+    el.innerHTML = `
+      <div class="wabag-empty wabag-empty-ok">
+        <iconify-icon icon="solar:check-circle-bold-duotone" width="18"></iconify-icon>
+        Tidak ada antrian — semua pencairan sudah selesai.
+      </div>`;
+    return;
+  }
+
+  const maxCount = Math.max(...Object.values(buckets).map(b => b.count), 1);
+  const barsHtml = Object.keys(AGING_LABELS).map(key => {
+    const b = buckets[key] || { count:0, nominal:0 };
+    const width = b.count === 0 ? 0 : Math.max(8, (b.count / maxCount) * 100);
+    return `
+      <div class="aging-row" title="${AGING_LABELS[key]}: ${b.count} antrian, ${formatRupiah(b.nominal)}">
+        <span class="aging-label">${AGING_LABELS[key]}</span>
+        <div class="aging-track">
+          <div class="aging-fill" style="width:${width}%;background:${AGING_COLORS[key]}"></div>
+        </div>
+        <span class="aging-val">${b.count}${b.count ? ' · ' + formatRupiah(b.nominal) : ''}</span>
+      </div>
+    `;
+  }).join('');
+
+  const tertuaHtml = tertua.slice(0, 3).map(t => `
+    <div class="antrian-old-item">
+      <div class="antrian-old-info">
+        <div class="antrian-old-nama">${t.nama || '—'}</div>
+        <div class="antrian-old-meta">${t.beasiswa || '—'} · ${ANTRIAN_STATUS_LABEL[t.status] || t.status}</div>
+      </div>
+      <div class="antrian-old-right">
+        <span class="antrian-old-umur">${t.umurHari} hari</span>
+        <span class="antrian-old-nominal">${formatRupiah(t.nominal)}</span>
+      </div>
+    </div>
+  `).join('');
+
+  el.innerHTML = `
+    <div class="aging-bars">${barsHtml}</div>
+    <div class="antrian-old-head">Terlama di antrian</div>
+    ${tertuaHtml}
+  `;
+}
+
+/* ── TREN DANA TERSALUR ── */
+let trenPenyaluranChart = null;
+function renderTrenPenyaluran() {
+  const canvas = document.getElementById('chartTrenPenyaluran');
+  if (!canvas || typeof Chart === 'undefined') return;
+
+  if (trenPenyaluranChart) { trenPenyaluranChart.destroy(); trenPenyaluranChart = null; }
+
+  if (!trenPenyaluran || !trenPenyaluran.years.length) {
+    canvas.style.display = 'none';
+    const parent = canvas.parentElement;
+    if (parent && !parent.querySelector('.tren-empty')) {
+      parent.insertAdjacentHTML('beforeend', '<div class="tren-empty">Belum ada data penyaluran untuk dibandingkan.</div>');
+    }
+    return;
+  }
+  canvas.style.display = 'block';
+
+  const { years, byYear } = trenPenyaluran;
+
+  trenPenyaluranChart = new Chart(canvas, {
+    type: 'line',
+    data: {
+      labels: years,
+      datasets: [
+        {
+          label: 'Total Tercatat',
+          data: years.map(y => byYear[y].totalNominal),
+          borderColor: '#2b4fad',
+          backgroundColor: 'rgba(43,79,173,0.10)',
+          tension: 0.3,
+          fill: true,
+          pointRadius: 4,
+        },
+        {
+          label: 'Sudah Cair',
+          data: years.map(y => byYear[y].totalCair),
+          borderColor: '#059669',
+          backgroundColor: 'rgba(5,150,105,0.10)',
+          tension: 0.3,
+          fill: true,
+          pointRadius: 4,
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { display: true, position: 'bottom', labels: { usePointStyle: true, boxWidth: 8 } },
+        tooltip: {
+          callbacks: {
+            label: (ctx) => `${ctx.dataset.label}: ${formatRupiah(ctx.parsed.y)}`,
+            afterBody: (items) => {
+              const y = items[0]?.label;
+              return y && byYear[y] ? `Jumlah transaksi: ${byYear[y].count}` : '';
+            },
+          },
+        },
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: { callback: (v) => 'Rp ' + (v / 1000000).toLocaleString('id-ID') + ' Jt' },
+        },
+      },
+    },
+  });
 }
 
 /* ── TABEL PENERIMA ── */
@@ -154,7 +417,7 @@ function renderTabelPenerima() {
     belum_cair      : { cls:'status-belum',   label:'Belum Cair',     icon:'solar:clock-circle-bold-duotone' },
   };
 
-  el.innerHTML = dummyPenerima.map(d => {
+  el.innerHTML = penerimaData.map(d => {
     const cfg = STATUS_CFG[d.status] || STATUS_CFG.belum_cair;
     return `
       <tr>
@@ -246,9 +509,6 @@ document.addEventListener('DOMContentLoaded', () => {
   initBgCanvas();
   initParticles();
   initUserInfo();
-  loadStats();
-  renderRingkasanBeasiswa();
-  renderSponsor();
-  renderTabelPenerima();
+  loadWabagData();
   console.log('💰 dashboardWabag.js loaded | User:', demoSession?.nama_lengkap);
 });
