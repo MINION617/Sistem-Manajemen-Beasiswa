@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Dashboard Wabag — Beasiswa Kampus</title>
+  <title>Penyaluran Dana — Beasiswa Kampus</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <!-- Space Grotesk (display/numbers) + DM Sans (body) -->
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
   <script src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <link rel="stylesheet" href="dashboardWabag.css" />
+  <link rel="stylesheet" href="penyaluranDana.css" />
 </head>
 <body>
 
@@ -43,12 +43,12 @@
     <nav class="sidebar-nav">
       <div class="nav-section-label">Menu Utama</div>
 
-      <a href="dashboardWabag.html" class="nav-item active">
+      <a href="dashboardWabag.html" class="nav-item">
         <span class="nav-icon"><iconify-icon icon="solar:home-2-bold-duotone"></iconify-icon></span>
         <span>Dashboard</span>
       </a>
 
-      <a href="penyaluranDana.html" class="nav-item">
+      <a href="penyaluranDana.html" class="nav-item active">
         <span class="nav-icon"><iconify-icon icon="solar:transfer-horizontal-bold-duotone"></iconify-icon></span>
         <span>Penyaluran Dana</span>
         <span class="nav-badge" id="badgeAntrian"></span>
@@ -79,19 +79,15 @@
           <svg viewBox="0 0 24 24" fill="none"><path d="M3 12h18M3 6h18M3 18h18" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
         </button>
         <div class="page-title">
-          <h1>Dashboard Wabag</h1>
-          <p>Ringkasan keuangan penyaluran beasiswa</p>
+          <h1>Penyaluran Dana</h1>
+          <p>Monitoring &amp; verifikasi pencairan dana beasiswa</p>
         </div>
       </div>
       <div class="topbar-right">
         <div class="topbar-search">
           <svg viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2"/><path d="M21 21l-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-          <input type="text" placeholder="Cari penerima atau sponsor..." />
+          <input type="text" id="searchInput" placeholder="Cari nama, NIM, beasiswa, sponsor..." />
         </div>
-        <a href="penyaluranDana.html" class="topbar-notif" title="Antrian pencairan">
-          <svg viewBox="0 0 24 24" fill="none"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          <span class="notif-dot" id="notifDot" style="display:none"></span>
-        </a>
         <a href="profilWabag.html" class="topbar-avatar" id="topbarAvatar">W</a>
       </div>
     </header>
@@ -101,149 +97,108 @@
       <!-- BANNER -->
       <div class="welcome-banner">
         <div class="welcome-text">
-          <h2 id="welcomeTitle">Halo, Wabag! 👋</h2>
-          <p id="welcomeSubtitle">Berikut ringkasan keuangan dan penyaluran dana beasiswa.</p>
+          <h2>Penyaluran Dana Beasiswa</h2>
+          <p>Pantau status pencairan dan verifikasi bukti transfer sebagai Wakil Bagian Keuangan.</p>
         </div>
-        <a href="penyaluranDana.html" class="btn-primary">
-          Lihat Penyaluran
-          <svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </a>
+        <div class="banner-stat-wrap">
+          <div class="banner-stat-item">
+            <span class="banner-stat-num" id="bannerTotalDana">Rp 0</span>
+            <span class="banner-stat-label">Total Tercatat</span>
+          </div>
+          <div class="banner-stat-item">
+            <span class="banner-stat-num" id="bannerAntrian">0</span>
+            <span class="banner-stat-label">Antrian Outstanding</span>
+          </div>
+        </div>
       </div>
 
-      <!-- STATS KEUANGAN -->
+      <!-- STATS -->
       <div class="stats-grid">
-        <div class="stat-card stat-green">
-          <div class="stat-icon"><iconify-icon icon="solar:wallet-money-bold-duotone" style="color:#059669"></iconify-icon></div>
-          <div class="stat-info">
-            <div class="stat-num" id="statTotalDana">—</div>
-            <div class="stat-label">Total Dana Disalurkan</div>
-          </div>
-          <span class="stat-tag">Dana</span>
-        </div>
         <div class="stat-card stat-blue">
-          <div class="stat-icon"><iconify-icon icon="solar:cup-star-bold-duotone" style="color:#2563eb"></iconify-icon></div>
+          <div class="stat-icon"><iconify-icon icon="solar:database-bold-duotone" style="color:#2563eb"></iconify-icon></div>
           <div class="stat-info">
-            <div class="stat-num" id="statPenerima">—</div>
-            <div class="stat-label">Total Penerima</div>
+            <div class="stat-num" id="statTotal">—</div>
+            <div class="stat-label">Total Penyaluran</div>
           </div>
-          <span class="stat-tag">Penerima</span>
+          <span class="stat-tag">Semua</span>
+        </div>
+        <div class="stat-card stat-green">
+          <div class="stat-icon"><iconify-icon icon="solar:check-circle-bold-duotone" style="color:#059669"></iconify-icon></div>
+          <div class="stat-info">
+            <div class="stat-num" id="statCair">—</div>
+            <div class="stat-label">Sudah Cair</div>
+          </div>
+          <span class="stat-tag">Cair</span>
         </div>
         <div class="stat-card stat-amber">
-          <div class="stat-icon"><iconify-icon icon="solar:buildings-2-bold-duotone" style="color:#d97706"></iconify-icon></div>
+          <div class="stat-icon"><iconify-icon icon="solar:transfer-horizontal-bold-duotone" style="color:#d97706"></iconify-icon></div>
           <div class="stat-info">
-            <div class="stat-num" id="statSponsor">—</div>
-            <div class="stat-label">Sponsor Aktif</div>
+            <div class="stat-num" id="statProses">—</div>
+            <div class="stat-label">Sedang Diproses</div>
           </div>
-          <span class="stat-tag">Sponsor</span>
+          <span class="stat-tag">Proses</span>
         </div>
         <div class="stat-card stat-coral">
           <div class="stat-icon"><iconify-icon icon="solar:clock-circle-bold-duotone" style="color:#e11d48"></iconify-icon></div>
           <div class="stat-info">
-            <div class="stat-num" id="statMenungguCair">—</div>
-            <div class="stat-label">Menunggu Pencairan</div>
+            <div class="stat-num" id="statPending">—</div>
+            <div class="stat-label">Belum Cair</div>
           </div>
           <span class="stat-tag">Antre</span>
         </div>
       </div>
 
-      <!-- RINGKASAN KEUANGAN -->
-      <div class="dashboard-grid">
-
-        <div class="card reveal">
-          <div class="card-header">
-            <h3 class="card-title">
-              <iconify-icon icon="solar:chart-2-bold-duotone" style="color:var(--accent)"></iconify-icon>
-              Ringkasan Per Beasiswa
-            </h3>
-            <a href="penyaluranDana.html" class="card-link">Detail →</a>
-          </div>
-          <div class="card-body" id="listRingkasanBeasiswa">
-            <!-- Dirender JS -->
-          </div>
-        </div>
-
-        <div class="card reveal">
-          <div class="card-header">
-            <h3 class="card-title">
-              <iconify-icon icon="solar:buildings-2-bold-duotone" style="color:var(--accent)"></iconify-icon>
-              Sponsor &amp; Kontribusi
-            </h3>
-          </div>
-          <div class="card-body" id="listSponsor">
-            <!-- Dirender JS -->
-          </div>
-        </div>
-
+      <!-- TAB BAR -->
+      <div class="tab-bar reveal">
+        <button class="tab-btn active" data-tab="all">Semua <span class="tab-count" id="tcAll">0</span></button>
+        <button class="tab-btn" data-tab="pending">
+          <iconify-icon icon="solar:clock-circle-bold-duotone" width="13"></iconify-icon>
+          Belum Cair <span class="tab-count" id="tcPending">0</span>
+        </button>
+        <button class="tab-btn" data-tab="sedang_diproses">
+          <iconify-icon icon="solar:transfer-horizontal-bold-duotone" width="13"></iconify-icon>
+          Sedang Diproses <span class="tab-count" id="tcProses">0</span>
+        </button>
+        <button class="tab-btn" data-tab="sudah_cair">
+          <iconify-icon icon="solar:check-circle-bold-duotone" width="13"></iconify-icon>
+          Sudah Cair <span class="tab-count" id="tcCair">0</span>
+        </button>
+        <button class="tab-btn" data-tab="perlu_verifikasi">
+          <iconify-icon icon="solar:shield-check-bold-duotone" width="13"></iconify-icon>
+          Perlu Verifikasi <span class="tab-count" id="tcVerif">0</span>
+        </button>
       </div>
 
-      <!-- REALISASI ANGGARAN & ANTRIAN PENCAIRAN -->
-      <div class="dashboard-grid">
-
-        <div class="card reveal">
-          <div class="card-header">
-            <h3 class="card-title">
-              <iconify-icon icon="solar:pie-chart-2-bold-duotone" style="color:var(--accent)"></iconify-icon>
-              Realisasi Anggaran
-            </h3>
-            <span class="card-meta" id="realisasiOverall"></span>
-          </div>
-          <div class="card-body" id="listRealisasi">
-            <!-- Dirender JS -->
-          </div>
-        </div>
-
-        <div class="card reveal">
-          <div class="card-header">
-            <h3 class="card-title">
-              <iconify-icon icon="solar:hourglass-line-bold-duotone" style="color:var(--accent)"></iconify-icon>
-              Antrian Pencairan
-            </h3>
-            <span class="card-meta" id="antrianTotal"></span>
-          </div>
-          <div class="card-body" id="antrianBody">
-            <!-- Dirender JS -->
-          </div>
-        </div>
-
-      </div>
-
-      <!-- TREN DANA TERSALUR -->
+      <!-- TABEL -->
       <div class="section-wrap reveal">
         <div class="section-head">
           <h3 class="section-title">
-            <iconify-icon icon="solar:graph-up-bold-duotone" style="color:var(--accent)"></iconify-icon>
-            Tren Dana Tersalur Tahun ke Tahun
+            <iconify-icon icon="solar:banknote-bold-duotone" style="color:var(--accent)"></iconify-icon>
+            Daftar Penyaluran
           </h3>
-        </div>
-        <div class="chart-box">
-          <canvas id="chartTrenPenyaluran"></canvas>
-        </div>
-      </div>
-
-      <!-- PENERIMA TERBARU -->
-      <div class="section-wrap reveal">
-        <div class="section-head">
-          <h3 class="section-title">
-            <iconify-icon icon="solar:cup-star-bold-duotone" style="color:var(--accent)"></iconify-icon>
-            Penerima Beasiswa Terbaru
-          </h3>
-          <a href="penyaluranDana.html" class="link-more">Lihat semua →</a>
+          <span class="panel-count" id="panelCount">0 penyaluran</span>
         </div>
         <div class="penerima-table-wrap">
           <table class="penerima-table">
             <thead>
               <tr>
-                <th>Nama Mahasiswa</th>
-                <th>NIM</th>
+                <th>No</th>
+                <th>Mahasiswa</th>
                 <th>Beasiswa</th>
-                <th>Nominal Dana</th>
+                <th>Nominal</th>
                 <th>Status</th>
+                <th>Tanggal / Umur</th>
+                <th>Bukti</th>
+                <th>Verifikasi</th>
               </tr>
             </thead>
-            <tbody id="tablePenerima">
-              <!-- Dirender JS -->
-            </tbody>
+            <tbody id="tablePenyaluran"></tbody>
           </table>
+        </div>
+        <div class="empty-state" id="emptyState" style="display:none">
+          <iconify-icon icon="solar:banknote-bold-duotone" width="52" style="color:var(--text-4);display:block;margin:0 auto 12px"></iconify-icon>
+          <h3>Tidak ada penyaluran</h3>
+          <p>Tidak ada data pada kategori ini.</p>
         </div>
       </div>
 
@@ -266,7 +221,7 @@
     </div>
   </div>
 
-  <!-- SCROLL REVEAL OBSERVER (tidak menyentuh dashboardWabag.js) -->
+  <!-- SCROLL REVEAL OBSERVER -->
   <script>
   (function(){
     if(!('IntersectionObserver' in window)) return;
@@ -284,6 +239,6 @@
   <script src="../../shared/supabaseConfig.js"></script>
   <script src="../../shared/apiClient.js"></script>
   <script src="../../shared/penyaluranMapper.js"></script>
-  <script src="dashboardWabag.js"></script>
+  <script src="penyaluranDana.js"></script>
 </body>
 </html>

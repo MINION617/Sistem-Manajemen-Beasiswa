@@ -36,12 +36,6 @@ const dummySponsor = [
   { id:'s-003', nama:'Telkom',         jenis:'BUMN Telekomunikasi',kontribusi:6000000, beasiswa:1 },
 ];
 
-const dummyLaporan = [
-  { status:'masuk' }, { status:'masuk' },
-  { status:'diproses' }, { status:'diproses' },
-  { status:'selesai' }, { status:'selesai' },
-];
-
 const dummyRealisasi = {
   programs: [
     { namaProgram:'Beasiswa Mandiri Prestasi', sponsor:'Bank Mandiri', penerimaDisahkan:3, komitmen:15000000, tersalur:10000000, persentase:67 },
@@ -76,10 +70,7 @@ const dummyTrenPenyaluran = {
   },
 };
 
-/* ── DATA (real backend, falls back to dummy above) ──
-   dashboardWabag.js has no accessible endpoint for laporan_kendala counts
-   (GET /kabag/laporan-statistik is kabag-only) — laporan badge stays mock.
-*/
+/* ── DATA (real backend, falls back to dummy above) ── */
 const PENYALURAN_STATUS_TO_WABAG = {
   pending: 'belum_cair',
   sedang_diproses: 'proses_transfer',
@@ -177,7 +168,6 @@ function loadStats() {
   const totalPenerima  = penerimaData.length;
   const totalSponsor   = sponsorData.length;
   const menungguCair   = financeDashboard ? (financeDashboard.perStatus.pending || 0) : penerimaData.filter(d => d.status === 'belum_cair').length;
-  const laporanMasuk   = dummyLaporan.filter(d => d.status === 'masuk').length;
 
   /* Format total dana ringkas */
   const el = document.getElementById('statTotalDana');
@@ -189,13 +179,17 @@ function loadStats() {
   animateNum('statSponsor',     totalSponsor);
   animateNum('statMenungguCair',menungguCair);
 
-  const badge = document.getElementById('badgeLaporan');
+  /* Badge sidebar "Penyaluran Dana" = jumlah antrian outstanding;
+     dot lonceng menyala kalau ada antrian menunggu >30 hari. */
+  const outstanding = antrianData?.totalCount || 0;
+  const badge = document.getElementById('badgeAntrian');
   if (badge) {
-    badge.textContent = laporanMasuk;
-    badge.classList.toggle('show', laporanMasuk > 0);
+    badge.textContent = outstanding;
+    badge.classList.toggle('show', outstanding > 0);
   }
+  const lamaMenunggu = antrianData?.buckets?.['>30']?.count || 0;
   const dot = document.getElementById('notifDot');
-  if (dot) dot.style.display = laporanMasuk > 0 ? 'block' : 'none';
+  if (dot) dot.style.display = lamaMenunggu > 0 ? 'block' : 'none';
 }
 
 /* ── RINGKASAN PER BEASISWA ── */
