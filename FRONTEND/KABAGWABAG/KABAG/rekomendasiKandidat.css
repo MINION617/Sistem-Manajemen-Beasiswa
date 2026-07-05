@@ -1,0 +1,25 @@
+/* ============================================================
+   REKOMENDASIKANDIDAT.CSS — extends dashboardKabag.css tokens
+   ============================================================ */
+
+.select-beasiswa{width:100%;max-width:420px;padding:10px 14px;border:1.5px solid var(--border);
+  border-radius:var(--radius-sm);font-family:var(--font-body);font-size:14px;color:var(--text);
+  background:white;outline:none}
+.select-beasiswa:focus{border-color:var(--blue-400);box-shadow:0 0 0 3px rgba(59,130,246,.12)}
+
+.list-empty{font-size:13px;color:var(--text-3);text-align:center;padding:24px 0}
+
+.rekom-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius-md);
+  padding:18px 20px;margin-bottom:14px;box-shadow:var(--shadow-sm)}
+.rekom-card.rank-1{border-color:var(--role);box-shadow:0 0 0 3px var(--role-soft),var(--shadow-sm)}
+.rekom-card-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
+  margin-bottom:10px}
+.rekom-nama{font-family:var(--font-display);font-weight:700;font-size:15px;color:var(--text)}
+.rekom-sub{font-size:12px;color:var(--text-3);margin-top:2px}
+.rekom-score{font-family:var(--font-display);font-size:22px;font-weight:800;color:var(--accent)}
+.rekom-score-label{font-size:10px;color:var(--text-4);text-align:right}
+
+.rekom-chart-box{max-width:340px;margin:10px auto 0;position:relative;height:260px}
+
+.cold-start-msg{background:var(--amber-soft);border:1px solid var(--yellow);border-radius:var(--radius-md);
+  padding:14px 18px;font-size:13px;color:var(--role-dark);margin-bottom:16px}

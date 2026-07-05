@@ -1,0 +1,33 @@
+$kind: http-request
+url: "{{base_url}}/api/penyaluran"
+method: POST
+headers:
+  Authorization: Bearer {{token_staff}}
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "pendaftaranId": "{{pendaftaran_id}}",
+      "nominal": 2500000,
+      "buktiTransferUrl": "https://example.com/bukti-transfer-demo.jpg"
+    }
+scripts:
+  - type: beforeRequest
+    code: |-
+      if (!pm.environment.get('pendaftaran_id')) {
+        console.warn('pendaftaran_id kosong -> request di-skip (jalankan request 3 dulu)');
+        pm.execution.skipRequest();
+      }
+    language: text/javascript
+  - type: afterResponse
+    code: |-
+      pm.test('Status 201', () => pm.response.to.have.status(201));
+      const json = pm.response.json();
+      pm.test('Response punya property data', () => pm.expect(json).to.have.property('data'));
+      if (json.data && json.data.id) {
+        pm.environment.set('penyaluran_id', json.data.id);
+        console.log('penyaluran_id disimpan:', json.data.id);
+      }
+    language: text/javascript
+order: 15000

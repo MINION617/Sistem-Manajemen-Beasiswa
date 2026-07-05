@@ -43,6 +43,8 @@ const demoSession = session || {
   id: 'demo-uuid',
 };
 
+const isRealSession = !!(session?.access_token && !session.access_token.startsWith('dummy-token-'));
+
 /* ===== DUMMY DATA =====
    icon: nama Iconify icon menggantikan emoji field
 */
@@ -136,11 +138,28 @@ function initUserInfo() {
   setEl('welcomeTitle', `Hai, ${first}! 🎓`);
 }
 
+/* ===== DATA (pendaftaran) ===== */
+let pendaftaranData = dummyPendaftaran;
+
+async function loadPendaftaran() {
+  if (isRealSession) {
+    try {
+      const { data } = await api.get('/status/saya');
+      pendaftaranData = data.map(mapPendaftaranRow);
+    } catch (err) {
+      console.warn('Gagal memuat pendaftaran, pakai data contoh:', err);
+      pendaftaranData = dummyPendaftaran;
+    }
+  }
+  loadStats();
+  renderPendaftaran();
+}
+
 /* ===== STATS ===== */
 function loadStats() {
-  const total    = dummyPendaftaran.length;
-  const proses   = dummyPendaftaran.filter(p => ['menunggu_verifikasi','lolos_berkas','wawancara'].includes(p.status)).length;
-  const diterima = dummyPendaftaran.filter(p => p.status === 'lolos_final').length;
+  const total    = pendaftaranData.length;
+  const proses   = pendaftaranData.filter(p => ['menunggu_verifikasi','lolos_berkas','wawancara'].includes(p.status)).length;
+  const diterima = pendaftaranData.filter(p => p.status === 'lolos_final').length;
   const dana     = diterima > 0 ? 'Rp 5 jt' : 'Rp 0';
 
   animateNum('statPendaftaran', total);
@@ -168,8 +187,8 @@ function loadStats() {
 */
 function renderPendaftaran() {
   const el = document.getElementById('listPendaftaran');
-  if (!el || !dummyPendaftaran.length) return;
-  el.innerHTML = dummyPendaftaran.map((p, i) => {
+  if (!el || !pendaftaranData.length) return;
+  el.innerHTML = pendaftaranData.map((p, i) => {
     const namaProgram    = p.beasiswa?.nama_program              || '—';
     const namaPerusahaan = p.beasiswa?.sponsors?.nama_perusahaan || '—';
     const cls   = STATUS_CLASS[p.status] || 'status-pending';
@@ -188,10 +207,26 @@ function renderPendaftaran() {
   }).join('');
 }
 
+/* ===== DATA (notifikasi) ===== */
+let notifikasiData = dummyNotifikasi;
+
+async function loadNotifikasi() {
+  if (isRealSession) {
+    try {
+      const { data } = await api.get('/notifikasi');
+      notifikasiData = data.map(mapNotifikasiRow);
+    } catch (err) {
+      console.warn('Gagal memuat notifikasi, pakai data contoh:', err);
+      notifikasiData = dummyNotifikasi;
+    }
+  }
+  renderNotifikasi();
+}
+
 /* ===== RENDER NOTIFIKASI ===== */
 function renderNotifikasi() {
   const el    = document.getElementById('listNotifikasi');
-  const unread = dummyNotifikasi.filter(n => !n.is_read).length;
+  const unread = notifikasiData.filter(n => !n.is_read).length;
 
   const dot   = document.getElementById('notifDot');
   const badge = document.getElementById('badgeNotif');
@@ -199,8 +234,8 @@ function renderNotifikasi() {
   if (dot && unread > 0) dot.classList.add('show');
   if (badge && unread > 0) { badge.textContent = unread; badge.classList.add('show'); }
 
-  if (!el || !dummyNotifikasi.length) return;
-  el.innerHTML = dummyNotifikasi.map((n, i) => `
+  if (!el || !notifikasiData.length) return;
+  el.innerHTML = notifikasiData.map((n, i) => `
     <div class="notif-item ${n.is_read ? '' : 'unread'}" style="animation-delay:${i * 0.08}s">
       <div class="notif-dot-indicator" style="${n.is_read ? 'opacity:0' : ''}"></div>
       <div>
@@ -403,9 +438,8 @@ document.addEventListener('DOMContentLoaded', () => {
   initBgCanvas();
   initParticles();
   initUserInfo();
-  loadStats();
-  renderPendaftaran();
-  renderNotifikasi();
+  loadPendaftaran();
+  loadNotifikasi();
   renderBeasiswaPreview();
   initNavbarScroll();
   initMobileNav();

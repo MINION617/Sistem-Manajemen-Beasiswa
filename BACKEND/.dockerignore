@@ -1,0 +1,8 @@
+node_modules
+.env
+.env.*
+npm-debug.log*
+*.txt
+*.md
+seed-users.js
+_test-login.mjs

@@ -25,3 +25,29 @@ kabagRouter.get(
   requireRole('kabag'),
   asyncHandler(kabagController.getLaporanStatistik)
 )
+
+// Year-over-year applicant volume trend.
+kabagRouter.get(
+  '/tren-pendaftaran',
+  auth,
+  requireRole('kabag'),
+  asyncHandler(kabagController.getTrenPendaftaran)
+)
+
+// Post-award recipient progress tracking (view-only — MIS reports on data,
+// it doesn't do TPS-style data entry; perkembangan_penerima rows are seeded
+// directly in the database, not created through the app).
+kabagRouter.get(
+  '/perkembangan',
+  auth,
+  requireRole('kabag'),
+  asyncHandler(kabagController.getPerkembangan)
+)
+
+// Candidate recommendation ranking for a scholarship program.
+kabagRouter.get(
+  '/rekomendasi/:beasiswaId',
+  auth,
+  requireRole('kabag'),
+  asyncHandler(kabagController.getRekomendasi)
+)

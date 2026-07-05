@@ -548,7 +548,7 @@ async function supabaseSignIn(email, password) {
 async function nimToEmail(nim) {
   try {
     const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/profiles?nim_nip=eq.${encodeURIComponent(nim)}&select=id`,
+      `${SUPABASE_URL}/rest/v1/profile_login_lookup?nim_nip=eq.${encodeURIComponent(nim)}&select=id`,
       { headers: { 'apikey': SUPABASE_ANON_KEY } }
     );
     const data = await res.json();

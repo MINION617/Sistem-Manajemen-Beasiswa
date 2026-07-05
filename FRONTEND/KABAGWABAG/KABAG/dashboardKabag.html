@@ -6,9 +6,13 @@
   <title>Dashboard Kabag — Beasiswa Kampus</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <!-- Space Grotesk (display/numbers) + DM Sans (body) -->
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+  <!-- Space Grotesk (display/numbers) + Inter (body) -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
   <script src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
   <link rel="stylesheet" href="dashboardKabag.css" />
 </head>
 <body>
@@ -55,6 +59,16 @@
       <a href="../SHARED/penerima.html" class="nav-item">
         <span class="nav-icon"><iconify-icon icon="solar:cup-star-bold-duotone"></iconify-icon></span>
         <span>Penerima Beasiswa</span>
+      </a>
+
+      <a href="perkembanganPenerima.html" class="nav-item">
+        <span class="nav-icon"><iconify-icon icon="solar:graph-new-up-bold-duotone"></iconify-icon></span>
+        <span>Perkembangan Penerima</span>
+      </a>
+
+      <a href="rekomendasiKandidat.html" class="nav-item">
+        <span class="nav-icon"><iconify-icon icon="solar:magic-stick-3-bold-duotone"></iconify-icon></span>
+        <span>Rekomendasi Kandidat</span>
       </a>
 
       <div class="nav-section-label">Lainnya</div>
@@ -210,6 +224,28 @@
         </div>
       </div>
 
+      <!-- TREN PENDAFTARAN TAHUN KE TAHUN -->
+      <div class="workflow reveal">
+        <div class="workflow-head">
+          <h3>
+            <iconify-icon icon="solar:graph-new-up-bold-duotone" style="vertical-align:middle;margin-right:6px;color:var(--accent)"></iconify-icon>
+            Tren Pendaftaran Tahun ke Tahun
+          </h3>
+          <div class="panel-head-right">
+            <span class="hint">Jumlah pendaftaran per tahun (berdasarkan tanggal daftar)</span>
+            <button class="btn-export btn-export-excel" id="btnExportKabagExcel" title="Export ke Excel">
+              <iconify-icon icon="solar:file-download-bold-duotone" width="14"></iconify-icon> Excel
+            </button>
+            <button class="btn-export btn-export-pdf" id="btnExportKabagPdf" title="Export ke PDF">
+              <iconify-icon icon="solar:file-text-bold-duotone" width="14"></iconify-icon> PDF
+            </button>
+          </div>
+        </div>
+        <div class="chart-box">
+          <canvas id="chartTren"></canvas>
+        </div>
+      </div>
+
     </div>
   </div>
 
@@ -245,6 +281,9 @@
   })();
   </script>
   <script src="../../shared/supabaseConfig.js"></script>
+  <script src="../../shared/apiClient.js"></script>
+  <script src="../../shared/kabagMapper.js"></script>
+  <script src="../../shared/exportHelper.js"></script>
   <script src="dashboardKabag.js"></script>
 </body>
 </html>

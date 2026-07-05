@@ -1,0 +1,10 @@
+$kind: http-request
+url: "{{base_url}}/api/kabag/statistik"
+method: GET
+headers:
+  Authorization: Bearer {{token_mahasiswa}}
+scripts:
+  - type: afterResponse
+    code: pm.test('Status 403 - role salah ditolak', () => pm.response.to.have.status(403));
+    language: text/javascript
+order: 4000

@@ -19,3 +19,18 @@ export async function getLaporanStatistik(req, res) {
   const data = await kabagService.getLaporanStatistik()
   res.json({ data })
 }
+
+export async function getTrenPendaftaran(req, res) {
+  const data = await kabagService.getTrenPendaftaran()
+  res.json({ data })
+}
+
+export async function getPerkembangan(req, res) {
+  const data = await kabagService.getPerkembangan()
+  res.json({ data })
+}
+
+export async function getRekomendasi(req, res) {
+  const data = await kabagService.getRekomendasi(req.params.beasiswaId)
+  res.json({ data })
+}

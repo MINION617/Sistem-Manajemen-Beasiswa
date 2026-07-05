@@ -258,15 +258,27 @@
             ></textarea>
           </div>
 
-          <!-- jadwal_wawancara — info tambahan untuk mahasiswa -->
+          <!-- skor kepribadian (1-10) — dasar fitur rekomendasi kandidat kabag -->
+          <div class="form-group">
+            <label>Kerja Keras (1–10)</label>
+            <input type="number" id="fKerjaKeras" name="nilai_kerja_keras" min="1" max="10" step="1" placeholder="1 – 10" />
+          </div>
+          <div class="form-group">
+            <label>Kepemimpinan (1–10)</label>
+            <input type="number" id="fKepemimpinan" name="nilai_kepemimpinan" min="1" max="10" step="1" placeholder="1 – 10" />
+          </div>
+          <div class="form-group">
+            <label>Komunikasi (1–10)</label>
+            <input type="number" id="fKomunikasi" name="nilai_komunikasi" min="1" max="10" step="1" placeholder="1 – 10" />
+          </div>
+          <div class="form-group">
+            <label>Keberanian (1–10)</label>
+            <input type="number" id="fKeberanian" name="nilai_keberanian" min="1" max="10" step="1" placeholder="1 – 10" />
+          </div>
           <div class="form-group form-group-full">
-            <label>Jadwal Wawancara (opsional)</label>
-            <input
-              type="datetime-local"
-              id="fJadwalWawancara"
-              name="jadwal_wawancara"
-            />
-            <div class="field-hint">Jadwal ini akan muncul di timeline pendaftaran mahasiswa.</div>
+            <label>Skor Prestasi Akademik (1–10)</label>
+            <input type="number" id="fSkorPrestasi" name="skor_prestasi_akademik" min="1" max="10" step="1" placeholder="1 – 10" />
+            <div class="field-hint">Skor hasil lomba/kompetisi akademik mahasiswa. Detail bebas bisa ditulis di Catatan Staff.</div>
           </div>
 
         </div>
@@ -309,6 +321,8 @@
   </div>
 
   <script src="../../shared/supabaseConfig.js"></script>
+  <script src="../../shared/apiClient.js"></script>
+  <script src="../../shared/seleksiMapper.js"></script>
   <script src="inputHasilSeleksi.js"></script>
 </body>
 </html>

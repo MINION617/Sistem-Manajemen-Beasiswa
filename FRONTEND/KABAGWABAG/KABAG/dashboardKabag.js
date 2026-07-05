@@ -18,6 +18,7 @@ const demoSession = session || {
   role         : 'kabag',
   id           : 'demo-kabag-uuid'
 };
+const isRealSession = !!(session?.access_token && !session.access_token.startsWith('dummy-token-'));
 
 /* ── DUMMY DATA PENDAFTAR ── */
 const dummyPendaftar = [
@@ -45,6 +46,144 @@ const PIPELINE_STAGES = [
   { key:'lolos_final',         label:'Penerima Final',    icon:'solar:cup-star-bold-duotone',               color:'#059669' },
   { key:'pencairan',           label:'Dana Dicairkan',    icon:'solar:transfer-horizontal-bold-duotone',    color:'#0284c7' },
 ];
+
+/* ── DATA (real backend, falls back to dummy above) ── */
+let pendaftarData = dummyPendaftar;
+let laporanCounts = null; // {total, perStatus} from /kabag/laporan-statistik; null → derive from dummyLaporan
+let trenPendaftaran = null; // {years, byYear} from /kabag/tren-pendaftaran; null → hide the section
+
+async function loadDashboardData() {
+  if (isRealSession) {
+    try {
+      const [{ data: pendaftar }, { data: laporanStat }, { data: tren }] = await Promise.all([
+        api.get('/kabag/pendaftar'),
+        api.get('/kabag/laporan-statistik'),
+        api.get('/kabag/tren-pendaftaran'),
+      ]);
+      pendaftarData = pendaftar.map(mapKabagApplicantRow);
+      laporanCounts = laporanStat;
+      trenPendaftaran = tren;
+    } catch (err) {
+      console.warn('Gagal memuat data kabag, pakai data contoh:', err);
+      pendaftarData = dummyPendaftar;
+      laporanCounts = null;
+      trenPendaftaran = null;
+    }
+  }
+  loadStats();
+  renderTopNilai();
+  renderRingkasanLaporan();
+  renderPipeline();
+  renderTrenPendaftaran();
+}
+
+/* ── TREN PENDAFTARAN (Chart.js) ── */
+let trenChart = null;
+
+function renderTrenPendaftaran() {
+  const canvas = document.getElementById('chartTren');
+  if (!canvas || typeof Chart === 'undefined') return;
+
+  if (trenChart) { trenChart.destroy(); trenChart = null; }
+
+  if (!trenPendaftaran || !trenPendaftaran.years.length) {
+    canvas.style.display = 'none';
+    const parent = canvas.parentElement;
+    if (parent && !parent.querySelector('.tren-empty')) {
+      parent.insertAdjacentHTML('beforeend', '<div class="tren-empty">Belum ada data pendaftaran untuk dibandingkan (perlu login sebagai akun kabag asli).</div>');
+    }
+    return;
+  }
+  canvas.style.display = 'block';
+
+  const { years, byYear } = trenPendaftaran;
+
+  trenChart = new Chart(canvas, {
+    type: 'line',
+    data: {
+      labels: years,
+      datasets: [{
+        label: 'Jumlah Pendaftaran',
+        data: years.map(y => byYear[y].total),
+        borderColor: '#2563eb',
+        backgroundColor: 'rgba(37,99,235,0.15)',
+        tension: 0.3,
+        fill: true,
+        pointRadius: 4,
+      }],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } },
+    },
+  });
+}
+
+/* ── EXPORT LAPORAN PENDAFTAR + TREN (Excel/PDF) ── */
+const PENDAFTAR_EXPORT_COLUMNS = [
+  { key: 'nama', label: 'Nama Mahasiswa' },
+  { key: 'nim', label: 'NIM' },
+  { key: 'beasiswa', label: 'Beasiswa' },
+  { key: 'ipkFmt', label: 'IPK' },
+  { key: 'nilaiTesFmt', label: 'Nilai Tes' },
+  { key: 'nilaiWawancaraFmt', label: 'Nilai Wawancara' },
+  { key: 'statusLabel', label: 'Status' },
+];
+const TREN_PENDAFTARAN_EXPORT_COLUMNS = [
+  { key: 'tahun', label: 'Tahun' },
+  { key: 'total', label: 'Jumlah Pendaftaran' },
+];
+
+function pendaftarExportRows() {
+  return pendaftarData.map(d => ({
+    ...d,
+    ipkFmt: d.ipk != null ? d.ipk.toFixed(2) : '—',
+    nilaiTesFmt: d.nilai_tes ?? '—',
+    nilaiWawancaraFmt: d.nilai_wawancara ?? '—',
+    statusLabel: d.status,
+  }));
+}
+function trenPendaftaranExportRows() {
+  const { years, byYear } = trenPendaftaran || { years: [], byYear: {} };
+  return years.map(y => ({ tahun: y, total: byYear[y].total }));
+}
+function trenPendaftaranChartAspectRatio() {
+  if (!trenChart) return 16 / 9;
+  return trenChart.canvas.width / trenChart.canvas.height;
+}
+
+document.getElementById('btnExportKabagExcel')?.addEventListener('click', async () => {
+  if (typeof ExcelJS === 'undefined') { alert('Library Excel belum termuat. Coba refresh halaman.'); return; }
+  const workbook = new ExcelJS.Workbook();
+  addTableSheet(workbook, 'Daftar Pendaftar', PENDAFTAR_EXPORT_COLUMNS, pendaftarExportRows());
+  addTableSheet(workbook, 'Tren Pendaftaran', TREN_PENDAFTARAN_EXPORT_COLUMNS, trenPendaftaranExportRows());
+  if (trenChart) addChartImageSheet(workbook, 'Grafik Tren', trenChart.toBase64Image(), trenPendaftaranChartAspectRatio());
+  await downloadWorkbook(workbook, 'laporan-pendaftar-kabag');
+});
+
+document.getElementById('btnExportKabagPdf')?.addEventListener('click', () => {
+  if (typeof window.jspdf === 'undefined') { alert('Library PDF belum termuat. Coba refresh halaman.'); return; }
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation: 'landscape' });
+
+  doc.setFontSize(14); doc.setFont(undefined, 'bold');
+  doc.text('Laporan Pendaftar — Ringkasan Kabag', 14, 16);
+  doc.setFontSize(9); doc.setFont(undefined, 'normal'); doc.setTextColor(100);
+  doc.text(`Dicetak: ${new Date().toLocaleString('id-ID', { dateStyle: 'long', timeStyle: 'short' })}`, 14, 22);
+
+  addPdfTable(doc, 31, 'Daftar Pendaftar', PENDAFTAR_EXPORT_COLUMNS, pendaftarExportRows(), [30, 58, 138]);
+
+  if (trenChart) {
+    doc.addPage();
+    addPdfTable(doc, 16, 'Tren Pendaftaran Tahun ke Tahun', TREN_PENDAFTARAN_EXPORT_COLUMNS, trenPendaftaranExportRows(), [245, 158, 11]);
+    const afterY = doc.lastAutoTable.finalY + 10;
+    addPdfChartImage(doc, afterY, trenChart.toBase64Image(), trenPendaftaranChartAspectRatio(), 'Grafik Tren Pendaftaran');
+  }
+
+  doc.save('laporan-pendaftar-kabag.pdf');
+});
 
 /* ── UTILS ── */
 function setEl(id, val) { const e = document.getElementById(id); if (e) e.textContent = val; }
@@ -86,10 +225,10 @@ function initUserInfo() {
 
 /* ── STATS ── */
 function loadStats() {
-  const totalPendaftar = dummyPendaftar.length;
-  const sudahTes       = dummyPendaftar.filter(d => d.nilai_tes !== null).length;
-  const sudahWawancara = dummyPendaftar.filter(d => d.nilai_wawancara !== null).length;
-  const laporanMasuk   = dummyLaporan.filter(d => d.status === 'masuk').length;
+  const totalPendaftar = pendaftarData.length;
+  const sudahTes       = pendaftarData.filter(d => d.nilai_tes !== null).length;
+  const sudahWawancara = pendaftarData.filter(d => d.nilai_wawancara !== null).length;
+  const laporanMasuk   = laporanCounts ? (laporanCounts.perStatus.masuk || 0) : dummyLaporan.filter(d => d.status === 'masuk').length;
 
   animateNum('statPendaftar', totalPendaftar);
   animateNum('statNilaiTes',  sudahTes);
@@ -111,7 +250,7 @@ function renderTopNilai() {
   const el = document.getElementById('listTopNilai');
   if (!el) return;
 
-  const sorted = [...dummyPendaftar]
+  const sorted = [...pendaftarData]
     .filter(d => d.nilai_tes)
     .sort((a, b) => parseFloat(avgNilai(b)) - parseFloat(avgNilai(a)))
     .slice(0, 5);
@@ -145,9 +284,9 @@ function renderRingkasanLaporan() {
   const el = document.getElementById('listRingkasanLaporan');
   if (!el) return;
 
-  const masuk    = dummyLaporan.filter(d => d.status === 'masuk').length;
-  const diproses = dummyLaporan.filter(d => d.status === 'diproses').length;
-  const selesai  = dummyLaporan.filter(d => d.status === 'selesai').length;
+  const masuk    = laporanCounts ? (laporanCounts.perStatus.masuk    || 0) : dummyLaporan.filter(d => d.status === 'masuk').length;
+  const diproses = laporanCounts ? (laporanCounts.perStatus.diproses || 0) : dummyLaporan.filter(d => d.status === 'diproses').length;
+  const selesai  = laporanCounts ? (laporanCounts.perStatus.selesai  || 0) : dummyLaporan.filter(d => d.status === 'selesai').length;
 
   const STATUS_CFG = {
     masuk    : { cls:'pill-masuk',    dot:'masuk',    label:'Baru' },
@@ -155,6 +294,9 @@ function renderRingkasanLaporan() {
     selesai  : { cls:'pill-selesai',  dot:'selesai',  label:'Selesai' },
   };
 
+  // Kabag only has access to laporan counts (/kabag/laporan-statistik), not the
+  // individual complaint list (GET /laporan is staff-only) — recent items below
+  // stay sample data until that's opened up to kabag.
   const recent = dummyLaporan.slice(0, 4);
 
   el.innerHTML = `
@@ -194,22 +336,137 @@ function renderPipeline() {
   if (!el) return;
 
   const counts = {
-    menunggu_verifikasi : dummyPendaftar.filter(d => d.status === 'menunggu_verifikasi').length,
-    lolos_berkas        : dummyPendaftar.filter(d => d.status === 'lolos_berkas').length,
-    wawancara           : dummyPendaftar.filter(d => d.status === 'wawancara').length,
-    lolos_final         : dummyPendaftar.filter(d => d.status === 'lolos_final').length,
-    pencairan           : dummyPendaftar.filter(d => d.status === 'pencairan').length,
+    menunggu_verifikasi : pendaftarData.filter(d => d.status === 'menunggu_verifikasi').length,
+    lolos_berkas        : pendaftarData.filter(d => d.status === 'lolos_berkas').length,
+    wawancara           : pendaftarData.filter(d => d.status === 'wawancara').length,
+    lolos_final         : pendaftarData.filter(d => d.status === 'lolos_final').length,
+    pencairan           : pendaftarData.filter(d => d.status === 'pencairan').length,
   };
 
   el.innerHTML = PIPELINE_STAGES.map(s => `
     <div class="pipeline-stage">
-      <div class="pipeline-bubble">
+      <div class="pipeline-bubble" style="--ring-color:${s.color}40">
         <iconify-icon icon="${s.icon}" style="color:${s.color}"></iconify-icon>
       </div>
       <div class="pipeline-count">${counts[s.key] || 0}</div>
       <div class="pipeline-name">${s.label}</div>
     </div>
   `).join('');
+
+  /* ── Buat SVG connector overlay (garis mengalir + partikel, sama seperti staff) ── */
+  requestAnimationFrame(() => {
+    setTimeout(() => {
+      const stages = el.querySelectorAll('.pipeline-stage');
+      if (stages.length < 2) return;
+
+      el.querySelector('.pipeline-connectors')?.remove();
+
+      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      svg.classList.add('pipeline-connectors');
+      svg.setAttribute('width', '100%');
+      svg.setAttribute('height', '100%');
+      svg.style.position = 'absolute';
+      svg.style.top = '0';
+      svg.style.left = '0';
+
+      const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+      const stageColors = PIPELINE_STAGES.map(s => s.color);
+
+      for (let i = 0; i < stages.length - 1; i++) {
+        const grad = document.createElementNS('http://www.w3.org/2000/svg', 'linearGradient');
+        grad.id = `pipeGradKabag${i}`;
+        grad.setAttribute('gradientUnits', 'userSpaceOnUse');
+
+        const stop1 = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
+        stop1.setAttribute('offset', '0%');
+        stop1.setAttribute('stop-color', stageColors[i]);
+
+        const stop2 = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
+        stop2.setAttribute('offset', '100%');
+        stop2.setAttribute('stop-color', stageColors[i + 1]);
+
+        grad.appendChild(stop1);
+        grad.appendChild(stop2);
+        defs.appendChild(grad);
+      }
+      svg.appendChild(defs);
+
+      const containerRect = el.getBoundingClientRect();
+
+      for (let i = 0; i < stages.length - 1; i++) {
+        const bubbleA = stages[i].querySelector('.pipeline-bubble');
+        const bubbleB = stages[i + 1].querySelector('.pipeline-bubble');
+        const rA = bubbleA.getBoundingClientRect();
+        const rB = bubbleB.getBoundingClientRect();
+
+        const x1 = rA.right - containerRect.left + 2;
+        const x2 = rB.left - containerRect.left - 2;
+        const y = rA.top + rA.height / 2 - containerRect.top;
+
+        const grad = defs.querySelector(`#pipeGradKabag${i}`);
+        grad.setAttribute('x1', x1);
+        grad.setAttribute('y1', y);
+        grad.setAttribute('x2', x2);
+        grad.setAttribute('y2', y);
+
+        const track = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        track.classList.add('connector-track');
+        track.setAttribute('x1', x1);
+        track.setAttribute('y1', y);
+        track.setAttribute('x2', x2);
+        track.setAttribute('y2', y);
+        svg.appendChild(track);
+
+        const flow = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        flow.classList.add('connector-flow');
+        flow.setAttribute('x1', x1);
+        flow.setAttribute('y1', y);
+        flow.setAttribute('x2', x2);
+        flow.setAttribute('y2', y);
+        flow.setAttribute('stroke', `url(#pipeGradKabag${i})`);
+        flow.style.animationDelay = `${i * -0.35}s`;
+        svg.appendChild(flow);
+
+        for (let p = 0; p < 2; p++) {
+          const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+          circle.classList.add('connector-particle');
+          circle.setAttribute('r', '3.5');
+          circle.setAttribute('fill', stageColors[i + 1]);
+
+          const animCx = document.createElementNS('http://www.w3.org/2000/svg', 'animate');
+          animCx.setAttribute('attributeName', 'cx');
+          animCx.setAttribute('from', x1);
+          animCx.setAttribute('to', x2);
+          animCx.setAttribute('dur', '2.2s');
+          animCx.setAttribute('begin', `${p * 1.1}s`);
+          animCx.setAttribute('repeatCount', 'indefinite');
+
+          const animCy = document.createElementNS('http://www.w3.org/2000/svg', 'animate');
+          animCy.setAttribute('attributeName', 'cy');
+          animCy.setAttribute('from', y);
+          animCy.setAttribute('to', y);
+          animCy.setAttribute('dur', '2.2s');
+          animCy.setAttribute('begin', `${p * 1.1}s`);
+          animCy.setAttribute('repeatCount', 'indefinite');
+
+          const animOp = document.createElementNS('http://www.w3.org/2000/svg', 'animate');
+          animOp.setAttribute('attributeName', 'opacity');
+          animOp.setAttribute('values', '0;0.85;0.85;0');
+          animOp.setAttribute('keyTimes', '0;0.08;0.88;1');
+          animOp.setAttribute('dur', '2.2s');
+          animOp.setAttribute('begin', `${p * 1.1}s`);
+          animOp.setAttribute('repeatCount', 'indefinite');
+
+          circle.appendChild(animCx);
+          circle.appendChild(animCy);
+          circle.appendChild(animOp);
+          svg.appendChild(circle);
+        }
+      }
+
+      el.appendChild(svg);
+    }, 60);
+  });
 }
 
 /* ── SIDEBAR & LOGOUT ── */
@@ -285,9 +542,6 @@ document.addEventListener('DOMContentLoaded', () => {
   initBgCanvas();
   initParticles();
   initUserInfo();
-  loadStats();
-  renderTopNilai();
-  renderRingkasanLaporan();
-  renderPipeline();
+  loadDashboardData();
   console.log('📊 dashboardKabag.js loaded | User:', demoSession?.nama_lengkap);
 });

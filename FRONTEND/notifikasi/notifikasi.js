@@ -83,8 +83,23 @@ const dummyNotifikasi = [
   },
 ];
 
+const isRealSession = !!(session?.access_token && !session.access_token.startsWith('dummy-token-'));
+
 let activeFilter = 'all';
 let allData = [...dummyNotifikasi];
+
+async function loadData() {
+  if (isRealSession) {
+    try {
+      const { data } = await api.get('/notifikasi');
+      allData = data.map(mapNotifikasiRow);
+      return;
+    } catch (err) {
+      console.warn('Gagal memuat notifikasi, pakai data contoh:', err);
+    }
+  }
+  allData = [...dummyNotifikasi];
+}
 
 // Jumlah pendaftaran yang sedang diproses — dipakai untuk badge
 // "Pendaftaran Saya" di navbar. TODO: ganti dengan hitungan asli dari
@@ -192,20 +207,36 @@ function renderList() {
 }
 
 // ===== MARK AS READ =====
-function markRead(id) {
+async function markRead(id) {
   const item = allData.find(n => n.id === id);
-  if (item && !item.is_read) {
-    item.is_read = true;
-    updateBadge();
-    renderList();
+  if (!item || item.is_read) return;
+
+  item.is_read = true;
+  updateBadge();
+  renderList();
+
+  if (isRealSession) {
+    try {
+      await api.patch(`/notifikasi/${id}/read`);
+    } catch (err) {
+      console.warn('Gagal menandai notifikasi terbaca:', err);
+    }
   }
 }
 
 // ===== TANDAI SEMUA DIBACA =====
-document.getElementById('btnBacaSemua')?.addEventListener('click', () => {
+document.getElementById('btnBacaSemua')?.addEventListener('click', async () => {
+  const unreadIds = allData.filter(n => !n.is_read).map(n => n.id);
   allData.forEach(n => n.is_read = true);
   updateBadge();
   renderList();
+
+  if (isRealSession) {
+    await Promise.all(unreadIds.map(id =>
+      api.patch(`/notifikasi/${id}/read`).catch(err =>
+        console.warn('Gagal menandai notifikasi terbaca:', id, err))
+    ));
+  }
 });
 
 // ===== FILTER =====
@@ -373,10 +404,11 @@ function initParticles() {
 }
 
 // ===== INIT =====
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   initBgCanvas();
   initParticles();
   initUserInfo();
+  await loadData();
   updateBadge();
   updateBadgePendaftaran();
   renderList();

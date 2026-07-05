@@ -1,0 +1,22 @@
+$kind: http-request
+url: "{{base_url}}/api/notifikasi"
+method: GET
+headers:
+  Authorization: Bearer {{token_mahasiswa}}
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('Status 200', () => pm.response.to.have.status(200));
+      const json = pm.response.json();
+      pm.test('Response punya property data berbentuk array', () => {
+        pm.expect(json).to.have.property('data');
+        pm.expect(json.data).to.be.an('array');
+      });
+      if (json.data && json.data.length > 0) {
+        pm.environment.set('notif_id', json.data[0].id);
+        console.log('notif_id disimpan:', json.data[0].id);
+      } else {
+        console.warn('Belum ada notifikasi untuk akun ini — request mark-as-read akan di-skip');
+      }
+    language: text/javascript
+order: 9000

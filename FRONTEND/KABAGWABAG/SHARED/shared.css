@@ -1,8 +1,8 @@
 /* ============================================================
  * SHARED.CSS — Beasiswa Kampus
  * Halaman: monitoringPendaftar, penerima, laporanKendala
- * Theme  : Academic Prestige — Navy × Gold
- * Fonts  : Space Grotesk (display/angka) + DM Sans (body)
+ * Theme  : Navy × Blue (matches mahasiswa/staff brand color)
+ * Fonts  : Space Grotesk (display/angka) + Inter (body)
  *
  * Cara pakai:
  *   @import url('shared.css');
@@ -28,12 +28,12 @@
   --navy-100 : #dde9fb;
   --navy-50  : #eef4ff;
 
-  /* ── Aksen Emas (Brand) ──────────────────────────────── */
-  --gold           : #f59e0b;
-  --gold-dark      : #b45309;
-  --gold-mid       : #fcd34d;
-  --gold-soft      : #fef3c7;
-  --gold-gradient  : linear-gradient(135deg, #f59e0b, #b45309);
+  /* ── Aksen Biru (Brand — selaras mahasiswa/staff) ─────── */
+  --gold           : #2563eb;
+  --gold-dark      : #1d4ed8;
+  --gold-mid       : #60a5fa;
+  --gold-soft      : #eff6ff;
+  --gold-gradient  : linear-gradient(135deg, #2563eb, #1d4ed8);
 
   /* ── Status & Semantik ───────────────────────────────── */
   --emerald      : #059669;
@@ -73,7 +73,7 @@
 
   /* ── Tipografi ───────────────────────────────────────── */
   --font-display : 'Space Grotesk', system-ui, sans-serif;
-  --font-body    : 'DM Sans', system-ui, sans-serif;
+  --font-body    : 'Inter', system-ui, sans-serif;
 
   /* ── Bayangan ────────────────────────────────────────── */
   --shadow-sm : 0 2px 8px rgba(12, 26, 58, 0.07);
@@ -89,7 +89,7 @@
   /* ── Misc ────────────────────────────────────────────── */
   --ease         : cubic-bezier(0.4, 0, 0.2, 1);
   --sidebar-width: 264px;
-  --accent       : var(--navy-600);
+  --accent       : var(--gold);
 }
 
 
@@ -193,8 +193,8 @@ a {
 }
 
 @keyframes rolePulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0);    }
-  50%      { box-shadow: 0 0 0 5px rgba(245, 158, 11, 0.12); }
+  0%, 100% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0);    }
+  50%      { box-shadow: 0 0 0 5px rgba(37, 99, 235, 0.12); }
 }
 
 /* Sidebar: langsung tampil, tanpa animasi masuk */
@@ -243,7 +243,7 @@ a {
   height            : 100vh;
   background        : var(--navy-900);
   background-image  :
-    radial-gradient(ellipse at 18% 8%,  rgba(245, 158, 11, 0.09) 0%, transparent 45%),
+    radial-gradient(ellipse at 18% 8%,  rgba(37, 99, 235, 0.09) 0%, transparent 45%),
     radial-gradient(ellipse at 85% 92%, rgba(30, 58, 138, 0.35)  0%, transparent 50%);
   border-right      : none;
   position          : fixed;
@@ -284,15 +284,15 @@ a {
 .logo-mark {
   width        : 36px;
   height       : 36px;
-  background   : var(--gold-gradient);
-  color        : var(--navy-900);
+  background   : linear-gradient(135deg, #2563eb, #1e40af);
+  color        : white;
   border-radius: 11px;
   display      : grid;
   place-items  : center;
   font-family  : var(--font-display);
   font-weight  : 700;
   font-size    : 18px;
-  box-shadow   : 0 3px 14px rgba(245, 158, 11, 0.4);
+  box-shadow   : 0 3px 14px rgba(37, 99, 235, 0.4);
   position     : relative;
   flex-shrink  : 0;
 }
@@ -302,15 +302,15 @@ a {
   position      : absolute;
   width         : 8px;
   height        : 8px;
-  background    : white;
+  background    : #fbbf24;
   border-radius : 50%;
   top           : -3px;
   right         : -3px;
-  border        : 2px solid var(--navy-900);
+  border        : 2px solid white;
 }
 
 .logo-text       { color: rgba(255, 255, 255, 0.9); }
-.logo-text strong { color: var(--gold); font-weight: 700; }
+.logo-text strong { color: #1d4ed8; font-weight: 700; }
 
 /* Tombol tutup (mobile) */
 .sidebar-close {
@@ -347,7 +347,7 @@ a {
   width        : 42px;
   height       : 42px;
   background   : var(--gold-gradient);
-  color        : var(--navy-900);
+  color        : white;
   border-radius: 50%;
   display      : grid;
   place-items  : center;
@@ -355,7 +355,7 @@ a {
   font-weight  : 700;
   font-size    : 18px;
   flex-shrink  : 0;
-  box-shadow   : 0 0 0 2.5px rgba(245, 158, 11, 0.28);
+  box-shadow   : 0 0 0 2.5px rgba(37, 99, 235, 0.28);
 }
 
 .user-info { min-width: 0; }
@@ -380,7 +380,7 @@ a {
   font-size      : 10px;
   font-weight    : 600;
   color          : var(--gold);
-  background     : rgba(245, 158, 11, 0.13);
+  background     : rgba(37, 99, 235, 0.13);
   padding        : 2px 9px;
   border-radius  : 100px;
   text-transform : uppercase;
@@ -430,7 +430,7 @@ a {
 }
 
 .nav-item.active {
-  background  : rgba(245, 158, 11, 0.13);
+  background  : rgba(37, 99, 235, 0.13);
   color       : var(--gold);
   font-weight : 600;
 }
@@ -693,13 +693,13 @@ a {
   height        : 36px;
   border-radius : 50%;
   background    : var(--gold-gradient);
-  color         : var(--navy-900);
+  color         : white;
   display       : grid;
   place-items   : center;
   font-family   : var(--font-display);
   font-weight   : 700;
   font-size     : 14px;
-  box-shadow    : 0 2px 8px rgba(245, 158, 11, 0.28);
+  box-shadow    : 0 2px 8px rgba(37, 99, 235, 0.28);
   transition    : transform 0.2s var(--ease);
 }
 
@@ -746,10 +746,10 @@ a {
   border-radius : 50%;
   top           : -80px;
   right         : -50px;
-  border        : 1.5px solid rgba(245, 158, 11, 0.14);
+  border        : 1.5px solid rgba(37, 99, 235, 0.14);
   box-shadow    :
-    0 0 0 40px rgba(245, 158, 11, 0.04),
-    0 0 0 80px rgba(245, 158, 11, 0.02);
+    0 0 0 40px rgba(37, 99, 235, 0.04),
+    0 0 0 80px rgba(37, 99, 235, 0.02);
   pointer-events: none;
 }
 
@@ -762,7 +762,7 @@ a {
   bottom         : 0;
   width          : 40%;
   background     :
-    radial-gradient(ellipse at 80% 30%, rgba(245, 158, 11, 0.09) 0%, transparent 55%),
+    radial-gradient(ellipse at 80% 30%, rgba(37, 99, 235, 0.09) 0%, transparent 55%),
     radial-gradient(ellipse at 90% 85%, rgba(255, 255, 255, 0.04) 0%, transparent 40%);
   pointer-events : none;
 }
@@ -810,7 +810,7 @@ a {
 
 .banner-stat-item:hover {
   background   : rgba(255, 255, 255, 0.16);
-  border-color : rgba(245, 158, 11, 0.4);
+  border-color : rgba(37, 99, 235, 0.4);
   transform    : translateY(-2px);
 }
 
@@ -824,7 +824,7 @@ a {
 
 /* Varian warna untuk angka dalam banner */
 .banner-stat-num.green  { color: #6ee7b7; }
-.banner-stat-num.orange { color: #fcd34d; }
+.banner-stat-num.orange { color: #60a5fa; }
 .banner-stat-num.yellow { color: #fde68a; }
 
 .banner-stat-label {

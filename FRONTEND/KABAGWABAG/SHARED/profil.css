@@ -63,13 +63,13 @@
   font-weight   : 700;
   overflow      : hidden;
   position      : relative;
-  box-shadow    : 0 0 0 4px rgba(245, 158, 11, 0.18), var(--shadow-sm);
+  box-shadow    : 0 0 0 4px rgba(37, 99, 235, 0.18), var(--shadow-sm);
   transition    : box-shadow 0.25s;
   user-select   : none;
 }
 
 .profile-avatar-circle:hover {
-  box-shadow: 0 0 0 5px rgba(245, 158, 11, 0.32), var(--shadow-md);
+  box-shadow: 0 0 0 5px rgba(37, 99, 235, 0.32), var(--shadow-md);
 }
 
 /* Foto yang sudah diupload */
@@ -315,7 +315,7 @@
 /* Focus saat edit mode aktif */
 .form-input:not(:disabled):not(.is-readonly):focus {
   border-color : var(--gold);
-  box-shadow   : 0 0 0 3px rgba(245, 158, 11, 0.15);
+  box-shadow   : 0 0 0 3px rgba(37, 99, 235, 0.15);
 }
 
 .form-input.has-error {
@@ -371,13 +371,13 @@
   font-weight   : 700;
   cursor        : pointer;
   transition    : all 0.25s;
-  box-shadow    : 0 3px 12px rgba(245, 158, 11, 0.3);
+  box-shadow    : 0 3px 12px rgba(37, 99, 235, 0.3);
 }
 
 .btn-save-profile:hover {
   background : var(--gold-mid);
   transform  : translateY(-1px);
-  box-shadow : 0 6px 18px rgba(245, 158, 11, 0.45);
+  box-shadow : 0 6px 18px rgba(37, 99, 235, 0.45);
 }
 
 /* Tombol batal */

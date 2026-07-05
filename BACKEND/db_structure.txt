@@ -1,0 +1,181 @@
+====================================================================
+DATABASE STRUCTURE — Sistem Manajemen Beasiswa
+Sumber: Supabase SQL Editor (schema export, information_schema/pg_catalog)
+        psql tidak tersedia di environment eksekusi Claude Code, sehingga
+        struktur diambil langsung dari dashboard Supabase oleh anggota tim
+        dan dikonfirmasi cocok dengan hasil query metadata sebelumnya
+        (lihat DATABASE/migrations/0000_baseline.sql).
+Tanggal pull: 2026-07-03
+Catatan: kolom pendaftaran.catatan_verifikasi terkonfirmasi ADA di sini —
+         hasil migration DATABASE/migrations/0001_add_pendaftaran_catatan_verifikasi.sql
+         yang sudah dijalankan.
+====================================================================
+
+-- WARNING: This schema is for context only and is not meant to be run.
+-- Table order and constraints may not be valid for execution.
+
+CREATE TABLE public.profiles (
+  id uuid NOT NULL,
+  nim_nip character varying NOT NULL UNIQUE,
+  nama_lengkap character varying NOT NULL,
+  role USER-DEFINED NOT NULL DEFAULT 'mahasiswa'::app_role,
+  email character varying,
+  program_studi character varying,
+  ipk numeric,
+  nomor_whatsapp character varying,
+  alamat text,
+  jabatan character varying,
+  unit character varying,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT profiles_pkey PRIMARY KEY (id),
+  CONSTRAINT profiles_id_fkey FOREIGN KEY (id) REFERENCES auth.users(id)
+);
+CREATE TABLE public.sponsors (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  nama_perusahaan character varying NOT NULL,
+  kontak_perusahaan character varying,
+  alamat_perusahaan text,
+  jenis_industri character varying,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  tagline text,
+  tentang text,
+  narahubung character varying,
+  email character varying,
+  warna character varying,
+  is_aktif boolean NOT NULL DEFAULT true,
+  CONSTRAINT sponsors_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.beasiswa (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  sponsor_id uuid,
+  nama_program character varying NOT NULL,
+  tahun_akademik character varying,
+  deskripsi text,
+  kategori character varying,
+  nominal_dana bigint,
+  kuota integer,
+  status character varying NOT NULL DEFAULT 'aktif'::character varying,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  tanggal_buka date,
+  tanggal_tutup date,
+  persyaratan ARRAY,
+  CONSTRAINT beasiswa_pkey PRIMARY KEY (id),
+  CONSTRAINT beasiswa_sponsor_id_fkey FOREIGN KEY (sponsor_id) REFERENCES public.sponsors(id)
+);
+CREATE TABLE public.pendaftaran (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  mahasiswa_id uuid NOT NULL,
+  beasiswa_id uuid NOT NULL,
+  status USER-DEFINED NOT NULL DEFAULT 'menunggu_verifikasi'::status_pendaftaran,
+  tanggal_daftar timestamp with time zone NOT NULL DEFAULT now(),
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  catatan_verifikasi text,
+  CONSTRAINT pendaftaran_pkey PRIMARY KEY (id),
+  CONSTRAINT pendaftaran_mahasiswa_id_fkey FOREIGN KEY (mahasiswa_id) REFERENCES public.profiles(id),
+  CONSTRAINT pendaftaran_beasiswa_id_fkey FOREIGN KEY (beasiswa_id) REFERENCES public.beasiswa(id)
+);
+CREATE TABLE public.dokumen_pendaftaran (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  pendaftaran_id uuid NOT NULL,
+  jenis_dokumen character varying NOT NULL,
+  file_path text,
+  file_url text,
+  ukuran_file bigint,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT dokumen_pendaftaran_pkey PRIMARY KEY (id),
+  CONSTRAINT dokumen_pendaftaran_pendaftaran_id_fkey FOREIGN KEY (pendaftaran_id) REFERENCES public.pendaftaran(id)
+);
+CREATE TABLE public.hasil_seleksi (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  pendaftaran_id uuid NOT NULL,
+  nilai_tes numeric,
+  nilai_wawancara numeric,
+  catatan_prestasi text,
+  catatan_staff text,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT hasil_seleksi_pkey PRIMARY KEY (id),
+  CONSTRAINT hasil_seleksi_pendaftaran_id_fkey FOREIGN KEY (pendaftaran_id) REFERENCES public.pendaftaran(id)
+);
+CREATE TABLE public.penerima_beasiswa (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  pendaftaran_id uuid NOT NULL,
+  status USER-DEFINED NOT NULL DEFAULT 'diusulkan'::status_penerima,
+  diusulkan_oleh uuid,
+  tanggal_usul timestamp with time zone DEFAULT now(),
+  disahkan_oleh uuid,
+  tanggal_acc timestamp with time zone,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT penerima_beasiswa_pkey PRIMARY KEY (id),
+  CONSTRAINT penerima_beasiswa_pendaftaran_id_fkey FOREIGN KEY (pendaftaran_id) REFERENCES public.pendaftaran(id),
+  CONSTRAINT penerima_beasiswa_diusulkan_oleh_fkey FOREIGN KEY (diusulkan_oleh) REFERENCES public.profiles(id),
+  CONSTRAINT penerima_beasiswa_disahkan_oleh_fkey FOREIGN KEY (disahkan_oleh) REFERENCES public.profiles(id)
+);
+CREATE TABLE public.penyaluran_dana (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  pendaftaran_id uuid NOT NULL,
+  nominal bigint,
+  bukti_transfer_url text,
+  status USER-DEFINED NOT NULL DEFAULT 'pending'::status_penyaluran,
+  tanggal_pencairan timestamp with time zone,
+  diverifikasi_oleh uuid,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT penyaluran_dana_pkey PRIMARY KEY (id),
+  CONSTRAINT penyaluran_dana_pendaftaran_id_fkey FOREIGN KEY (pendaftaran_id) REFERENCES public.pendaftaran(id),
+  CONSTRAINT penyaluran_dana_diverifikasi_oleh_fkey FOREIGN KEY (diverifikasi_oleh) REFERENCES public.profiles(id)
+);
+CREATE TABLE public.laporan_kendala (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  mahasiswa_id uuid NOT NULL,
+  beasiswa_id uuid,
+  judul_laporan character varying NOT NULL,
+  deskripsi text,
+  kategori character varying,
+  status USER-DEFINED NOT NULL DEFAULT 'masuk'::status_laporan,
+  tanggapan_staff text,
+  tanggal_lapor timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT laporan_kendala_pkey PRIMARY KEY (id),
+  CONSTRAINT laporan_kendala_mahasiswa_id_fkey FOREIGN KEY (mahasiswa_id) REFERENCES public.profiles(id),
+  CONSTRAINT laporan_kendala_beasiswa_id_fkey FOREIGN KEY (beasiswa_id) REFERENCES public.beasiswa(id)
+);
+CREATE TABLE public.notifikasi (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL,
+  judul character varying,
+  pesan text,
+  is_read boolean NOT NULL DEFAULT false,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT notifikasi_pkey PRIMARY KEY (id),
+  CONSTRAINT notifikasi_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.profiles(id)
+);
+CREATE TABLE public.dokumen_mahasiswa (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  mahasiswa_id uuid NOT NULL,
+  jenis_dokumen character varying NOT NULL,
+  file_path text,
+  file_url text,
+  ukuran_file bigint,
+  uploaded_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT dokumen_mahasiswa_pkey PRIMARY KEY (id),
+  CONSTRAINT dokumen_mahasiswa_mahasiswa_id_fkey FOREIGN KEY (mahasiswa_id) REFERENCES public.profiles(id)
+);
+
+====================================================================
+ENUM TYPES (dari 0000_baseline.sql, dikonfirmasi via query terpisah)
+====================================================================
+app_role            : mahasiswa | staff | kabag | wabag
+status_pendaftaran  : menunggu_verifikasi | lolos_berkas | ditolak_berkas |
+                       wawancara | lolos_final | tidak_lolos_final
+status_penerima     : diusulkan | disahkan | dibatalkan
+status_penyaluran   : pending | sedang_diproses | sudah_cair
+status_laporan      : masuk | diproses | selesai
+
+====================================================================
+RINGKASAN
+====================================================================
+Total tabel  : 11 (profiles, sponsors, beasiswa, pendaftaran,
+                dokumen_pendaftaran, hasil_seleksi, penerima_beasiswa,
+                penyaluran_dana, laporan_kendala, notifikasi,
+                dokumen_mahasiswa)
+Total enum   : 5
+Row Level Security: AKTIF di seluruh 11 tabel (baris pertahanan kedua,
+                di belakang service-role API sebagai baris pertahanan utama)

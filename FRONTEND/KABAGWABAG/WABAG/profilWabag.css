@@ -19,7 +19,7 @@
   border-radius:99px;padding:3px 11px;font-size:11.5px;font-weight:600;color:#fff}
 
 /* ── Form data diri ── */
-.profil-form{display:flex;flex-direction:column;gap:14px}
+.profil-form{display:flex;flex-direction:column;gap:14px;padding:18px 20px}
 .profil-field{display:flex;flex-direction:column;gap:5px}
 .profil-field span{font-size:12px;font-weight:600;color:var(--text-3)}
 .profil-field input,.profil-field textarea{
@@ -38,7 +38,7 @@
 .save-note{font-size:12.5px;font-weight:600;color:var(--emerald)}
 
 /* ── Info kepegawaian ── */
-.info-list{display:flex;flex-direction:column}
+.info-list{display:flex;flex-direction:column;padding:8px 20px 18px}
 .info-item{display:flex;align-items:center;gap:12px;padding:10px 0;
   border-bottom:1px solid var(--border)}
 .info-item:last-child{border-bottom:none}

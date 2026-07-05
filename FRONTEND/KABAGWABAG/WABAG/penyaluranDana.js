@@ -228,6 +228,47 @@ function renderAll() {
   renderTable();
 }
 
+/* ── EXPORT (Excel/PDF) ── */
+const EXPORT_COLUMNS = [
+  { key: 'nama', label: 'Nama Mahasiswa' },
+  { key: 'nim', label: 'NIM' },
+  { key: 'beasiswa', label: 'Beasiswa' },
+  { key: 'sponsor', label: 'Sponsor' },
+  { key: 'nominalFmt', label: 'Nominal' },
+  { key: 'statusLabel', label: 'Status' },
+  { key: 'waktuFmt', label: 'Tanggal Cair / Umur Antre' },
+  { key: 'verifLabel', label: 'Verifikasi' },
+];
+
+function exportRows() {
+  return filteredRows().map(r => {
+    const cfg = STATUS_CFG[r.status] || STATUS_CFG.pending;
+    return {
+      ...r,
+      nominalFmt: formatRupiah(r.nominal),
+      statusLabel: cfg.label,
+      waktuFmt: r.status === 'sudah_cair'
+        ? formatTanggal(r.tanggal_pencairan)
+        : `${umurHari(r.created_at)} hari antre`,
+      verifLabel: r.diverifikasi_oleh ? 'Terverifikasi' : (perluVerifikasi(r) ? 'Perlu verifikasi' : '—'),
+    };
+  });
+}
+
+document.getElementById('btnExportExcel')?.addEventListener('click', () => {
+  exportToExcel('laporan-penyaluran-dana', 'Penyaluran Dana', EXPORT_COLUMNS, exportRows());
+});
+document.getElementById('btnExportPdf')?.addEventListener('click', () => {
+  const tabLabel = document.querySelector('.tab-btn.active')?.textContent?.trim() || 'Semua';
+  exportToPdf(
+    'laporan-penyaluran-dana',
+    'Laporan Penyaluran Dana Beasiswa',
+    EXPORT_COLUMNS,
+    exportRows(),
+    `Filter: ${tabLabel}${searchQuery ? ` · Pencarian: "${searchQuery}"` : ''}`
+  );
+});
+
 /* ── TAB & SEARCH ── */
 document.querySelectorAll('.tab-btn').forEach(btn => {
   btn.addEventListener('click', () => {

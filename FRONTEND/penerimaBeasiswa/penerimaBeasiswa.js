@@ -41,6 +41,8 @@ const dummyNotifUnread = 2;
 // data pendaftaran saat sudah terhubung ke backend.
 const dummyPendaftaranProses = 2;
 
+const isRealSession = !!(session?.access_token && !session.access_token.startsWith('dummy-token-'));
+
 
 /* ============================================================
    STATUS CONFIG — icon: Iconify icon name + iconColor
@@ -678,7 +680,35 @@ function initParticles() {
    LOAD DATA
    ============================================================ */
 async function loadData() {
-  /* Production Supabase query identik asli */
+  if (isRealSession) {
+    try {
+      const { data } = await api.get('/status/saya');
+      allData = data
+        .map(mapPendaftaranRow)
+        .filter(row => row.penyaluran_dana)
+        .map(row => {
+          const cfg = STATUS_CFG[row.penyaluran_dana.status] || STATUS_CFG.pending;
+          return {
+            id: row.penyaluran_dana.id,
+            pendaftaran_id: row.id,
+            nominal: row.penyaluran_dana.nominal,
+            bukti_transfer_url: row.penyaluran_dana.bukti_transfer_url,
+            status: row.penyaluran_dana.status,
+            tanggal_pencairan: row.penyaluran_dana.tanggal_pencairan,
+            created_at: row.penyaluran_dana.created_at,
+            pendaftaran: { beasiswa: row.beasiswa },
+            icon: cfg.icon,
+            iconColor: cfg.iconColor,
+            bg: cfg.color + '1a',
+          };
+        });
+      renderStats();
+      renderList();
+      return;
+    } catch (err) {
+      console.warn('Gagal memuat data penyaluran, pakai data contoh:', err);
+    }
+  }
   allData = [...dummyDana];
   renderStats();
   renderList();

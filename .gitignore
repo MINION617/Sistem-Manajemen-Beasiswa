@@ -23,3 +23,11 @@ yarn-error.log*
 # OS
 .DS_Store
 Thumbs.db
+
+# Local test artifacts / contains real auth tokens or transient run output
+backend/write-env.js
+postman/environments/beasiswa-local.environment.yaml
+backend/server_log.txt
+backend/api_test_results.txt
+backend/newman_report.html
+backend/postman_collection.json

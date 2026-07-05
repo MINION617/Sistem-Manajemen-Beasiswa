@@ -1,0 +1,15 @@
+workspace:
+  id: b5ea0ea4-8e5b-4f7e-8e06-57a608445fd9
+
+localResources:
+  collections:
+    - ../backend/postman_collection.json
+
+# Each entry here maps a local resource to one or more corresponding objects in Postman Cloud
+
+cloudResources:
+  collections:
+    ../backend/postman_collection.json: 56367215-6348bde6-1a88-4524-a31a-92b65b233f09
+    ../postman/collections/Sistem Manajemen Beasiswa - Backend API: af8532db-e08b-4309-8966-05003a8711f8
+  environments:
+    ../postman/environments/beasiswa-local.environment.yaml: 56367215-23e6bb0e-902a-4b86-9521-53c4ebb2cd4a

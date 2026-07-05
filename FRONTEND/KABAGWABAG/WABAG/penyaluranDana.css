@@ -25,7 +25,20 @@
 .tab-btn.active .tab-count{background:rgba(255,255,255,.22);color:#fff}
 
 /* ── Section head counter ── */
+.panel-head-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .panel-count{font-size:12px;font-weight:600;color:var(--text-3);white-space:nowrap}
+
+/* ── Export buttons ── */
+.btn-export{display:inline-flex;align-items:center;gap:5px;
+  padding:6px 12px;border:1.5px solid var(--border);border-radius:99px;
+  background:var(--surface);color:var(--text-2);
+  font-family:var(--font-body);font-size:12px;font-weight:600;
+  cursor:pointer;transition:all .18s var(--ease)}
+.btn-export:hover{border-color:var(--navy-300);background:var(--bg)}
+.btn-export-excel{color:#047857;border-color:var(--mint)}
+.btn-export-excel:hover{background:var(--mint-soft)}
+.btn-export-pdf{color:#be123c;border-color:var(--coral)}
+.btn-export-pdf:hover{background:var(--coral-soft)}
 
 /* ── Sel tabel tambahan ── */
 .td-no{color:var(--text-4);font-size:12px}

@@ -19,6 +19,8 @@ const demoSession = session || {
   id: 'demo-uuid',
 };
 
+const isRealSession = !!(session?.access_token && !session.access_token.startsWith('dummy-token-'));
+
 /* STATUS_CFG — icon & group identik asli, emoji diganti Iconify icon name */
 const STATUS_CFG = {
   menunggu_verifikasi: { label: 'Menunggu',     cls: 's-menunggu', icon: 'solar:clock-circle-bold-duotone',   iconColor: '#d97706', group: 'proses' },
@@ -71,7 +73,20 @@ const dummyHistory = [
 
 let activeFilter = 'all';
 let searchQuery  = '';
-const allData    = [...dummyHistory];
+let allData      = [...dummyHistory];
+
+async function loadData() {
+  if (isRealSession) {
+    try {
+      const { data } = await api.get('/status/saya');
+      allData = data.map(mapPendaftaranRow);
+      return;
+    } catch (err) {
+      console.warn('Gagal memuat riwayat, pakai data contoh:', err);
+    }
+  }
+  allData = [...dummyHistory];
+}
 
 // Jumlah notifikasi belum dibaca — dipakai untuk titik merah di lonceng
 // notifikasi & badge di dropdown profil. TODO: ganti dengan hitungan asli
@@ -360,10 +375,11 @@ function initScrollReveal() {
 }
 
 /* ===== INIT ===== */
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   initBgCanvas();
   initParticles();
   initUserInfo();
+  await loadData();
   initNavbarBadges();
   renderStats();
   renderList();

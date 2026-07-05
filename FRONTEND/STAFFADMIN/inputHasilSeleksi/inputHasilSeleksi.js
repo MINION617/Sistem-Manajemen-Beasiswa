@@ -32,6 +32,7 @@ if (!session || session.role !== 'staff') {
   // window.location.href = '../LOGIN/login.html';
 }
 const demoSession = session || { nama_lengkap: 'Rangga Adi Nugroho', role: 'staff', id: 'demo-staff-uuid' };
+const isRealSession = !!(session?.access_token && !session.access_token.startsWith('dummy-token-'));
 
 /* ── DUMMY DATA ──
    Struktur: pendaftaran JOIN profiles JOIN beasiswa JOIN hasil_seleksi
@@ -50,7 +51,7 @@ let dummyData = [
     /* JOIN beasiswa */
     beasiswa : { nama_program: 'Beasiswa Mandiri Prestasi', nominal_dana: 5000000, sponsors: { nama_perusahaan: 'Bank Mandiri' } },
     /* JOIN hasil_seleksi — field name IDENTIK dengan pendaftaranSaya.js */
-    hasil_seleksi  : { nilai_tes: null, nilai_wawancara: null, catatan_staff: null, jadwal_wawancara: null },
+    hasil_seleksi  : { nilai_tes: null, nilai_wawancara: null, catatan_staff: null },
   },
   {
     id             : 'p-102',
@@ -60,7 +61,7 @@ let dummyData = [
     tanggal_daftar : '2026-06-10T06:10:00Z',
     mahasiswa: { nama_lengkap: 'Cahaya Nur Aisyah', nim_nip: '2021220032', program_studi: 'Akuntansi', ipk: 3.75 },
     beasiswa : { nama_program: 'Beasiswa Djarum Plus', nominal_dana: 6000000, sponsors: { nama_perusahaan: 'Djarum Foundation' } },
-    hasil_seleksi  : { nilai_tes: null, nilai_wawancara: null, catatan_staff: null, jadwal_wawancara: null },
+    hasil_seleksi  : { nilai_tes: null, nilai_wawancara: null, catatan_staff: null },
   },
   {
     id             : 'p-103',
@@ -71,7 +72,7 @@ let dummyData = [
     mahasiswa: { nama_lengkap: 'Dimas Surya Atmaja', nim_nip: '2020130021', program_studi: 'Teknik Elektro', ipk: 3.91 },
     beasiswa : { nama_program: 'Pertamina Sobat Bumi', nominal_dana: 7500000, sponsors: { nama_perusahaan: 'Pertamina' } },
     /* Nilai tes sudah ada, wawancara belum */
-    hasil_seleksi  : { nilai_tes: 84.5, nilai_wawancara: null, catatan_staff: null, jadwal_wawancara: '2026-06-25T10:00' },
+    hasil_seleksi  : { nilai_tes: 84.5, nilai_wawancara: null, catatan_staff: null },
   },
   {
     id             : 'p-104',
@@ -81,7 +82,7 @@ let dummyData = [
     tanggal_daftar : '2026-06-07T11:20:00Z',
     mahasiswa: { nama_lengkap: 'Elisa Rahayu Putri', nim_nip: '2022510017', program_studi: 'Sistem Informasi', ipk: 3.88 },
     beasiswa : { nama_program: 'Telkom Digital Talent', nominal_dana: 4500000, sponsors: { nama_perusahaan: 'Telkom Indonesia' } },
-    hasil_seleksi  : { nilai_tes: 91.0, nilai_wawancara: 88.5, catatan_staff: 'Presentasi sangat baik, komunikasi lancar.', jadwal_wawancara: '2026-06-20T13:00' },
+    hasil_seleksi  : { nilai_tes: 91.0, nilai_wawancara: 88.5, catatan_staff: 'Presentasi sangat baik, komunikasi lancar.' },
   },
   {
     id             : 'p-105',
@@ -91,7 +92,7 @@ let dummyData = [
     tanggal_daftar : '2026-06-08T09:00:00Z',
     mahasiswa: { nama_lengkap: 'Fadhlan Rizki Maulana', nim_nip: '2021410043', program_studi: 'Manajemen', ipk: 3.65 },
     beasiswa : { nama_program: 'Beasiswa Djarum Plus', nominal_dana: 6000000, sponsors: { nama_perusahaan: 'Djarum Foundation' } },
-    hasil_seleksi  : { nilai_tes: 76.0, nilai_wawancara: null, catatan_staff: null, jadwal_wawancara: '2026-06-26T09:00' },
+    hasil_seleksi  : { nilai_tes: 76.0, nilai_wawancara: null, catatan_staff: null },
   },
   {
     id             : 'p-106',
@@ -101,9 +102,24 @@ let dummyData = [
     tanggal_daftar : '2026-06-09T14:00:00Z',
     mahasiswa: { nama_lengkap: 'Gita Safira Dewi', nim_nip: '2023110029', program_studi: 'Teknik Industri', ipk: 3.78 },
     beasiswa : { nama_program: 'Beasiswa Mandiri Prestasi', nominal_dana: 5000000, sponsors: { nama_perusahaan: 'Bank Mandiri' } },
-    hasil_seleksi  : { nilai_tes: 88.0, nilai_wawancara: 85.0, catatan_staff: 'Motivasi tinggi, cocok untuk program ini.', jadwal_wawancara: '2026-06-22T14:00' },
+    hasil_seleksi  : { nilai_tes: 88.0, nilai_wawancara: 85.0, catatan_staff: 'Motivasi tinggi, cocok untuk program ini.' },
   },
 ];
+
+/* ── LOAD DATA ── */
+async function loadAntrean() {
+  if (isRealSession) {
+    try {
+      const { data } = await api.get('/seleksi/antrean');
+      dummyData = data.map(mapSeleksiRow);
+    } catch (err) {
+      console.warn('Gagal memuat antrean seleksi, pakai data contoh:', err);
+    }
+  }
+  loadStats();
+  populateFilterBeasiswa();
+  renderList();
+}
 
 /* ── STATUS CONFIG (sinkron enum mahasiswa) ── */
 const STATUS_CFG = {
@@ -258,12 +274,6 @@ function renderList() {
               <iconify-icon icon="solar:calendar-bold-duotone" width="10"></iconify-icon>
               Daftar ${formatTgl(d.tanggal_daftar)}
             </span>
-            ${hs?.jadwal_wawancara
-              ? `<span class="card-tag" style="color:#7c3aed;background:var(--purple-soft);border-color:#ddd6fe">
-                   <iconify-icon icon="solar:calendar-mark-bold-duotone" width="10"></iconify-icon>
-                   Wawancara ${formatTgl(hs.jadwal_wawancara)}
-                 </span>`
-              : ''}
           </div>
         </div>
 
@@ -325,7 +335,11 @@ function openInputNilai(id) {
   document.getElementById('fNilaiTes').value        = hs?.nilai_tes       ?? '';
   document.getElementById('fNilaiWawancara').value  = hs?.nilai_wawancara ?? '';
   document.getElementById('fCatatanStaff').value    = hs?.catatan_staff   ?? '';
-  document.getElementById('fJadwalWawancara').value = hs?.jadwal_wawancara ?? '';
+  document.getElementById('fKerjaKeras').value      = hs?.nilai_kerja_keras      ?? '';
+  document.getElementById('fKepemimpinan').value    = hs?.nilai_kepemimpinan     ?? '';
+  document.getElementById('fKomunikasi').value      = hs?.nilai_komunikasi       ?? '';
+  document.getElementById('fKeberanian').value      = hs?.nilai_keberanian       ?? '';
+  document.getElementById('fSkorPrestasi').value    = hs?.skor_prestasi_akademik ?? '';
 
   updateNilaiBadge('fNilaiTes',       'badgeNilaiTes');
   updateNilaiBadge('fNilaiWawancara', 'badgeNilaiWawancara');
@@ -363,10 +377,14 @@ document.getElementById('fNilaiWawancara')?.addEventListener('input',  () => upd
 document.getElementById('formNilai')?.addEventListener('submit', async (e) => {
   e.preventDefault();
 
-  const nilaiTes  = document.getElementById('fNilaiTes').value;
-  const nilaiWaw  = document.getElementById('fNilaiWawancara').value;
-  const catatan   = document.getElementById('fCatatanStaff').value.trim();
-  const jadwal    = document.getElementById('fJadwalWawancara').value;
+  const nilaiTes       = document.getElementById('fNilaiTes').value;
+  const nilaiWaw       = document.getElementById('fNilaiWawancara').value;
+  const catatan        = document.getElementById('fCatatanStaff').value.trim();
+  const kerjaKeras     = document.getElementById('fKerjaKeras').value;
+  const kepemimpinan   = document.getElementById('fKepemimpinan').value;
+  const komunikasi     = document.getElementById('fKomunikasi').value;
+  const keberanian     = document.getElementById('fKeberanian').value;
+  const skorPrestasi   = document.getElementById('fSkorPrestasi').value;
 
   /* Validasi minimal satu nilai diisi */
   if (!nilaiTes && !nilaiWaw) {
@@ -385,17 +403,40 @@ document.getElementById('formNilai')?.addEventListener('submit', async (e) => {
   }
 
   setLoading('btnSimpanNilai', 'loaderNilai', true);
+
+  const payload = {
+    ...(nilaiTes      && { nilai_tes: parseFloat(nilaiTes) }),
+    ...(nilaiWaw      && { nilai_wawancara: parseFloat(nilaiWaw) }),
+    ...(catatan       && { catatan_staff: catatan }),
+    ...(kerjaKeras    && { nilai_kerja_keras: parseFloat(kerjaKeras) }),
+    ...(kepemimpinan  && { nilai_kepemimpinan: parseFloat(kepemimpinan) }),
+    ...(komunikasi    && { nilai_komunikasi: parseFloat(komunikasi) }),
+    ...(keberanian    && { nilai_keberanian: parseFloat(keberanian) }),
+    ...(skorPrestasi  && { skor_prestasi_akademik: parseFloat(skorPrestasi) }),
+  };
+
+  if (isRealSession) {
+    try {
+      await api.post('/seleksi/' + editingId, payload);
+      showFormMsg('formNilaiMsg', 'success', '✓ Nilai berhasil disimpan! Mahasiswa dapat melihatnya di Pendaftaran Saya.');
+      setLoading('btnSimpanNilai', 'loaderNilai', false);
+      await loadAntrean();
+      setTimeout(() => closeInputNilai(), 1600);
+      return;
+    } catch (err) {
+      console.warn('Gagal menyimpan nilai:', err);
+      showFormMsg('formNilaiMsg', 'error', '⚠ Gagal menyimpan ke server. Coba lagi.');
+      setLoading('btnSimpanNilai', 'loaderNilai', false);
+      return;
+    }
+  }
+
   await delay(900);
 
-  /* UPDATE local data — field name sinkron hasil_seleksi mahasiswa */
+  /* Fallback dummy: UPDATE local data — field name sinkron hasil_seleksi mahasiswa */
   const idx = dummyData.findIndex(d => d.id === editingId);
   if (idx !== -1) {
-    dummyData[idx].hasil_seleksi = {
-      nilai_tes        : nilaiTes  ? parseFloat(nilaiTes)  : null,
-      nilai_wawancara  : nilaiWaw  ? parseFloat(nilaiWaw)  : null,
-      catatan_staff    : catatan   || null,
-      jadwal_wawancara : jadwal    || null,
-    };
+    dummyData[idx].hasil_seleksi = { ...dummyData[idx].hasil_seleksi, ...payload };
 
     /* Update status: jika nilai_tes diisi dan status masih lolos_berkas → wawancara */
     if (nilaiTes && dummyData[idx].status === 'lolos_berkas') {
@@ -540,10 +581,8 @@ document.addEventListener('DOMContentLoaded', () => {
   initBgCanvas();
   initParticles();
   initUserInfo();
-  loadStats();
-  populateFilterBeasiswa();
   initTabs();
   initSearch();
-  renderList();
+  loadAntrean();
   console.log('📝 inputHasilSeleksi.js loaded | Staff:', demoSession?.nama_lengkap);
 });

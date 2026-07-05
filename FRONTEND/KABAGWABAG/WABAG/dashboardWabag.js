@@ -378,6 +378,7 @@ function renderTrenPenyaluran() {
     },
     options: {
       responsive: true,
+      maintainAspectRatio: false,
       plugins: {
         legend: { display: true, position: 'bottom', labels: { usePointStyle: true, boxWidth: 8 } },
         tooltip: {
@@ -429,6 +430,141 @@ function renderTabelPenerima() {
     `;
   }).join('');
 }
+
+/* ── EXPORT LAPORAN KEUANGAN (Realisasi Anggaran + Tren Penyaluran) ── */
+const REALISASI_EXPORT_COLUMNS = [
+  { key: 'namaProgram', label: 'Program Beasiswa' },
+  { key: 'sponsor', label: 'Sponsor' },
+  { key: 'penerimaDisahkan', label: 'Penerima Disahkan' },
+  { key: 'komitmenFmt', label: 'Komitmen' },
+  { key: 'tersalurFmt', label: 'Tersalur' },
+  { key: 'persentaseFmt', label: 'Realisasi' },
+];
+const TREN_EXPORT_COLUMNS = [
+  { key: 'tahun', label: 'Tahun' },
+  { key: 'totalNominalFmt', label: 'Total Tercatat' },
+  { key: 'totalCairFmt', label: 'Sudah Cair' },
+  { key: 'count', label: 'Jumlah Transaksi' },
+];
+
+function realisasiExportRows() {
+  return (realisasiData.programs || []).map(p => ({
+    ...p,
+    komitmenFmt: formatRupiah(p.komitmen),
+    tersalurFmt: formatRupiah(p.tersalur),
+    persentaseFmt: p.persentase === null ? '—' : `${p.persentase}%`,
+  }));
+}
+function trenExportRows() {
+  const { years, byYear } = trenPenyaluran || { years: [], byYear: {} };
+  return years.map(y => ({
+    tahun: y,
+    totalNominalFmt: formatRupiah(byYear[y].totalNominal),
+    totalCairFmt: formatRupiah(byYear[y].totalCair),
+    count: byYear[y].count,
+  }));
+}
+
+function trenChartAspectRatio() {
+  if (!trenPenyaluranChart) return 16 / 9;
+  const canvas = trenPenyaluranChart.canvas;
+  return canvas.width / canvas.height;
+}
+
+/**
+ * Renders a standalone single-line chart off-screen (for export only — not
+ * shown on the dashboard) and returns its PNG image + aspect ratio. Used to
+ * give "Total Tercatat" and "Sudah Cair" their own individual charts in the
+ * export, alongside the combined one already on screen.
+ */
+function renderStandaloneLineChartImage(label, color, years, values) {
+  const width = 900, height = 420;
+  const canvas = document.createElement('canvas');
+  canvas.width = width;
+  canvas.height = height;
+  canvas.style.position = 'fixed';
+  canvas.style.left = '-9999px';
+  document.body.appendChild(canvas);
+
+  const chart = new Chart(canvas, {
+    type: 'line',
+    data: {
+      labels: years,
+      datasets: [{
+        label,
+        data: values,
+        borderColor: color,
+        backgroundColor: color + '26',
+        tension: 0.3,
+        fill: true,
+        pointRadius: 5,
+      }],
+    },
+    options: {
+      responsive: false,
+      animation: false,
+      plugins: { legend: { display: true, position: 'bottom' } },
+      scales: { y: { beginAtZero: true } },
+    },
+  });
+
+  const image = chart.toBase64Image();
+  chart.destroy();
+  canvas.remove();
+  return { image, aspectRatio: width / height };
+}
+
+function trenIndividualChartImages() {
+  const { years, byYear } = trenPenyaluran || { years: [], byYear: {} };
+  if (!years.length) return [];
+  return [
+    {
+      label: 'Grafik Total Tercatat per Tahun',
+      sheetName: 'Grafik Total Tercatat',
+      ...renderStandaloneLineChartImage('Total Tercatat', '#1e3a8a', years, years.map(y => byYear[y].totalNominal)),
+    },
+    {
+      label: 'Grafik Sudah Cair per Tahun',
+      sheetName: 'Grafik Sudah Cair',
+      ...renderStandaloneLineChartImage('Sudah Cair', '#059669', years, years.map(y => byYear[y].totalCair)),
+    },
+  ];
+}
+
+document.getElementById('btnExportKeuanganExcel')?.addEventListener('click', async () => {
+  if (typeof ExcelJS === 'undefined') { alert('Library Excel belum termuat. Coba refresh halaman.'); return; }
+  const workbook = new ExcelJS.Workbook();
+  addTableSheet(workbook, 'Realisasi Anggaran', REALISASI_EXPORT_COLUMNS, realisasiExportRows());
+  addTableSheet(workbook, 'Tren Penyaluran', TREN_EXPORT_COLUMNS, trenExportRows());
+  if (trenPenyaluranChart) addChartImageSheet(workbook, 'Grafik Tren', trenPenyaluranChart.toBase64Image(), trenChartAspectRatio());
+  trenIndividualChartImages().forEach(c => addChartImageSheet(workbook, c.sheetName, c.image, c.aspectRatio));
+  await downloadWorkbook(workbook, 'laporan-keuangan-wabag');
+});
+
+document.getElementById('btnExportKeuanganPdf')?.addEventListener('click', () => {
+  if (typeof window.jspdf === 'undefined') { alert('Library PDF belum termuat. Coba refresh halaman.'); return; }
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation: 'portrait' });
+
+  doc.setFontSize(14); doc.setFont(undefined, 'bold');
+  doc.text('Laporan Keuangan — Ringkasan Wabag', 14, 16);
+  doc.setFontSize(9); doc.setFont(undefined, 'normal'); doc.setTextColor(100);
+  doc.text(`Dicetak: ${new Date().toLocaleString('id-ID', { dateStyle: 'long', timeStyle: 'short' })}`, 14, 22);
+
+  const afterRealisasiY = addPdfTable(doc, 31, 'Realisasi Anggaran', REALISASI_EXPORT_COLUMNS, realisasiExportRows(), [30, 58, 138]);
+  const afterTrenY = addPdfTable(doc, afterRealisasiY, 'Tren Dana Tersalur Tahun ke Tahun', TREN_EXPORT_COLUMNS, trenExportRows(), [245, 158, 11]);
+
+  if (trenPenyaluranChart) {
+    doc.addPage();
+    addPdfChartImage(doc, 16, trenPenyaluranChart.toBase64Image(), trenChartAspectRatio(), 'Grafik Tren Dana Tersalur (Gabungan)');
+  }
+  trenIndividualChartImages().forEach(c => {
+    doc.addPage();
+    addPdfChartImage(doc, 16, c.image, c.aspectRatio, c.label);
+  });
+
+  doc.save('laporan-keuangan-wabag.pdf');
+});
 
 /* ── SIDEBAR & LOGOUT ── */
 const sidebar        = document.getElementById('sidebar');

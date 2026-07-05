@@ -1,0 +1,32 @@
+$kind: collection
+description: "Collection end-to-end (22 request). Isi variable token_staff/token_kabag/token_wabag/token_mahasiswa dengan access_token hasil login. Backend HARUS jalan duluan di http://localhost:4000. Jalankan lewat Collection Runner secara BERURUTAN (1 -> 22) — request list/create menyimpan ID (pendaftaran_id, notif_id, laporan_id, penyaluran_id, penerima_id) ke environment variable otomatis, dipakai request setelahnya. Kalau ID belum ada, request terkait otomatis di-skip (bukan gagal). Alternatif: isi manual ke-5 ID itu di environment variable supaya semua request bisa jalan independen tanpa bergantung urutan run."
+variables:
+  base_url: http://localhost:4000
+  token_staff: ""
+  token_kabag: ""
+  token_wabag: ""
+  token_mahasiswa: ""
+  pendaftaran_id: ""
+  notif_id: ""
+  laporan_id: ""
+  penerima_id: ""
+  penyaluran_id: ""
+scripts:
+  - type: http:beforeRequest
+    code: |-
+      // Auto-trim semua token & ID variable di setiap request, supaya newline/spasi
+      // yang tidak sengaja ikut ter-copy-paste tidak menyebabkan 'Invalid character
+      // in header content' pada header Authorization.
+      const keys = ['token_mahasiswa','token_staff','token_kabag','token_wabag',
+        'pendaftaran_id','notif_id','laporan_id','penyaluran_id','penerima_id'];
+      keys.forEach((k) => {
+        const v = pm.environment.get(k) ?? pm.collectionVariables.get(k);
+        if (typeof v === 'string') {
+          const trimmed = v.replace(/[\r\n\t]/g, '').trim();
+          if (trimmed !== v) {
+            pm.environment.set(k, trimmed);
+            console.warn(k + ': karakter tak terlihat (newline/spasi) terdeteksi dan dibuang otomatis');
+          }
+        }
+      });
+    language: text/javascript

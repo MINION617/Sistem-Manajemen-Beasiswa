@@ -33,6 +33,7 @@ if (!session || session.role !== 'staff') {
   // window.location.href = '../LOGIN/login.html';
 }
 const demoSession = session || { nama_lengkap: 'Rangga Adi Nugroho', role: 'staff', id: 'demo-staff-uuid' };
+const isRealSession = !!(session?.access_token && !session.access_token.startsWith('dummy-token-'));
 
 /* ── DUMMY DATA ──
    Struktur: penyaluran_dana JOIN pendaftaran JOIN profiles JOIN beasiswa
@@ -136,6 +137,21 @@ const STATUS_CFG = {
   sedang_diproses  : { label: 'Sedang Diproses', cls: 'status-proses',  accent: '#2563eb', icon: 'solar:transfer-horizontal-bold-duotone' },
   sudah_cair       : { label: 'Sudah Cair',      cls: 'status-cair',    accent: '#059669', icon: 'solar:check-circle-bold-duotone' },
 };
+
+/* ── LOAD DATA ── */
+async function loadPencairanData() {
+  if (isRealSession) {
+    try {
+      const { data } = await api.get('/penyaluran');
+      dummyData = data.map(mapPenyaluranRow);
+    } catch (err) {
+      console.warn('Gagal memuat data penyaluran, pakai data contoh:', err);
+    }
+  }
+  loadStats();
+  populateFilter();
+  renderList();
+}
 
 /* ── STATE ── */
 let activeTab  = 'pending';
@@ -636,6 +652,6 @@ function initParticles() {
 /* ── INIT ── */
 document.addEventListener('DOMContentLoaded', () => {
   initBgCanvas(); initParticles(); initUserInfo();
-  loadStats(); populateFilter(); initTabs(); initSearch(); renderList();
+  initTabs(); initSearch(); loadPencairanData();
   console.log('💰 pencairanDana.js loaded | Staff:', demoSession?.nama_lengkap);
 });

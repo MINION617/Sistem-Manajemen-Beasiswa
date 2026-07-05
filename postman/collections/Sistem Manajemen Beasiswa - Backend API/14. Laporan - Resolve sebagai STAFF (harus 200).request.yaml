@@ -1,0 +1,25 @@
+$kind: http-request
+url: "{{base_url}}/api/laporan/{{laporan_id}}"
+method: PATCH
+headers:
+  Authorization: Bearer {{token_staff}}
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "status": "diproses",
+      "tanggapanStaff": "Sedang kami tindaklanjuti ke tim IT."
+    }
+scripts:
+  - type: beforeRequest
+    code: |-
+      if (!pm.environment.get('laporan_id')) {
+        console.warn('laporan_id kosong -> request di-skip (jalankan request 11 dulu)');
+        pm.execution.skipRequest();
+      }
+    language: text/javascript
+  - type: afterResponse
+    code: pm.test('Status 200', () => pm.response.to.have.status(200));
+    language: text/javascript
+order: 14000

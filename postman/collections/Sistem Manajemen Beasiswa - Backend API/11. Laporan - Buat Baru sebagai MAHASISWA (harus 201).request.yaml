@@ -1,0 +1,26 @@
+$kind: http-request
+url: "{{base_url}}/api/laporan"
+method: POST
+headers:
+  Authorization: Bearer {{token_mahasiswa}}
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "judul": "Kendala Upload Dokumen",
+      "deskripsi": "Sistem tidak bisa menerima file PDF lebih dari 2MB saat upload transkrip nilai.",
+      "kategori": "teknis"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('Status 201', () => pm.response.to.have.status(201));
+      const json = pm.response.json();
+      pm.test('Response punya property data', () => pm.expect(json).to.have.property('data'));
+      if (json.data && json.data.id) {
+        pm.environment.set('laporan_id', json.data.id);
+        console.log('laporan_id disimpan:', json.data.id);
+      }
+    language: text/javascript
+order: 11000

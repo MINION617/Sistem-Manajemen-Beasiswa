@@ -24,6 +24,8 @@ const demoSession = session || {
   id: 'demo-uuid',
 };
 
+const isRealSession = !!(session?.access_token && !session.access_token.startsWith('dummy-token-'));
+
 // ===== STATUS CONFIG =====
 // icon: Iconify icon name + iconColor menggantikan emoji string
 const STATUS_CFG = {
@@ -182,7 +184,17 @@ function initUserInfo() {
 
 // ===== LOAD DATA =====
 async function loadData() {
-  /* Production: Supabase query identik asli */
+  if (isRealSession) {
+    try {
+      const { data } = await api.get('/status/saya');
+      allData = data.map(mapPendaftaranRow);
+      renderStats();
+      renderList();
+      return;
+    } catch (err) {
+      console.warn('Gagal memuat pendaftaran, pakai data contoh:', err);
+    }
+  }
   allData = [...dummyData];
   renderStats();
   renderList();
@@ -353,9 +365,9 @@ function openDetail(id) {
 
   document.getElementById('modalInfoGrid').innerHTML = `
     <div class="info-item"><div class="info-label">Tanggal Daftar</div><div class="info-val">${formatTanggal(d.tanggal_daftar)}</div></div>
-    <div class="info-item"><div class="info-label">Terakhir Update</div><div class="info-val">${formatTanggal(d.updated_at)}</div></div>
-    <div class="info-item"><div class="info-label">Nominal Dana</div><div class="info-val">${formatRupiah(d.beasiswa.nominal_dana)}</div></div>
-    <div class="info-item"><div class="info-label">Kuota Penerima</div><div class="info-val">${d.beasiswa.kuota_penerima} orang</div></div>`;
+    <div class="info-item"><div class="info-label">Terakhir Update</div><div class="info-val">${d.updated_at ? formatTanggal(d.updated_at) : '—'}</div></div>
+    <div class="info-item"><div class="info-label">Nominal Dana</div><div class="info-val">${d.beasiswa.nominal_dana != null ? formatRupiah(d.beasiswa.nominal_dana) : '—'}</div></div>
+    <div class="info-item"><div class="info-label">Kuota Penerima</div><div class="info-val">${d.beasiswa.kuota_penerima != null ? d.beasiswa.kuota_penerima + ' orang' : '—'}</div></div>`;
 
   const jenisLabel = {
     sertifikat_prestasi: 'Sertifikat Prestasi',
@@ -369,6 +381,8 @@ function openDetail(id) {
       stsHTML = `<span class="dok-status dok-ok"><iconify-icon icon="solar:check-circle-bold-duotone" width="12" style="vertical-align:middle;margin-right:3px;color:#059669"></iconify-icon>Terverifikasi</span>`;
     } else if (dok.status === 'rejected') {
       stsHTML = `<span class="dok-status"><iconify-icon icon="solar:close-circle-bold-duotone" width="12" style="vertical-align:middle;margin-right:3px;color:#be123c"></iconify-icon>Ditolak</span>`;
+    } else if (dok.status === 'uploaded') {
+      stsHTML = `<span class="dok-status"><iconify-icon icon="solar:file-check-bold-duotone" width="12" style="vertical-align:middle;margin-right:3px;color:#2563eb"></iconify-icon>Terunggah</span>`;
     } else {
       stsHTML = `<span class="dok-status dok-pending"><iconify-icon icon="solar:clock-circle-bold-duotone" width="12" style="vertical-align:middle;margin-right:3px;color:#d97706"></iconify-icon>Menunggu</span>`;
     }

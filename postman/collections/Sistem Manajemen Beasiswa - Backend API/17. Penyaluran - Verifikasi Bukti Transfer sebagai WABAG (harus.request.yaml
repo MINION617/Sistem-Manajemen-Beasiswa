@@ -1,0 +1,18 @@
+$kind: http-request
+name: 17. Penyaluran - Verifikasi Bukti Transfer sebagai WABAG (harus 200)
+url: "{{base_url}}/api/penyaluran/{{penyaluran_id}}/verifikasi"
+method: PATCH
+headers:
+  Authorization: Bearer {{token_wabag}}
+scripts:
+  - type: beforeRequest
+    code: |-
+      if (!pm.environment.get('penyaluran_id')) {
+        console.warn('penyaluran_id kosong -> request di-skip (jalankan request 15 dulu)');
+        pm.execution.skipRequest();
+      }
+    language: text/javascript
+  - type: afterResponse
+    code: pm.test('Status 200', () => pm.response.to.have.status(200));
+    language: text/javascript
+order: 17000

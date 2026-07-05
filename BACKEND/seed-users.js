@@ -17,8 +17,11 @@
      SUPABASE_SERVICE_ROLE_KEY     <-- server-only secret; never ship to browser
    ============================================================ */
 
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 /* --- tiny .env parser (no dependency) --- */
 function loadEnv(file) {
@@ -49,6 +52,10 @@ const accounts = [
   { nim: '199002',  role: 'staff',     nama_lengkap: 'Sari Wulandari',     jabatan: 'Staff Administrasi Beasiswa', unit: 'Bagian Kemahasiswaan', nomor_whatsapp: '081220002002' },
   { nim: '197505',  role: 'kabag',     nama_lengkap: 'Dr. Bambang Sutejo, M.M.', jabatan: 'Kepala Bagian Kemahasiswaan', unit: 'Bagian Kemahasiswaan', nomor_whatsapp: '081230001001' },
   { nim: '198003',  role: 'wabag',     nama_lengkap: 'Dra. Hartini, M.M.',       jabatan: 'Wakil Bagian Keuangan',       unit: 'Bagian Keuangan',      nomor_whatsapp: '081240001001' },
+  { nim: '9999001', role: 'mahasiswa', nama_lengkap: 'Test Rewiring Mahasiswa', program_studi: 'Teknik Informatika', ipk: 3.50, nomor_whatsapp: '081200009999', alamat: 'Test' },
+  { nim: '9999002', role: 'kabag',     nama_lengkap: 'Test Rewiring Kabag', jabatan: 'Kepala Bagian (Test)', unit: 'Bagian Kemahasiswaan', nomor_whatsapp: '081200009998' },
+  { nim: '9999003', role: 'wabag',     nama_lengkap: 'Test Rewiring Wabag', jabatan: 'Wakil Bagian Keuangan (Test)', unit: 'Bagian Keuangan', nomor_whatsapp: '081200009997' },
+  { nim: '9999004', role: 'staff',     nama_lengkap: 'Test Rewiring Staff', jabatan: 'Staff Bagian Beasiswa (Test)', unit: 'Bagian Kemahasiswaan', nomor_whatsapp: '081200009996' },
 ];
 
 async function createUser(acc) {
