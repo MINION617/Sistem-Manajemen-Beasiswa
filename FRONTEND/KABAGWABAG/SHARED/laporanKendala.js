@@ -48,6 +48,25 @@ const ROLE_CFG = {
 };
 
 const roleCfg = ROLE_CFG[ROLE] || ROLE_CFG.kabag;
+const isRealSession = !!(session?.access_token && !session.access_token.startsWith('dummy-token-'));
+
+/* GET /api/laporan row -> shape this page renders (mirrors kabagMapper.js style) */
+function mapLaporanRow(row) {
+  return {
+    id: row.id,
+    judul: row.judul,
+    deskripsi: row.deskripsi,
+    kategori: row.kategori,
+    status: row.status,
+    tgl: row.tanggal_lapor,
+    mahasiswa: {
+      nama: row.profiles?.nama_lengkap ?? '—',
+      nim: row.profiles?.nim_nip ?? '—',
+    },
+    beasiswa: row.beasiswa?.nama_program ?? null,
+    tanggapan_staff: row.tanggapan_staff,
+  };
+}
 
 
 /* ============================================================
@@ -170,6 +189,23 @@ const KATEGORI_CFG = {
   lainnya  : { label : 'Lainnya',            icon : 'solar:info-circle-bold-duotone' },
 };
 
+/* ── DATA (real backend, falls back to dummy above) ── */
+let laporanData = dummyLaporan;
+
+async function loadData() {
+  if (isRealSession) {
+    try {
+      const { data } = await api.get('/laporan');
+      laporanData = data.map(mapLaporanRow);
+    } catch (err) {
+      console.warn('Gagal memuat data laporan, pakai data contoh:', err);
+      laporanData = dummyLaporan;
+    }
+  }
+  loadStats();
+  renderList();
+}
+
 
 /* ============================================================
    04. STATE FILTER
@@ -272,10 +308,10 @@ function initUserInfo() {
    ============================================================ */
 
 function loadStats() {
-  const masuk    = dummyLaporan.filter(d => d.status === 'masuk').length;
-  const diproses = dummyLaporan.filter(d => d.status === 'diproses').length;
-  const selesai  = dummyLaporan.filter(d => d.status === 'selesai').length;
-  const total    = dummyLaporan.length;
+  const masuk    = laporanData.filter(d => d.status === 'masuk').length;
+  const diproses = laporanData.filter(d => d.status === 'diproses').length;
+  const selesai  = laporanData.filter(d => d.status === 'selesai').length;
+  const total    = laporanData.length;
 
   animateNum('statMasuk',    masuk);
   animateNum('statDiproses', diproses);
@@ -312,7 +348,7 @@ function renderList() {
   if (!listEl) return;
 
   /* Filter data */
-  let data = [...dummyLaporan];
+  let data = [...laporanData];
 
   if (activeTab !== 'all') {
     data = data.filter(d => d.status === activeTab);
@@ -426,7 +462,7 @@ function renderList() {
 const modalDetail = document.getElementById('modalDetail');
 
 function openDetail(id) {
-  const d = dummyLaporan.find(x => x.id === id);
+  const d = laporanData.find(x => x.id === id);
   if (!d) return;
 
   const cfg    = STATUS_CFG[d.status]       || STATUS_CFG.masuk;
@@ -698,8 +734,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initBgCanvas();
   initParticles();
   initUserInfo();
-  loadStats();
-  renderList();
+  loadData();
 
   console.log(`📋 laporanKendala.js loaded | Role: ${ROLE} | User: ${demoSession.nama_lengkap}`);
 });

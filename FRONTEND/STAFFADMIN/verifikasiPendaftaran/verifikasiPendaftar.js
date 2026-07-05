@@ -31,6 +31,7 @@ const demoSession = session || {
   role         : 'staff',
   id           : 'demo-staff-uuid',
 };
+const isRealSession = !!(session?.access_token && !session.access_token.startsWith('dummy-token-'));
 
 /* ============================================================
    DUMMY DATA — pendaftaran
@@ -244,6 +245,24 @@ const STATUS_CFG = {
   },
 };
 
+/* ── DATA (real backend, falls back to dummy above) ── */
+let pendaftaranData = dummyPendaftaran;
+
+async function loadData() {
+  if (isRealSession) {
+    try {
+      const { data } = await api.get('/verifikasi');
+      pendaftaranData = data.map(mapVerifikasiRow);
+    } catch (err) {
+      console.warn('Gagal memuat data pendaftaran, pakai data contoh:', err);
+      pendaftaranData = dummyPendaftaran;
+    }
+  }
+  loadStats();
+  populateBeasiswaFilter();
+  renderList();
+}
+
 /* ============================================================
    STATE
    ============================================================ */
@@ -315,10 +334,10 @@ function initUserInfo() {
    STATS & COUNTS
    ============================================================ */
 function loadStats() {
-  const menunggu = dummyPendaftaran.filter(p => p.status === 'menunggu_verifikasi').length;
-  const lolos    = dummyPendaftaran.filter(p => p.status === 'lolos_berkas').length;
-  const ditolak  = dummyPendaftaran.filter(p => p.status === 'ditolak_berkas').length;
-  const total    = dummyPendaftaran.length;
+  const menunggu = pendaftaranData.filter(p => p.status === 'menunggu_verifikasi').length;
+  const lolos    = pendaftaranData.filter(p => p.status === 'lolos_berkas').length;
+  const ditolak  = pendaftaranData.filter(p => p.status === 'ditolak_berkas').length;
+  const total    = pendaftaranData.length;
 
   animateNum('statMenunggu',  menunggu);
   animateNum('statLolosBerkas', lolos);
@@ -357,7 +376,7 @@ function populateBeasiswaFilter() {
   if (!sel) return;
 
   const uniqueBeasiswa = [...new Map(
-    dummyPendaftaran.map(p => [p.beasiswa_id, p.beasiswa?.nama_program])
+    pendaftaranData.map(p => [p.beasiswa_id, p.beasiswa?.nama_program])
   ).entries()];
 
   sel.innerHTML = '<option value="all">Semua Beasiswa</option>';
@@ -379,7 +398,7 @@ function renderList() {
   const emptyEl = document.getElementById('emptyState');
   if (!listEl) return;
 
-  let data = [...dummyPendaftaran];
+  let data = [...pendaftaranData];
 
   /* Filter status tab */
   if (activeStatusFilter !== 'all') {
@@ -519,7 +538,7 @@ function initSearch() {
 const modalDetail = document.getElementById('modalDetail');
 
 function openDetail(id) {
-  const p = dummyPendaftaran.find(x => x.id === id);
+  const p = pendaftaranData.find(x => x.id === id);
   if (!p) return;
   openDetailId = id;
 
@@ -655,7 +674,7 @@ function triggerAksi(pendaftaranId, aksi) {
 
   pendingAksi = { pendaftaranId, aksi };
 
-  const p    = dummyPendaftaran.find(x => x.id === pendaftaranId);
+  const p    = pendaftaranData.find(x => x.id === pendaftaranId);
   const nama = p?.mahasiswa?.nama_lengkap || '—';
 
   const konfirmasiIconEl = document.getElementById('konfirmasiIcon');
@@ -694,22 +713,37 @@ function closeKonfirmasi() {
 document.getElementById('cancelKonfirmasi')?.addEventListener('click',         closeKonfirmasi);
 document.getElementById('modalKonfirmasiOverlay')?.addEventListener('click',  closeKonfirmasi);
 
-document.getElementById('confirmAksi')?.addEventListener('click', () => {
+document.getElementById('confirmAksi')?.addEventListener('click', async () => {
   if (!pendingAksi) return;
 
   const { pendaftaranId, aksi } = pendingAksi;
   const catatan = document.getElementById('catatanVerifikasi')?.value.trim() || null;
 
-  const idx = dummyPendaftaran.findIndex(p => p.id === pendaftaranId);
+  const idx = pendaftaranData.findIndex(p => p.id === pendaftaranId);
   if (idx === -1) { closeKonfirmasi(); return; }
 
-  /* UPDATE status — field name sinkron dengan pendaftaranSaya.js mahasiswa */
-  if (aksi === 'setuju') {
-    dummyPendaftaran[idx].status        = 'lolos_berkas';
-    dummyPendaftaran[idx].catatan_staff = catatan || 'Berkas dinyatakan lengkap dan valid.';
+  if (aksi === 'tolak' && !catatan) {
+    alert('Alasan penolakan wajib diisi.');
+    return;
+  }
+
+  if (isRealSession) {
+    try {
+      const { data } = await api.post(`/verifikasi/${pendaftaranId}`, {
+        decision: aksi === 'setuju' ? 'verified' : 'rejected',
+        alasan: catatan || undefined,
+      });
+      pendaftaranData[idx] = mapVerifikasiRow(data);
+    } catch (err) {
+      alert(err.message || 'Gagal menyimpan keputusan verifikasi.');
+      return;
+    }
+  } else if (aksi === 'setuju') {
+    pendaftaranData[idx].status        = 'lolos_berkas';
+    pendaftaranData[idx].catatan_staff = catatan || 'Berkas dinyatakan lengkap dan valid.';
   } else {
-    dummyPendaftaran[idx].status        = 'ditolak_berkas';
-    dummyPendaftaran[idx].catatan_staff = catatan || 'Berkas tidak memenuhi syarat.';
+    pendaftaranData[idx].status        = 'ditolak_berkas';
+    pendaftaranData[idx].catatan_staff = catatan || 'Berkas tidak memenuhi syarat.';
   }
 
   closeKonfirmasi();
@@ -859,11 +893,9 @@ document.addEventListener('DOMContentLoaded', () => {
   initBgCanvas();
   initParticles();
   initUserInfo();
-  loadStats();
-  populateBeasiswaFilter();
   initTabs();
   initSearch();
-  renderList();
+  loadData();
 
   console.log(
     '✅ verifikasiPendaftar.js loaded | Staff:',

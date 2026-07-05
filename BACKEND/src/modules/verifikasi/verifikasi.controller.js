@@ -16,6 +16,11 @@ export async function getAntrean(req, res) {
   res.json({ data })
 }
 
+export async function getAll(req, res) {
+  const data = await verifikasiService.listAll()
+  res.json({ data })
+}
+
 export async function postDecision(req, res) {
   const parsed = decideSchema.safeParse(req.body)
   if (!parsed.success) {

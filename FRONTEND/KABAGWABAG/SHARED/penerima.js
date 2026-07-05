@@ -47,6 +47,29 @@ const ROLE_CFG = {
 };
 
 const roleCfg = ROLE_CFG[ROLE] || ROLE_CFG.kabag;
+const isRealSession = !!(session?.access_token && !session.access_token.startsWith('dummy-token-'));
+
+/* status_penyaluran enum ('pending'/'sedang_diproses'/'sudah_cair') -> this page's STATUS_CFG keys */
+const PENYALURAN_STATUS_MAP = {
+  pending: 'belum_cair',
+  sedang_diproses: 'proses_transfer',
+  sudah_cair: 'sudah_cair',
+};
+
+/* mapPenyaluranRow() output (from penyaluranMapper.js) -> shape this page renders */
+function mapPenerimaRow(row) {
+  const mapped = mapPenyaluranRow(row);
+  return {
+    id: mapped.id,
+    nama: mapped.mahasiswa.nama_lengkap ?? '—',
+    nim: mapped.mahasiswa.nim_nip ?? '—',
+    beasiswa: mapped.beasiswa.nama_program ?? '—',
+    sponsor: mapped.beasiswa.sponsors.nama_perusahaan ?? '—',
+    nominal: mapped.nominal ?? 0,
+    status: PENYALURAN_STATUS_MAP[mapped.status] ?? 'belum_cair',
+    tgl: mapped.tanggal_pencairan ?? mapped.created_at,
+  };
+}
 
 
 /* ============================================================
@@ -134,6 +157,23 @@ const STATUS_CFG = {
   },
 };
 
+/* ── DATA (real backend, falls back to dummy above) ── */
+let penerimaData = dummyPenerima;
+
+async function loadData() {
+  if (isRealSession) {
+    try {
+      const { data } = await api.get('/penyaluran');
+      penerimaData = data.map(mapPenerimaRow);
+    } catch (err) {
+      console.warn('Gagal memuat data penerima, pakai data contoh:', err);
+      penerimaData = dummyPenerima;
+    }
+  }
+  loadStats();
+  renderList();
+}
+
 
 /* ============================================================
    04. STATE FILTER
@@ -208,11 +248,11 @@ function initUserInfo() {
    ============================================================ */
 
 function loadStats() {
-  const total      = dummyPenerima.length;
-  const sudahCair  = dummyPenerima.filter(d => d.status === 'sudah_cair').length;
-  const proses     = dummyPenerima.filter(d => d.status === 'proses_transfer').length;
-  const belumCair  = dummyPenerima.filter(d => d.status === 'belum_cair').length;
-  const totalDana  = dummyPenerima.reduce((sum, d) => sum + d.nominal, 0);
+  const total      = penerimaData.length;
+  const sudahCair  = penerimaData.filter(d => d.status === 'sudah_cair').length;
+  const proses     = penerimaData.filter(d => d.status === 'proses_transfer').length;
+  const belumCair  = penerimaData.filter(d => d.status === 'belum_cair').length;
+  const totalDana  = penerimaData.reduce((sum, d) => sum + d.nominal, 0);
   const juta       = (totalDana / 1000000).toLocaleString('id-ID');
 
   animateNum('statTotalPenerima', total);
@@ -253,7 +293,7 @@ function renderList() {
   if (!tableEl) return;
 
   /* Filter data */
-  let data = [...dummyPenerima];
+  let data = [...penerimaData];
 
   if (activeTab !== 'all') {
     data = data.filter(d => d.status === activeTab);
@@ -490,8 +530,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initBgCanvas();
   initParticles();
   initUserInfo();
-  loadStats();
-  renderList();
+  loadData();
 
   console.log(`🏆 penerima.js loaded | Role: ${ROLE} | User: ${demoSession.nama_lengkap}`);
 });

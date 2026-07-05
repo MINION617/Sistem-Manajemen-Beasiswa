@@ -13,6 +13,14 @@ verifikasiRouter.get(
   asyncHandler(verifikasiController.getAntrean)
 )
 
+// Full history (all statuses) — used by the verification page's Semua/Lolos/Ditolak tabs.
+verifikasiRouter.get(
+  '/',
+  auth,
+  requireRole('staff'),
+  asyncHandler(verifikasiController.getAll)
+)
+
 verifikasiRouter.post(
   '/:pendaftaranId',
   auth,

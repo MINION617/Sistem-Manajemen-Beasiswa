@@ -18,5 +18,6 @@ function mapKabagApplicantRow(row) {
     nilai_wawancara: hasilSeleksi?.nilai_wawancara ?? null,
     ipk: row.profiles?.ipk ?? null,
     status: row.status,
+    tgl: row.tanggal_daftar,
   };
 }

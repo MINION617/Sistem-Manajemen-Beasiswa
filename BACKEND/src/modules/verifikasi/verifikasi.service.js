@@ -28,6 +28,17 @@ export async function listAntrean() {
   return data
 }
 
+/** Full history (all statuses) for the staff verification page's tabs (Semua/Lolos/Ditolak). */
+export async function listAll() {
+  const { data, error } = await supabaseAdmin
+    .from('pendaftaran')
+    .select(PENDAFTARAN_SELECT)
+    .order('tanggal_daftar', { ascending: false })
+
+  if (error) throw Object.assign(new Error(error.message), { status: 502 })
+  return data
+}
+
 /**
  * Move an application to Verified or Rejected. `alasan` is required for rejections
  * so the decision stays auditable (see AGENTS.md working rules). Written to

@@ -21,10 +21,11 @@ laporanRouter.get(
 )
 
 // COMP-02: staff reads every complaint and resolves them.
+// Kabag/wabag get read-only visibility (monitoring pages), no resolve access.
 laporanRouter.get(
   '/',
   auth,
-  requireRole('staff'),
+  requireRole('staff', 'kabag', 'wabag'),
   asyncHandler(laporanController.getAll)
 )
 laporanRouter.patch(

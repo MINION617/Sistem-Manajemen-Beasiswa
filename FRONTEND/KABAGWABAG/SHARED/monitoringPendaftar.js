@@ -48,6 +48,7 @@ const ROLE_CFG = {
 };
 
 const roleCfg = ROLE_CFG[ROLE] || ROLE_CFG.kabag;
+const isRealSession = !!(session?.access_token && !session.access_token.startsWith('dummy-token-'));
 
 
 /* ============================================================
@@ -179,6 +180,24 @@ const STATUS_CFG = {
 };
 
 
+/* ── DATA (real backend, falls back to dummy above) ── */
+let pendaftarData = dummyPendaftar;
+
+async function loadData() {
+  if (isRealSession) {
+    try {
+      const { data } = await api.get('/kabag/pendaftar');
+      pendaftarData = data.map(mapKabagApplicantRow);
+    } catch (err) {
+      console.warn('Gagal memuat data pendaftar, pakai data contoh:', err);
+      pendaftarData = dummyPendaftar;
+    }
+  }
+  loadStats();
+  renderList();
+}
+
+
 /* ============================================================
    04. STATE FILTER
    ============================================================ */
@@ -275,11 +294,11 @@ function initUserInfo() {
    ============================================================ */
 
 function loadStats() {
-  const menunggu    = dummyPendaftar.filter(d => d.status === 'menunggu_verifikasi').length;
-  const lolosBerkas = dummyPendaftar.filter(d => d.status === 'lolos_berkas').length;
-  const wawancara   = dummyPendaftar.filter(d => d.status === 'wawancara').length;
-  const lolosFinal  = dummyPendaftar.filter(d => d.status === 'lolos_final').length;
-  const total       = dummyPendaftar.length;
+  const menunggu    = pendaftarData.filter(d => d.status === 'menunggu_verifikasi').length;
+  const lolosBerkas = pendaftarData.filter(d => d.status === 'lolos_berkas').length;
+  const wawancara   = pendaftarData.filter(d => d.status === 'wawancara').length;
+  const lolosFinal  = pendaftarData.filter(d => d.status === 'lolos_final').length;
+  const total       = pendaftarData.length;
 
   animateNum('statMenunggu',    menunggu);
   animateNum('statLolosBerkas', lolosBerkas);
@@ -316,7 +335,7 @@ function renderList() {
   if (!listEl) return;
 
   /* Filter data */
-  let data = [...dummyPendaftar];
+  let data = [...pendaftarData];
 
   if (activeTab !== 'all') {
     data = data.filter(d => d.status === activeTab);
@@ -424,7 +443,7 @@ function renderList() {
 const modalDetail = document.getElementById('modalDetail');
 
 function openDetail(id) {
-  const d = dummyPendaftar.find(x => x.id === id);
+  const d = pendaftarData.find(x => x.id === id);
   if (!d) return;
 
   const cfg = STATUS_CFG[d.status] || STATUS_CFG.menunggu_verifikasi;
@@ -687,8 +706,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initBgCanvas();
   initParticles();
   initUserInfo();
-  loadStats();
-  renderList();
+  loadData();
 
   console.log(`👥 monitoringPendaftar.js loaded | Role: ${ROLE} | User: ${demoSession.nama_lengkap}`);
 });
