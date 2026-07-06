@@ -527,18 +527,33 @@ a{color:inherit;text-decoration:none}
 /* ── REALISASI ANGGARAN & ANTRIAN PENCAIRAN ── */
 .card-meta{font-size:12px;font-weight:600;color:var(--text-3);white-space:nowrap}
 
-.realisasi-item{padding:10px 0;border-bottom:1px solid var(--border)}
-.realisasi-item:last-child{border-bottom:none;padding-bottom:0}
+.realisasi-item{
+  padding:14px 20px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:14px;position:relative;
+  transition:background .2s,padding-left .2s}
+.realisasi-item:last-child{border-bottom:none}
+.realisasi-item::before{
+  content:'';position:absolute;left:0;top:0;bottom:0;
+  width:0;background:var(--role);transition:width .2s var(--ease);border-radius:0 2px 2px 0}
+.realisasi-item:hover{background:rgba(245,158,11,.04);padding-left:24px}
+.realisasi-item:hover::before{width:3px}
+.realisasi-icon{
+  width:40px;height:40px;border-radius:var(--radius-sm);
+  background:var(--emerald-soft);display:grid;place-items:center;flex-shrink:0;
+  transition:transform .2s var(--ease)}
+.realisasi-item:hover .realisasi-icon{transform:scale(1.08) rotate(-4deg)}
+.realisasi-body{flex:1;min-width:0}
 .realisasi-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:8px}
-.realisasi-nama{font-weight:600;font-size:13.5px;color:var(--text-2)}
-.realisasi-meta{font-size:12px;color:var(--text-3)}
+.realisasi-nama{font-size:13px;font-weight:600;color:var(--text);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.realisasi-meta{font-size:11px;color:var(--text-3)}
 .realisasi-angka{text-align:right;flex-shrink:0}
-.realisasi-pct{display:block;font-family:var(--font-display);font-weight:700;font-size:15px;color:var(--text-2)}
+.realisasi-pct{display:block;font-family:var(--font-display);font-weight:700;font-size:14px;color:var(--role)}
 .realisasi-nominal{font-size:11px;color:var(--text-4);white-space:nowrap}
-.realisasi-track{height:8px;background:var(--navy-100);border-radius:99px;overflow:hidden}
+.realisasi-track{height:7px;background:var(--navy-100);border-radius:99px;overflow:hidden}
 .realisasi-fill{height:100%;background:var(--emerald);border-radius:99px;transition:width .6s var(--ease)}
 
-.aging-bars{display:flex;flex-direction:column;gap:10px;margin-bottom:16px}
+.aging-bars{display:flex;flex-direction:column;gap:10px;margin:0 20px 16px;padding-top:14px}
 .aging-row{display:flex;align-items:center;gap:10px}
 .aging-label{width:74px;flex-shrink:0;font-size:12px;font-weight:600;color:var(--text-3)}
 .aging-track{flex:1;height:14px;background:var(--navy-50);border-radius:4px}
@@ -546,9 +561,20 @@ a{color:inherit;text-decoration:none}
 .aging-val{flex-shrink:0;min-width:24px;font-size:12px;font-weight:600;color:var(--text-2);white-space:nowrap;text-align:right}
 
 .antrian-old-head{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
-  color:var(--text-4);padding-top:12px;margin-bottom:6px;border-top:1px solid var(--border)}
-.antrian-old-item{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:7px 0}
-.antrian-old-nama{font-weight:600;font-size:13px;color:var(--text-2)}
+  color:var(--text-4);padding:12px 20px 6px;margin:0;border-top:1px solid var(--border)}
+.antrian-old-item{
+  display:flex;align-items:center;gap:14px;
+  padding:10px 20px;border-bottom:1px solid var(--border);
+  transition:background .2s;position:relative}
+.antrian-old-item:last-child{border-bottom:none}
+.antrian-old-icon{
+  width:36px;height:36px;border-radius:var(--radius-sm);flex-shrink:0;
+  background:var(--role-gradient);color:var(--navy-900);display:grid;place-items:center;
+  font-family:var(--font-display);font-weight:700;font-size:13px}
+.antrian-old-item:hover{background:rgba(245,158,11,.04)}
+.antrian-old-info{flex:1;min-width:0}
+.antrian-old-nama{font-weight:600;font-size:13px;color:var(--text-2);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .antrian-old-meta{font-size:11.5px;color:var(--text-3)}
 .antrian-old-right{text-align:right;flex-shrink:0}
 .antrian-old-umur{display:inline-block;font-family:var(--font-display);font-weight:700;font-size:12px;

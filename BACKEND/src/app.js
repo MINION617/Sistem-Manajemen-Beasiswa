@@ -12,6 +12,11 @@ import { kabagRouter } from './modules/kabag/kabag.routes.js'
 import { penerimaRouter } from './modules/penerima/penerima.routes.js'
 import { penyaluranRouter } from './modules/penyaluran/penyaluran.routes.js'
 import { financeRouter } from './modules/finance/finance.routes.js'
+import { beasiswaRouter } from './modules/beasiswa/beasiswa.routes.js'
+import { sponsorsRouter } from './modules/sponsors/sponsors.routes.js'
+import { pendaftaranRouter } from './modules/pendaftaran/pendaftaran.routes.js'
+import { dokumenRouter } from './modules/dokumen/dokumen.routes.js'
+import { seleksiRouter } from './modules/seleksi/seleksi.routes.js'
 
 export const app = express()
 
@@ -32,6 +37,11 @@ app.use('/api/kabag', kabagRouter)
 app.use('/api/penerima', penerimaRouter)
 app.use('/api/penyaluran', penyaluranRouter)
 app.use('/api/finance', financeRouter)
+app.use('/api/beasiswa', beasiswaRouter)
+app.use('/api/sponsors', sponsorsRouter)
+app.use('/api/pendaftaran', pendaftaranRouter)
+app.use('/api/dokumen', dokumenRouter)
+app.use('/api/seleksi', seleksiRouter)
 
 app.use(notFound)
 app.use(errorHandler)

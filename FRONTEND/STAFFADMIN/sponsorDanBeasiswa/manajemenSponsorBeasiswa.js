@@ -33,6 +33,79 @@ const demoSession = session || {
   id           : 'demo-staff-uuid',
 };
 
+const isRealSession = !!(session?.access_token && !session.access_token.startsWith('dummy-token-'));
+
+/* ============================================================
+   BACKEND WIRING — GET/POST/PATCH /api/sponsors, /api/beasiswa
+   Kolom asli DB berbeda nama dari field dummy di atas (mis. `kuota`
+   bukan `kuota_penerima`, `jenis_industri` bukan `industri`), dan
+   `status` beasiswa di DB memakai 'aktif'/'nonaktif' (dipakai juga
+   oleh daftarBeasiswa.js mahasiswa yang filter status=aktif),
+   sedangkan form di halaman ini memakai label 'buka'/'tutup'.
+   ============================================================ */
+const STATUS_BACKEND_TO_UI = { aktif: 'buka', nonaktif: 'tutup' };
+const STATUS_UI_TO_BACKEND = { buka: 'aktif', tutup: 'nonaktif' };
+
+const KATEGORI_STYLE = {
+  prestasi : { icon: 'solar:cup-star-bold-duotone',  iconColor: '#d97706', bg: '#fef3c7' },
+  riset    : { icon: 'solar:globus-bold-duotone',     iconColor: '#059669', bg: '#fee2e2' },
+  industri : { icon: 'solar:laptop-bold-duotone',     iconColor: '#2563eb', bg: '#eff6ff' },
+  afirmasi : { icon: 'solar:leaf-bold-duotone',        iconColor: '#10b981', bg: '#d1fae5' },
+};
+const KATEGORI_STYLE_DEFAULT = { icon: 'solar:diploma-bold-duotone', iconColor: '#2563eb', bg: '#eff6ff' };
+
+function mapSponsorFromApi(s) {
+  return {
+    id              : s.id,
+    nama_perusahaan : s.nama_perusahaan,
+    industri        : s.jenis_industri || '—',
+    tagline         : s.tagline || '',
+    tentang         : s.tentang || '',
+    narahubung      : s.narahubung || '—',
+    kontak          : s.kontak_perusahaan || '—',
+    email           : s.email || '',
+    alamat          : s.alamat_perusahaan || '',
+    warna           : s.warna || '#2563eb',
+    inisial         : (s.nama_perusahaan || '??').slice(0, 2).toUpperCase(),
+    is_aktif        : s.is_aktif,
+    jumlah_beasiswa : 0,
+    total_kuota     : 0,
+  };
+}
+
+function mapBeasiswaFromApi(b) {
+  const style = KATEGORI_STYLE[b.kategori] || KATEGORI_STYLE_DEFAULT;
+  return {
+    id             : b.id,
+    sponsor_id     : b.sponsor_id,
+    nama_program   : b.nama_program,
+    deskripsi      : b.deskripsi || '',
+    nominal_dana   : b.nominal_dana || 0,
+    kuota_penerima : b.kuota || 0,
+    tanggal_buka   : b.tanggal_buka,
+    tanggal_tutup  : b.tanggal_tutup,
+    kategori       : b.kategori || 'prestasi',
+    status         : STATUS_BACKEND_TO_UI[b.status] || 'tutup',
+    ...style,
+  };
+}
+
+/** Ganti data contoh dengan data asli backend kalau sesi login-nya nyata. */
+async function loadRealData() {
+  if (!isRealSession) return;
+  try {
+    const [sponsorsRes, beasiswaRes] = await Promise.all([
+      api.get('/sponsors'),
+      api.get('/beasiswa'),
+    ]);
+    dummySponsors = sponsorsRes.data.map(mapSponsorFromApi);
+    dummyBeasiswa = beasiswaRes.data.map(mapBeasiswaFromApi);
+    dummySponsors.forEach(s => updateSponsorKuota(s.id));
+  } catch (err) {
+    console.warn('Gagal memuat data sponsor/beasiswa dari backend, pakai data contoh:', err);
+  }
+}
+
 /* ============================================================
    DUMMY DATA — sponsors
    Nama field identik dengan profilPerusahaanBeasiswa.js mahasiswa
@@ -704,7 +777,6 @@ document.getElementById('formSponsor')?.addEventListener('submit', async (e) => 
   }
 
   setLoading('btnSimpanSponsor', 'loaderSponsor', true);
-  await delay(900);
 
   const payload = {
     nama_perusahaan : nama,
@@ -720,31 +792,55 @@ document.getElementById('formSponsor')?.addEventListener('submit', async (e) => 
     inisial         : nama.slice(0, 2).toUpperCase(),
   };
 
-  if (editingSponsorId) {
-    /* UPDATE */
-    const idx = dummySponsors.findIndex(s => s.id === editingSponsorId);
-    if (idx !== -1) {
-      dummySponsors[idx] = { ...dummySponsors[idx], ...payload };
+  try {
+    if (isRealSession) {
+      const apiPayload = {
+        namaPerusahaan   : payload.nama_perusahaan,
+        jenisIndustri    : payload.industri,
+        tagline          : payload.tagline || undefined,
+        tentang          : payload.tentang || undefined,
+        narahubung       : payload.narahubung || undefined,
+        kontakPerusahaan : payload.kontak || undefined,
+        email            : payload.email || undefined,
+        alamatPerusahaan : payload.alamat || undefined,
+        warna            : payload.warna,
+        isAktif          : payload.is_aktif,
+      };
+
+      if (editingSponsorId) {
+        const res = await api.patch(`/sponsors/${editingSponsorId}`, apiPayload);
+        const idx = dummySponsors.findIndex(s => s.id === editingSponsorId);
+        if (idx !== -1) dummySponsors[idx] = mapSponsorFromApi(res.data);
+        showFormMsg('formSponsorMsg', 'success', '✓ Data sponsor berhasil diperbarui!');
+      } else {
+        const res = await api.post('/sponsors', apiPayload);
+        dummySponsors.push(mapSponsorFromApi(res.data));
+        showFormMsg('formSponsorMsg', 'success', '✓ Sponsor baru berhasil ditambahkan!');
+      }
+      dummySponsors.forEach(s => updateSponsorKuota(s.id));
+    } else {
+      await delay(900);
+
+      if (editingSponsorId) {
+        const idx = dummySponsors.findIndex(s => s.id === editingSponsorId);
+        if (idx !== -1) dummySponsors[idx] = { ...dummySponsors[idx], ...payload };
+        showFormMsg('formSponsorMsg', 'success', '✓ Data sponsor berhasil diperbarui!');
+      } else {
+        dummySponsors.push({ id: 'sp-' + Date.now(), jumlah_beasiswa: 0, total_kuota: 0, ...payload });
+        showFormMsg('formSponsorMsg', 'success', '✓ Sponsor baru berhasil ditambahkan!');
+      }
     }
-    showFormMsg('formSponsorMsg', 'success', '✓ Data sponsor berhasil diperbarui!');
-  } else {
-    /* INSERT */
-    const newId = 'sp-' + Date.now();
-    dummySponsors.push({
-      id               : newId,
-      jumlah_beasiswa  : 0,
-      total_kuota      : 0,
-      ...payload,
-    });
-    showFormMsg('formSponsorMsg', 'success', '✓ Sponsor baru berhasil ditambahkan!');
+
+    setLoading('btnSimpanSponsor', 'loaderSponsor', false);
+    loadStats();
+    renderSponsorGrid();
+    populateSponsorSelect();
+
+    setTimeout(() => closeModalSponsor(), 1500);
+  } catch (err) {
+    setLoading('btnSimpanSponsor', 'loaderSponsor', false);
+    showFormMsg('formSponsorMsg', 'error', '⚠ ' + (err?.message || 'Gagal menyimpan sponsor.'));
   }
-
-  setLoading('btnSimpanSponsor', 'loaderSponsor', false);
-  loadStats();
-  renderSponsorGrid();
-  populateSponsorSelect();
-
-  setTimeout(() => closeModalSponsor(), 1500);
 });
 
 document.getElementById('modalSponsorClose')?.addEventListener('click', closeModalSponsor);
@@ -818,7 +914,6 @@ document.getElementById('formBeasiswa')?.addEventListener('submit', async (e) =>
   }
 
   setLoading('btnSimpanBeasiswa', 'loaderBeasiswa', true);
-  await delay(900);
 
   const payload = {
     nama_program   : nama,
@@ -832,34 +927,58 @@ document.getElementById('formBeasiswa')?.addEventListener('submit', async (e) =>
     status         : document.getElementById('fStatusBeasiswa').value,
   };
 
-  if (editingBeasiswaId) {
-    const idx = dummyBeasiswa.findIndex(b => b.id === editingBeasiswaId);
-    if (idx !== -1) {
-      dummyBeasiswa[idx] = {
-        ...dummyBeasiswa[idx],
-        ...payload,
+  try {
+    if (isRealSession) {
+      const apiPayload = {
+        sponsorId   : payload.sponsor_id,
+        namaProgram : payload.nama_program,
+        deskripsi   : payload.deskripsi || undefined,
+        nominalDana : payload.nominal_dana,
+        kuota       : payload.kuota_penerima,
+        tanggalBuka : payload.tanggal_buka || undefined,
+        tanggalTutup: payload.tanggal_tutup || undefined,
+        kategori    : payload.kategori || undefined,
+        status      : STATUS_UI_TO_BACKEND[payload.status] || 'aktif',
       };
+
+      if (editingBeasiswaId) {
+        const res = await api.patch(`/beasiswa/${editingBeasiswaId}`, apiPayload);
+        const idx = dummyBeasiswa.findIndex(b => b.id === editingBeasiswaId);
+        if (idx !== -1) dummyBeasiswa[idx] = mapBeasiswaFromApi(res.data);
+        showFormMsg('formBeasiswaMsg', 'success', '✓ Program beasiswa berhasil diperbarui!');
+      } else {
+        const res = await api.post('/beasiswa', apiPayload);
+        dummyBeasiswa.push(mapBeasiswaFromApi(res.data));
+        showFormMsg('formBeasiswaMsg', 'success', '✓ Program beasiswa berhasil ditambahkan!');
+      }
+    } else {
+      await delay(900);
+
+      if (editingBeasiswaId) {
+        const idx = dummyBeasiswa.findIndex(b => b.id === editingBeasiswaId);
+        if (idx !== -1) dummyBeasiswa[idx] = { ...dummyBeasiswa[idx], ...payload };
+        showFormMsg('formBeasiswaMsg', 'success', '✓ Program beasiswa berhasil diperbarui!');
+      } else {
+        dummyBeasiswa.push({
+          id: 'b-' + Date.now(), icon: 'solar:diploma-bold-duotone',
+          iconColor: '#2563eb', bg: '#eff6ff', ...payload,
+        });
+        showFormMsg('formBeasiswaMsg', 'success', '✓ Program beasiswa berhasil ditambahkan!');
+      }
     }
-    showFormMsg('formBeasiswaMsg', 'success', '✓ Program beasiswa berhasil diperbarui!');
-  } else {
-    dummyBeasiswa.push({
-      id        : 'b-' + Date.now(),
-      icon      : 'solar:diploma-bold-duotone',
-      iconColor : '#2563eb',
-      bg        : '#eff6ff',
-      ...payload,
-    });
-    showFormMsg('formBeasiswaMsg', 'success', '✓ Program beasiswa berhasil ditambahkan!');
+
+    setLoading('btnSimpanBeasiswa', 'loaderBeasiswa', false);
+
+    /* Update kuota sponsor */
+    updateSponsorKuota(sponsorId);
+    loadStats();
+    renderBeasiswaList();
+
+    setTimeout(() => closeModalBeasiswa(), 1500);
+  } catch (err) {
+    setLoading('btnSimpanBeasiswa', 'loaderBeasiswa', false);
+    showFormMsg('formBeasiswaMsg', 'error', '⚠ ' + (err?.message || 'Gagal menyimpan program beasiswa.'));
   }
-
-  setLoading('btnSimpanBeasiswa', 'loaderBeasiswa', false);
-
-  /* Update kuota sponsor */
-  updateSponsorKuota(sponsorId);
-  loadStats();
-  renderBeasiswaList();
-
-  setTimeout(() => closeModalBeasiswa(), 1500);
 });
 
 document.getElementById('modalBeasiswaClose')?.addEventListener('click',    closeModalBeasiswa);
@@ -883,8 +1002,11 @@ const modalHapus = document.getElementById('modalHapus');
 function confirmHapus(type, id, nama) {
   hapusType = type;
   hapusId   = id;
-  setEl('hapusTitle', `Hapus ${type === 'sponsor' ? 'Sponsor' : 'Beasiswa'}?`);
-  setEl('hapusDesc',  `"${nama}" akan dihapus permanen. Tindakan ini tidak dapat dibatalkan.`);
+  setEl('hapusTitle', `${isRealSession ? 'Nonaktifkan' : 'Hapus'} ${type === 'sponsor' ? 'Sponsor' : 'Beasiswa'}?`);
+  setEl('hapusDesc', isRealSession
+    ? `"${nama}" akan dinonaktifkan dan tidak lagi tampil untuk mahasiswa. Data tetap tersimpan dan bisa diaktifkan kembali lewat Edit.`
+    : `"${nama}" akan dihapus permanen. Tindakan ini tidak dapat dibatalkan.`);
+  setEl('confirmHapus', isRealSession ? 'Ya, Nonaktifkan' : 'Ya, Hapus');
   modalHapus?.classList.add('active');
   document.body.style.overflow = 'hidden';
 }
@@ -899,20 +1021,38 @@ function closeModalHapus() {
 document.getElementById('cancelHapus')?.addEventListener('click', closeModalHapus);
 document.getElementById('modalHapusOverlay')?.addEventListener('click', closeModalHapus);
 
-document.getElementById('confirmHapus')?.addEventListener('click', () => {
-  if (hapusType === 'sponsor') {
-    dummySponsors  = dummySponsors.filter(s => s.id !== hapusId);
-    dummyBeasiswa  = dummyBeasiswa.filter(b => b.sponsor_id !== hapusId);
+document.getElementById('confirmHapus')?.addEventListener('click', async () => {
+  try {
+    if (isRealSession) {
+      // Backend tidak punya hard-delete (konsisten dengan modul lain) —
+      // "Hapus" di sini menonaktifkan lewat PATCH, bukan menghapus baris.
+      if (hapusType === 'sponsor') {
+        const res = await api.patch(`/sponsors/${hapusId}`, { isAktif: false });
+        const idx = dummySponsors.findIndex(s => s.id === hapusId);
+        if (idx !== -1) dummySponsors[idx] = mapSponsorFromApi(res.data);
+      } else {
+        const res = await api.patch(`/beasiswa/${hapusId}`, { status: 'nonaktif' });
+        const idx = dummyBeasiswa.findIndex(b => b.id === hapusId);
+        if (idx !== -1) dummyBeasiswa[idx] = mapBeasiswaFromApi(res.data);
+      }
+    } else if (hapusType === 'sponsor') {
+      dummySponsors  = dummySponsors.filter(s => s.id !== hapusId);
+      dummyBeasiswa  = dummyBeasiswa.filter(b => b.sponsor_id !== hapusId);
+    } else {
+      const b = dummyBeasiswa.find(x => x.id === hapusId);
+      dummyBeasiswa = dummyBeasiswa.filter(x => x.id !== hapusId);
+      if (b) updateSponsorKuota(b.sponsor_id);
+    }
+
     renderSponsorGrid();
     renderFilterChips();
-  } else {
-    const b = dummyBeasiswa.find(x => x.id === hapusId);
-    dummyBeasiswa = dummyBeasiswa.filter(x => x.id !== hapusId);
-    if (b) updateSponsorKuota(b.sponsor_id);
     renderBeasiswaList();
+    loadStats();
+    closeModalHapus();
+  } catch (err) {
+    console.error('Gagal menonaktifkan:', err);
+    alert(err?.message || 'Gagal menonaktifkan data. Coba lagi.');
   }
-  loadStats();
-  closeModalHapus();
 });
 
 /* ============================================================
@@ -1080,10 +1220,11 @@ document.addEventListener('keydown', e => {
 /* ============================================================
    INIT
    ============================================================ */
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   initBgCanvas();
   initParticles();
   initUserInfo();
+  await loadRealData();
   loadStats();
   initTabs();
   initSearch();
