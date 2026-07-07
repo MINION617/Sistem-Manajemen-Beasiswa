@@ -196,10 +196,11 @@ function loadStats() {
   animateNum('statTotal',          total);
   setEl('bannerCount', belumTes + belumWaw);
 
-  /* Tab counts */
-  const tTes  = dummyData.filter(d => d.status === 'lolos_berkas').length;
-  const tWaw  = dummyData.filter(d => d.status === 'wawancara').length;
-  const tAll  = dummyData.filter(d => ['lolos_berkas','wawancara'].includes(d.status)).length;
+  /* Tab counts — sinkron dengan filter tab di renderList() (nilai asli,
+     bukan status semata). */
+  const tTes  = belumTes;
+  const tWaw  = belumWaw;
+  const tAll  = total;
   setEl('tcTes',       tTes);
   setEl('tcWawancara', tWaw);
   setEl('tcSemua',     tAll);
@@ -224,13 +225,17 @@ function renderList() {
 
   let data = [...dummyData];
 
-  /* Filter tab */
+  /* Filter tab — "Perlu Nilai Tes"/"Perlu Nilai Wawancara" berarti BENERAN
+     belum diisi, jadi disaring dari nilai asli, bukan cuma status. Tanpa
+     ini, kandidat yang nilainya sudah lengkap tapi statusnya belum sempat
+     pindah tahap tetap muncul di tab "Perlu Nilai Wawancara". */
+  const isActive = d => ['lolos_berkas', 'wawancara'].includes(d.status);
   if (activeTab === 'lolos_berkas') {
-    data = data.filter(d => d.status === 'lolos_berkas');
+    data = data.filter(d => isActive(d) && d.hasil_seleksi?.nilai_tes == null);
   } else if (activeTab === 'wawancara') {
-    data = data.filter(d => d.status === 'wawancara');
+    data = data.filter(d => isActive(d) && d.hasil_seleksi?.nilai_tes != null && d.hasil_seleksi?.nilai_wawancara == null);
   } else {
-    data = data.filter(d => ['lolos_berkas','wawancara'].includes(d.status));
+    data = data.filter(isActive);
   }
 
   /* Filter beasiswa */
