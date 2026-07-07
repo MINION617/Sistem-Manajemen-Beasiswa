@@ -54,13 +54,18 @@ const demoSession = session || {
   id           : 'demo-staff-uuid',
 };
 
+/* Sesi asli (bukan akun demo hardcode) → punya access_token asli dari Supabase,
+   bukan 'dummy-token-...' dari DUMMY_ACCOUNTS di login.js */
+const isRealSession = !!(session?.access_token && !session.access_token.startsWith('dummy-token-'));
+
 
 /* ============================================================
    02. KONSTANTA — DATA DUMMY
    ============================================================ */
 
-/* ── Statistik utama ── */
-const dummyStats = {
+/* ── Statistik utama ──
+   `let` (bukan `const`) supaya bisa diganti data asli oleh loadStaffDashboardData() */
+let dummyStats = {
   perluVerifikasi : 18,
   sedangProses    : 47,
   penerima        : 215,
@@ -70,7 +75,7 @@ const dummyStats = {
 /* ── Pipeline alur seleksi ──
    href menuju subfolder masing-masing halaman
    (nama file = nama yang dipakai user, tidak berubah)          */
-const dummyPipeline = [
+let dummyPipeline = [
   {
     icon  : 'solar:inbox-in-bold-duotone',
     color : '#d97706',
@@ -102,7 +107,7 @@ const dummyPipeline = [
 ];
 
 /* ── Antrian verifikasi (preview 4 item) ── */
-const dummyVerifikasi = [
+let dummyVerifikasi = [
   {
     id         : 'p-101',
     nama       : 'Adinda Putri Lestari',
@@ -134,7 +139,7 @@ const dummyVerifikasi = [
 ];
 
 /* ── Laporan kendala terbaru (preview 3 item) ── */
-const dummyLaporan = [
+let dummyLaporan = [
   {
     id         : 'l-01',
     judul      : 'Bukti transfer belum muncul',
@@ -210,6 +215,73 @@ const STATUS_LAPORAN = {
   proses : { label: 'Diproses', cls: 'status-proses' },
   done   : { label: 'Selesai',  cls: 'status-done' },
 };
+
+/* Terjemahan status laporan dari enum backend (masuk/diproses/selesai)
+   ke key yang dipakai STATUS_LAPORAN di atas (new/proses/done). */
+const LAPORAN_STATUS_BACKEND_TO_DASHBOARD = {
+  masuk    : 'new',
+  diproses : 'proses',
+  selesai  : 'done',
+};
+
+
+/* ============================================================
+   02b. LOAD DATA ASLI (backend) — fallback ke dummy di atas
+   kalau bukan real session atau salah satu request gagal.
+   ============================================================ */
+
+async function loadStaffDashboardData() {
+  if (!isRealSession) return; // tetap pakai data dummy yang sudah di-define di atas
+
+  try {
+    const [antrean, seleksi, penerimaDiusulkan, penerimaDisahkan, penyaluranPending, laporan] = await Promise.all([
+      api.get('/verifikasi/antrean'),
+      api.get('/seleksi'),
+      api.get('/penerima?status=diusulkan'),
+      api.get('/penerima?status=disahkan'),
+      api.get('/penyaluran?status=pending'),
+      api.get('/laporan'),
+    ]);
+
+    const jumlahVerifikasi = antrean.data.length;
+    const jumlahSeleksi    = seleksi.data.length;
+    const jumlahPenetapan  = penerimaDiusulkan.data.length;
+    const jumlahPencairan  = penyaluranPending.data.length;
+
+    dummyStats = {
+      perluVerifikasi : jumlahVerifikasi,
+      sedangProses    : jumlahSeleksi,
+      penerima        : penerimaDisahkan.data.length,
+      pencairan       : jumlahPencairan,
+    };
+
+    dummyPipeline = [
+      { icon: 'solar:inbox-in-bold-duotone',      color: '#d97706', count: jumlahVerifikasi, name: 'Verifikasi Berkas',   href: 'verifikasiPendaftaran/verifikasiPendaftar.html' },
+      { icon: 'solar:document-add-bold-duotone',  color: '#2563eb', count: jumlahSeleksi,    name: 'Tes &amp; Wawancara', href: 'inputHasilSeleksi/inputHasilSeleksi.html' },
+      { icon: 'solar:cup-star-bold-duotone',       color: '#059669', count: jumlahPenetapan,  name: 'Penetapan Penerima', href: 'penetapanPenerima/penetapanPenerima.html' },
+      { icon: 'solar:card-transfer-bold-duotone',  color: '#7c3aed', count: jumlahPencairan,  name: 'Pencairan Dana',     href: 'PencairanDana/pencairanDana.html' },
+    ];
+
+    dummyVerifikasi = antrean.data.slice(0, 4).map(p => ({
+      id         : p.id,
+      nama       : p.profiles?.nama_lengkap  || '—',
+      program    : p.profiles?.program_studi || '—',
+      beasiswa   : p.beasiswa?.nama_program   || '—',
+      created_at : p.tanggal_daftar,
+    }));
+
+    dummyLaporan = laporan.data.slice(0, 3).map(l => ({
+      id         : l.id,
+      judul      : l.judul_laporan,
+      pelapor    : l.profiles?.nama_lengkap || '—',
+      status     : LAPORAN_STATUS_BACKEND_TO_DASHBOARD[l.status] || 'new',
+      created_at : l.tanggal_lapor,
+    }));
+  } catch (err) {
+    console.warn('Gagal memuat data dashboard staff dari backend, pakai data contoh:', err);
+    /* dummyStats / dummyPipeline / dummyVerifikasi / dummyLaporan tetap nilai dummy di atas */
+  }
+}
 
 
 /* ============================================================
@@ -759,9 +831,12 @@ document.addEventListener('keydown', e => {
    15. INIT — DOMContentLoaded
    ============================================================ */
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   initBgCanvas();
   initParticles();
+
+  await loadStaffDashboardData();
+
   initUserInfo();
   loadStats();
   renderPipeline();

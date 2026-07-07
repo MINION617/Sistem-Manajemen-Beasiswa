@@ -258,17 +258,22 @@ function renderRealisasi() {
     const pct = p.persentase === null ? 0 : Math.min(100, p.persentase);
     return `
       <div class="realisasi-item" title="Tersalur ${formatRupiah(p.tersalur)} dari komitmen ${formatRupiah(p.komitmen)}">
-        <div class="realisasi-top">
-          <div class="realisasi-info">
-            <div class="realisasi-nama">${p.namaProgram}</div>
-            <div class="realisasi-meta">${p.sponsor || '—'} · ${p.penerimaDisahkan} penerima disahkan</div>
-          </div>
-          <div class="realisasi-angka">
-            <span class="realisasi-pct">${p.persentase === null ? '—' : p.persentase + '%'}</span>
-            <span class="realisasi-nominal">${formatRupiah(p.tersalur)} / ${formatRupiah(p.komitmen)}</span>
-          </div>
+        <div class="realisasi-icon">
+          <iconify-icon icon="solar:pie-chart-2-bold-duotone" style="color:#059669;font-size:18px"></iconify-icon>
         </div>
-        <div class="realisasi-track"><div class="realisasi-fill" style="width:${pct}%"></div></div>
+        <div class="realisasi-body">
+          <div class="realisasi-top">
+            <div class="realisasi-info">
+              <div class="realisasi-nama">${p.namaProgram}</div>
+              <div class="realisasi-meta">${p.sponsor || '—'} · ${p.penerimaDisahkan} penerima disahkan</div>
+            </div>
+            <div class="realisasi-angka">
+              <span class="realisasi-pct">${p.persentase === null ? '—' : p.persentase + '%'}</span>
+              <span class="realisasi-nominal">${formatRupiah(p.tersalur)} / ${formatRupiah(p.komitmen)}</span>
+            </div>
+          </div>
+          <div class="realisasi-track"><div class="realisasi-fill" style="width:${pct}%"></div></div>
+        </div>
       </div>
     `;
   }).join('');
@@ -313,6 +318,7 @@ function renderAntrian() {
 
   const tertuaHtml = tertua.slice(0, 3).map(t => `
     <div class="antrian-old-item">
+      <div class="antrian-old-icon">${inisial(t.nama || '?')}</div>
       <div class="antrian-old-info">
         <div class="antrian-old-nama">${t.nama || '—'}</div>
         <div class="antrian-old-meta">${t.beasiswa || '—'} · ${ANTRIAN_STATUS_LABEL[t.status] || t.status}</div>

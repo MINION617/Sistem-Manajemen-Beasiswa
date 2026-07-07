@@ -1,67 +1,72 @@
 /* ============================================================
-   API CLIENT — single entry point for calls to the Express backend.
-   ============================================================
-   Load this AFTER supabaseConfig.js and BEFORE a page's own script:
-     <script src="../shared/supabaseConfig.js"></script>
-     <script src="../shared/apiClient.js"></script>
-     <script src="dashboard.js"></script>
+   apiClient.js — Shared authenticated fetch helper
+   Dipakai oleh halaman staff/kabag/wabag yang terhubung ke
+   backend Express (BACKEND/src/app.js, jalan di localhost:4000).
 
-   Privileged/write operations (verification, scoring, disbursement,
-   approvals) go through this client to backend/src — never straight
-   to Supabase with the anon key. Read-only/public data may still use
-   Supabase directly.
+   Interface: window.api.get(path) / .post(path, body) / .patch(path, body)
+   Semua method mengembalikan body JSON hasil parse (biasanya
+   berbentuk { data: ... } sesuai kontrak controller di backend).
+   Token diambil dari sesi login (bk_user di sessionStorage/localStorage).
    ============================================================ */
 
-const API_BASE_URL = 'http://localhost:4000/api';
+const API_BASE = 'http://localhost:4000/api';
 
-class ApiError extends Error {
-  constructor(message, status, body) {
-    super(message);
-    this.name = 'ApiError';
-    this.status = status;
-    this.body = body;
-  }
-}
-
-function getStoredUser() {
+function getAuthToken() {
   const raw = sessionStorage.getItem('bk_user') || localStorage.getItem('bk_user');
-  return raw ? JSON.parse(raw) : null;
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw)?.access_token || null;
+  } catch {
+    return null;
+  }
 }
 
-async function apiFetch(path, options = {}) {
-  const user = getStoredUser();
-  const headers = {
-    'Content-Type': 'application/json',
-    ...(options.headers || {}),
-  };
+async function request(method, path, body) {
+  const token = getAuthToken();
+  const headers = { 'Content-Type': 'application/json' };
+  if (token) headers.Authorization = `Bearer ${token}`;
 
-  if (user?.access_token) {
-    headers.Authorization = `Bearer ${user.access_token}`;
-  }
+  const res = await fetch(`${API_BASE}${path}`, {
+    method,
+    headers,
+    body: body !== undefined ? JSON.stringify(body) : undefined,
+  });
 
-  const res = await fetch(`${API_BASE_URL}${path}`, { ...options, headers });
-
-  let body = null;
-  const text = await res.text();
-  if (text) {
-    try { body = JSON.parse(text); } catch { body = text; }
-  }
+  let json = null;
+  try { json = await res.json(); } catch { /* respons tanpa body (mis. 204) */ }
 
   if (!res.ok) {
-    if (res.status === 401) {
-      sessionStorage.removeItem('bk_user');
-      localStorage.removeItem('bk_user');
-      window.location.href = '/LOGIN/login.html';
-    }
-    throw new ApiError(body?.error || `Request gagal (${res.status})`, res.status, body);
+    const message = json?.error || `Request gagal: ${res.status}`;
+    throw Object.assign(new Error(message), { status: res.status, body: json });
   }
 
-  return body;
+  return json ?? {};
 }
 
-const api = {
-  get: (path) => apiFetch(path, { method: 'GET' }),
-  post: (path, data) => apiFetch(path, { method: 'POST', body: JSON.stringify(data) }),
-  patch: (path, data) => apiFetch(path, { method: 'PATCH', body: JSON.stringify(data) }),
-  delete: (path) => apiFetch(path, { method: 'DELETE' }),
+/** Upload multipart (FormData) — tanpa Content-Type manual, biar browser
+ * yang isi boundary-nya sendiri. */
+async function uploadRequest(path, formData) {
+  const token = getAuthToken();
+  const headers = {};
+  if (token) headers.Authorization = `Bearer ${token}`;
+
+  const res = await fetch(`${API_BASE}${path}`, { method: 'POST', headers, body: formData });
+
+  let json = null;
+  try { json = await res.json(); } catch { /* respons tanpa body */ }
+
+  if (!res.ok) {
+    const message = json?.error || `Upload gagal: ${res.status}`;
+    throw Object.assign(new Error(message), { status: res.status, body: json });
+  }
+
+  return json ?? {};
+}
+
+window.api = {
+  get:    (path)           => request('GET',   path),
+  post:   (path, body)     => request('POST',  path, body),
+  patch:  (path, body)     => request('PATCH', path, body),
+  delete: (path)           => request('DELETE', path),
+  upload: (path, formData) => uploadRequest(path, formData),
 };

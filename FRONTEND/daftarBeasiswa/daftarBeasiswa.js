@@ -28,11 +28,13 @@ if (!session || session.role !== 'mahasiswa') {
   window.location.href = '../LOGIN/login.html';
 }
 
+const isRealSession = !!(session?.access_token && !session.access_token.startsWith('dummy-token-'));
+
 
 /* =================================================================
    3. DATA — field emoji diganti: icon + iconColor + emoji_bg tetap
    ================================================================= */
-const beasiswaList = [
+let beasiswaList = [
   {
     id: 'b-001',
     nama_program: 'Beasiswa Mandiri Prestasi',
@@ -275,6 +277,53 @@ const dummyNotifUnread = 2;
 
 
 /* =================================================================
+   3B. BACKEND WIRING — GET /api/beasiswa + GET /api/pendaftaran/saya
+   Kategori asli di database bebas teks (bisa null), jadi icon/warna
+   kartu dipetakan dari kategori dengan fallback generik.
+   ================================================================= */
+const KATEGORI_ICON = {
+  prestasi: { icon: 'solar:cup-star-bold-duotone',   iconColor: '#d97706', accent: '#fbbf24', emoji_bg: '#fef3c7' },
+  riset:    { icon: 'solar:microscope-bold-duotone',  iconColor: '#8b5cf6', accent: '#8b5cf6', emoji_bg: '#ede9fe' },
+  industri: { icon: 'solar:case-bold-duotone',        iconColor: '#2563eb', accent: '#3b82f6', emoji_bg: '#dbeafe' },
+  afirmasi: { icon: 'solar:leaf-bold-duotone',         iconColor: '#10b981', accent: '#10b981', emoji_bg: '#d1fae5' },
+};
+const KATEGORI_DEFAULT = { icon: 'solar:medal-ribbons-star-bold-duotone', iconColor: '#2563eb', accent: '#3b82f6', emoji_bg: '#dbeafe' };
+
+function mapBeasiswaFromApi(b) {
+  const style = KATEGORI_ICON[b.kategori] || KATEGORI_DEFAULT;
+  return {
+    id: b.id,
+    nama_program: b.nama_program,
+    sponsor_nama: b.sponsors?.nama_perusahaan || 'Sponsor belum ditentukan',
+    sponsor_industri: b.sponsors?.jenis_industri || '—',
+    kuota_penerima: b.kuota ?? 0,
+    kategori: b.kategori || 'lainnya',
+    nominal_dana: b.nominal_dana ?? 0,
+    tanggal_buka: b.tanggal_buka,
+    tanggal_tutup: b.tanggal_tutup,
+    deskripsi: b.deskripsi || 'Belum ada deskripsi untuk program ini.',
+    persyaratan: b.persyaratan?.length ? b.persyaratan : ['Persyaratan menyusul, hubungi bagian beasiswa.'],
+    ...style,
+  };
+}
+
+/** Ganti data contoh dengan data asli backend kalau sesi login-nya nyata. */
+async function loadBeasiswaData() {
+  if (!isRealSession) return;
+  try {
+    const [beasiswaRes, pendaftaranRes] = await Promise.all([
+      api.get('/beasiswa?status=aktif'),
+      api.get('/pendaftaran/saya'),
+    ]);
+
+    beasiswaList = beasiswaRes.data.map(mapBeasiswaFromApi);
+    pendaftaranRes.data.forEach(p => sudahDaftar.add(p.beasiswa_id));
+  } catch (err) {
+    console.warn('Gagal memuat data beasiswa dari backend, pakai data contoh:', err);
+  }
+}
+
+/* =================================================================
    4. STATE
    ================================================================= */
 let sudahDaftar      = new Set();
@@ -360,14 +409,8 @@ function initUserInfo() {
    7. DAFTAR STATUS
    ================================================================= */
 async function loadSudahDaftar() {
-  /* === PRODUCTION SUPABASE ===
-  const res = await fetch(
-    `${SUPABASE_URL}/rest/v1/pendaftaran?mahasiswa_id=eq.${session.id}&select=beasiswa_id`,
-    { headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${session.access_token}` } }
-  );
-  const data = await res.json();
-  data.forEach(d => sudahDaftar.add(d.beasiswa_id));
-  */
+  // Diisi oleh loadBeasiswaData() (lihat bagian 3B) saat sesi asli;
+  // di sini tinggal update tampilan strip.
   updateStripSudahDaftar();
 }
 
@@ -652,6 +695,32 @@ function setSubmitLoading(on) {
   if (loader) loader.style.display = on ? 'flex'  : 'none';
 }
 
+/** Upload file yang dipilih user ke POST /api/dokumen/upload, satu per satu,
+ * lalu kembalikan array metadata siap dikirim sebagai field `dokumen`
+ * ke POST /api/pendaftaran. Input yang kosong (mis. sertifikat_bahasa
+ * yang opsional) dilewati. */
+async function uploadPendaftaranFiles() {
+  const fields = [
+    { id: 'sertifikat_prestasi', jenisDokumen: 'sertifikat_prestasi' },
+    { id: 'sertifikat_bahasa',   jenisDokumen: 'sertifikat_bahasa' },
+    { id: 'berkas_pendukung',    jenisDokumen: 'berkas_pendukung' },
+  ];
+
+  const dokumen = [];
+  for (const { id, jenisDokumen } of fields) {
+    const file = document.getElementById(id)?.files?.[0];
+    if (!file) continue;
+
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('jenisDokumen', jenisDokumen);
+
+    const res = await api.upload('/dokumen/upload', formData);
+    dokumen.push(res.data);
+  }
+  return dokumen;
+}
+
 function initFormSubmit() {
   document.getElementById('formDaftar')?.addEventListener('submit', async e => {
     e.preventDefault();
@@ -660,9 +729,12 @@ function initFormSubmit() {
     setSubmitLoading(true);
 
     try {
-      /* === PRODUCTION SUPABASE === (identik asli) */
-
-      await delay(1500);
+      if (isRealSession) {
+        const dokumen = await uploadPendaftaranFiles();
+        await api.post('/pendaftaran', { beasiswaId: selectedBeasiswa.id, dokumen });
+      } else {
+        await delay(1500);
+      }
 
       sudahDaftar.add(selectedBeasiswa.id);
       updateStripSudahDaftar();
@@ -674,7 +746,7 @@ function initFormSubmit() {
 
     } catch (err) {
       console.error(err);
-      alert('Terjadi kesalahan. Coba lagi.');
+      alert(err?.message || 'Terjadi kesalahan. Coba lagi.');
     } finally {
       setSubmitLoading(false);
     }
@@ -924,13 +996,14 @@ function applyScrollReveal() {
 /* =================================================================
   20. INITIALIZATION (DOMContentLoaded)
    ================================================================= */
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
 
   initBgCanvas();
   initParticles();
 
   initUserInfo();
-  loadSudahDaftar();
+  await loadBeasiswaData();
+  await loadSudahDaftar();
 
   renderGrid();
 

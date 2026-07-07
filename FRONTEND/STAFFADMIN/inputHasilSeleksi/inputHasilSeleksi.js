@@ -34,6 +34,13 @@ if (!session || session.role !== 'staff') {
 const demoSession = session || { nama_lengkap: 'Rangga Adi Nugroho', role: 'staff', id: 'demo-staff-uuid' };
 const isRealSession = !!(session?.access_token && !session.access_token.startsWith('dummy-token-'));
 
+/* ── BACKEND WIRING — GET/PATCH /api/seleksi ──
+   Bentuk data dari backend sudah dirancang sama persis dengan dummyData
+   di bawah (mahasiswa/beasiswa/hasil_seleksi ter-join), jadi tidak perlu
+   mapping field. Satu pengecualian: kolom `jadwal_wawancara` belum ada
+   di database asli (lihat DATABASE/migrations/0002_...), jadi untuk sesi
+   asli field itu murni tampilan lokal dan tidak tersimpan permanen. */
+
 /* ── DUMMY DATA ──
    Struktur: pendaftaran JOIN profiles JOIN beasiswa JOIN hasil_seleksi
    Field name sinkron dengan pendaftaranSaya.js mahasiswa
@@ -110,8 +117,8 @@ let dummyData = [
 async function loadAntrean() {
   if (isRealSession) {
     try {
-      const { data } = await api.get('/seleksi/antrean');
-      dummyData = data.map(mapSeleksiRow);
+      const { data } = await api.get('/seleksi');
+      dummyData = data;
     } catch (err) {
       console.warn('Gagal memuat antrean seleksi, pakai data contoh:', err);
     }
@@ -404,53 +411,48 @@ document.getElementById('formNilai')?.addEventListener('submit', async (e) => {
 
   setLoading('btnSimpanNilai', 'loaderNilai', true);
 
-  const payload = {
-    ...(nilaiTes      && { nilai_tes: parseFloat(nilaiTes) }),
-    ...(nilaiWaw      && { nilai_wawancara: parseFloat(nilaiWaw) }),
-    ...(catatan       && { catatan_staff: catatan }),
-    ...(kerjaKeras    && { nilai_kerja_keras: parseFloat(kerjaKeras) }),
-    ...(kepemimpinan  && { nilai_kepemimpinan: parseFloat(kepemimpinan) }),
-    ...(komunikasi    && { nilai_komunikasi: parseFloat(komunikasi) }),
-    ...(keberanian    && { nilai_keberanian: parseFloat(keberanian) }),
-    ...(skorPrestasi  && { skor_prestasi_akademik: parseFloat(skorPrestasi) }),
-  };
+  try {
+    const idx = dummyData.findIndex(d => d.id === editingId);
+    // jadwal_wawancara belum ada kolomnya di database — pertahankan nilai
+    // lokal yang sedang ditampilkan, jangan hilang saat refresh state.
+    const existingJadwal = idx !== -1 ? (dummyData[idx].hasil_seleksi?.jadwal_wawancara ?? null) : null;
 
-  if (isRealSession) {
-    try {
-      await api.post('/seleksi/' + editingId, payload);
-      showFormMsg('formNilaiMsg', 'success', '✓ Nilai berhasil disimpan! Mahasiswa dapat melihatnya di Pendaftaran Saya.');
-      setLoading('btnSimpanNilai', 'loaderNilai', false);
-      await loadAntrean();
-      setTimeout(() => closeInputNilai(), 1600);
-      return;
-    } catch (err) {
-      console.warn('Gagal menyimpan nilai:', err);
-      showFormMsg('formNilaiMsg', 'error', '⚠ Gagal menyimpan ke server. Coba lagi.');
-      setLoading('btnSimpanNilai', 'loaderNilai', false);
-      return;
+    if (isRealSession) {
+      const payload = {
+        nilaiTes       : nilaiTes ? parseFloat(nilaiTes) : null,
+        nilaiWawancara : nilaiWaw ? parseFloat(nilaiWaw) : null,
+        catatanStaff   : catatan || null,
+      };
+      const res = await api.patch(`/seleksi/${editingId}`, payload);
+      if (idx !== -1) {
+        dummyData[idx] = { ...res.data, hasil_seleksi: { ...res.data.hasil_seleksi, jadwal_wawancara: existingJadwal } };
+      }
+    } else {
+      await delay(900);
+      if (idx !== -1) {
+        dummyData[idx].hasil_seleksi = {
+          nilai_tes        : nilaiTes  ? parseFloat(nilaiTes)  : null,
+          nilai_wawancara  : nilaiWaw  ? parseFloat(nilaiWaw)  : null,
+          catatan_staff    : catatan   || null,
+          jadwal_wawancara : existingJadwal,
+        };
+        if (nilaiTes && dummyData[idx].status === 'lolos_berkas') {
+          dummyData[idx].status = 'wawancara';
+        }
+      }
     }
+
+    showFormMsg('formNilaiMsg', 'success', '✓ Nilai berhasil disimpan! Mahasiswa dapat melihatnya di Pendaftaran Saya.');
+    setLoading('btnSimpanNilai', 'loaderNilai', false);
+
+    loadStats();
+    renderList();
+
+    setTimeout(() => closeInputNilai(), 1600);
+  } catch (err) {
+    setLoading('btnSimpanNilai', 'loaderNilai', false);
+    showFormMsg('formNilaiMsg', 'error', '⚠ ' + (err?.message || 'Gagal menyimpan nilai.'));
   }
-
-  await delay(900);
-
-  /* Fallback dummy: UPDATE local data — field name sinkron hasil_seleksi mahasiswa */
-  const idx = dummyData.findIndex(d => d.id === editingId);
-  if (idx !== -1) {
-    dummyData[idx].hasil_seleksi = { ...dummyData[idx].hasil_seleksi, ...payload };
-
-    /* Update status: jika nilai_tes diisi dan status masih lolos_berkas → wawancara */
-    if (nilaiTes && dummyData[idx].status === 'lolos_berkas') {
-      dummyData[idx].status = 'wawancara';
-    }
-  }
-
-  showFormMsg('formNilaiMsg', 'success', '✓ Nilai berhasil disimpan! Mahasiswa dapat melihatnya di Pendaftaran Saya.');
-  setLoading('btnSimpanNilai', 'loaderNilai', false);
-
-  loadStats();
-  renderList();
-
-  setTimeout(() => closeInputNilai(), 1600);
 });
 
 document.getElementById('modalInputClose')?.addEventListener('click',   closeInputNilai);
@@ -577,7 +579,7 @@ function initParticles() {
 }
 
 /* ── INIT ── */
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   initBgCanvas();
   initParticles();
   initUserInfo();

@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//c/Users/Lenovo/AppData/Local/Temp/claude/d--Kuliah-SEMESTER-4-PSI-PROJECT-Sistem-Manajemen-Beasiswa/1b5cc023-993e-4947-95ce-41ecf50fef28/scratchpad/**)",
+      "Bash(node hovertest.js)",
+      "Bash(curl -s http://localhost:4000/ -o /dev/null -w \"backend status: %{http_code}\\\\n\")",
+      "Bash(node test-manajemensponsor.js)",
+      "Bash(node test-manajemensponsor-hapus.js)",
+      "Bash(node check-storage.js)",
+      "Bash(npm install *)",
+      "PowerShell(Get-NetTCPConnection -LocalPort 4000 -ErrorAction SilentlyContinue)"
+    ]
+  }
+}
