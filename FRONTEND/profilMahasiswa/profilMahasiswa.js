@@ -77,9 +77,21 @@ function delay(ms) {
   return new Promise(r => setTimeout(r, ms));
 }
 
+/* elId -> requestAnimationFrame handle, supaya animasi lama (mis. angka
+   dummy awal) dibatalkan kalau elemen yang sama dianimasikan ulang dengan
+   angka asli sebelum animasi lama selesai — tanpa ini, animasi lama yang
+   masih jalan bisa "menang" dan menimpa balik angka asli yang benar. */
+const activeNumAnimations = {};
+
 function animateNum(elId, target) {
   const el = document.getElementById(elId);
   if (!el) return;
+
+  if (activeNumAnimations[elId]) {
+    cancelAnimationFrame(activeNumAnimations[elId]);
+    delete activeNumAnimations[elId];
+  }
+
   if (target === 0) {
     el.textContent = '0';
     return;
@@ -90,7 +102,11 @@ function animateNum(elId, target) {
   (function tick(now) {
     const p = Math.min((now - t0) / dur, 1);
     el.textContent = Math.round(target * ease(p));
-    if (p < 1) requestAnimationFrame(tick);
+    if (p < 1) {
+      activeNumAnimations[elId] = requestAnimationFrame(tick);
+    } else {
+      delete activeNumAnimations[elId];
+    }
   })(t0);
 }
 
@@ -165,17 +181,123 @@ function initMiniStats() {
 function initNavBadges() {
   const dot = document.getElementById('notifDot');
   const badge = document.getElementById('badgeNotif');
-  if (dot && dummyNotifUnread > 0) dot.classList.add('show');
-  if (badge && dummyNotifUnread > 0) {
+  if (!isRealSession && dot && dummyNotifUnread > 0) dot.classList.add('show');
+  if (!isRealSession && badge && dummyNotifUnread > 0) {
     badge.textContent = dummyNotifUnread;
     badge.classList.add('show');
   }
 
   const bp = document.getElementById('badgePendaftaran');
-  if (bp && dummyPendaftaranProses > 0) {
+  if (!isRealSession && bp && dummyPendaftaranProses > 0) {
     bp.textContent = dummyPendaftaranProses;
     bp.classList.add('show');
   }
+}
+
+/* Badge "Pendaftaran Saya" — hitungan asli (sinkron dengan dashboard.js/
+   pendaftaranSaya.js/historyBeasiswa.js). Juga dipakai untuk mengisi ulang
+   mini-stats (statTotal/statLolos/statProses) dengan angka asli, supaya
+   tidak beda dengan halaman lain. */
+/* Lonceng notifikasi — hitungan asli (sinkron dengan dashboard.js/
+   notifikasi.js), bukan dummyNotifUnread yang selalu nyala. */
+async function updateNotifBadge() {
+  if (!isRealSession) return;
+  const dot = document.getElementById('notifDot');
+  const badge = document.getElementById('badgeNotif');
+  try {
+    const { data } = await api.get('/notifikasi');
+    const unread = data.filter(n => !n.is_read).length;
+    if (dot) dot.classList.toggle('show', unread > 0);
+    if (badge) {
+      badge.textContent = unread;
+      badge.classList.toggle('show', unread > 0);
+    }
+  } catch (err) {
+    console.warn('Gagal memuat notifikasi untuk badge:', err);
+  }
+}
+
+async function loadPendaftaranStats() {
+  if (!isRealSession) {
+    renderDokumen([]);
+    return;
+  }
+  try {
+    const { data } = await api.get('/status/saya');
+    const proses = data.filter(d => ['menunggu_verifikasi', 'lolos_berkas', 'wawancara'].includes(d.status)).length;
+    const lolos  = data.filter(d => d.status === 'lolos_final').length;
+
+    /* Total dana diterima — sum penyaluran_dana yang statusnya sudah_cair,
+       lintas semua pendaftaran. penyaluran_dana relasinya one-to-many di
+       skema (belum ada constraint unik), jadi baris ini array, bukan objek
+       tunggal. Sebelumnya kartu ini hardcode "Rp 9 jt". */
+    const totalDana = data.reduce((sum, d) => {
+      const penyaluran = Array.isArray(d.penyaluran_dana) ? d.penyaluran_dana : (d.penyaluran_dana ? [d.penyaluran_dana] : []);
+      return sum + penyaluran.filter(p => p.status === 'sudah_cair').reduce((s, p) => s + (p.nominal || 0), 0);
+    }, 0);
+    const danaLabel = totalDana >= 1000000
+      ? 'Rp ' + (totalDana / 1000000).toLocaleString('id-ID') + ' jt'
+      : 'Rp ' + totalDana.toLocaleString('id-ID');
+
+    const bp = document.getElementById('badgePendaftaran');
+    if (bp) {
+      bp.textContent = proses;
+      bp.classList.toggle('show', proses > 0);
+    }
+
+    animateNum('statTotal',  data.length);
+    animateNum('statLolos',  lolos);
+    animateNum('statProses', proses);
+    setEl('statDana', danaLabel);
+    setEl('heroBadgeDaftar', String(data.length));
+    setEl('heroBadgeLolos',  String(lolos));
+    setEl('heroBadgeDana',   danaLabel);
+
+    renderDokumen(data);
+  } catch (err) {
+    console.warn('Gagal memuat status pendaftaran untuk badge/stats:', err);
+  }
+}
+
+/* Label tampilan untuk jenis_dokumen — lihat field upload di daftarBeasiswa.html */
+const JENIS_DOKUMEN_LABEL = {
+  sertifikat_prestasi: 'Sertifikat Prestasi',
+  sertifikat_bahasa: 'Sertifikat Bahasa Asing',
+  berkas_pendukung: 'Berkas Pendukung (Transkrip, dll)',
+};
+
+/* Dokumen yang diunggah mahasiswa saat mendaftar beasiswa (dokumen_pendaftaran)
+   — sebelumnya tidak ditampilkan sama sekali di halaman profil. */
+function renderDokumen(pendaftaranList) {
+  const listEl  = document.getElementById('listDokumen');
+  const emptyEl = document.getElementById('emptyDokumen');
+  if (!listEl) return;
+
+  const rows = pendaftaranList.flatMap(p =>
+    (p.dokumen_pendaftaran || []).map(d => ({ ...d, beasiswaNama: p.beasiswa?.nama_program || '—' }))
+  );
+
+  if (!rows.length) {
+    listEl.innerHTML = '';
+    if (emptyEl) emptyEl.style.display = 'block';
+    return;
+  }
+  if (emptyEl) emptyEl.style.display = 'none';
+
+  listEl.innerHTML = rows.map(d => `
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid var(--border,#e2e8f0)">
+      <div style="display:flex;align-items:flex-start;gap:10px;min-width:0;flex:1">
+        <iconify-icon icon="solar:file-text-bold-duotone" width="20" style="color:#2563eb;flex-shrink:0;margin-top:1px"></iconify-icon>
+        <div style="min-width:0;overflow-wrap:break-word">
+          <div style="font-size:13px;font-weight:600;line-height:1.4">${JENIS_DOKUMEN_LABEL[d.jenis_dokumen] || d.jenis_dokumen}</div>
+          <div style="font-size:11px;color:var(--text-3);line-height:1.4">${d.beasiswaNama}</div>
+        </div>
+      </div>
+      ${d.file_url
+        ? `<a href="${d.file_url}" target="_blank" rel="noopener" style="flex-shrink:0;white-space:nowrap;font-size:12px;font-weight:600;color:#2563eb;background:#eff6ff;padding:5px 12px;border-radius:100px">Lihat</a>`
+        : ''}
+    </div>
+  `).join('');
 }
 
 
@@ -183,7 +305,11 @@ function initNavBadges() {
    EDIT MODE
    ============================================================ */
 let isEditing        = false;
-const editableFields = ['fNama', 'fProdi', 'fIpk', 'fAlamat', 'fWa'];
+/* Nama, Program Studi, dan IPK sengaja TIDAK self-editable — itu data
+   institusional (nama & prodi dari data akademik, IPK dari transkrip
+   nilai yang diverifikasi staff saat pendaftaran), bukan isian bebas
+   mahasiswa. Cuma alamat & nomor WA yang boleh diubah sendiri. */
+const editableFields = ['fAlamat', 'fWa'];
 
 /* Tombol Edit di form header */
 document.getElementById('btnEdit')?.addEventListener('click', () => {
@@ -240,30 +366,13 @@ document.getElementById('btnBatal')?.addEventListener('click', () => {
 document.getElementById('formProfil')?.addEventListener('submit', async (e) => {
   e.preventDefault();
 
-  const namaVal   = document.getElementById('fNama').value.trim();
-  const prodiVal  = document.getElementById('fProdi').value.trim();
-  const ipkVal    = parseFloat(document.getElementById('fIpk').value) || null;
   const alamatVal = document.getElementById('fAlamat').value.trim();
   const waVal     = document.getElementById('fWa').value.trim();
-
-  /* Validasi */
-  if (!namaVal) {
-    showFormMsg('error', '⚠ Nama lengkap wajib diisi');
-    return;
-  }
-
-  if (ipkVal !== null && (ipkVal < 0 || ipkVal > 4)) {
-    showFormMsg('error', '⚠ IPK harus antara 0.00 – 4.00');
-    return;
-  }
 
   setLoading(true);
 
   let updated = {
     ...demoSession,
-    nama_lengkap   : namaVal,
-    program_studi  : prodiVal,
-    ipk            : ipkVal,
     alamat         : alamatVal,
     nomor_whatsapp : waVal,
   };
@@ -271,9 +380,6 @@ document.getElementById('formProfil')?.addEventListener('submit', async (e) => {
   if (isRealSession) {
     try {
       const { data } = await api.patch('/profil', {
-        nama_lengkap: namaVal,
-        program_studi: prodiVal,
-        ipk: ipkVal,
         alamat: alamatVal,
         nomor_whatsapp: waVal,
       });
@@ -650,6 +756,8 @@ document.addEventListener('DOMContentLoaded', () => {
   initMobileNav();
   initLogout();
   loadProfile();
+  loadPendaftaranStats();
+  updateNotifBadge();
 
   setTimeout(initScrollReveal, 100);
 
