@@ -73,19 +73,20 @@ bobotnya dinormalisasi ulang di antara dimensi yang tersedia.
 
 | Dimensi | Bobot | Skala | Alasan |
 |---|---|---|---|
-| IPK | **0.20** | 0–4 | Indikator akademik objektif, mencerminkan performa berkelanjutan lintas semester (bukan cuma satu momen ujian) — makanya dibobot sedikit lebih tinggi dari nilai tes/wawancara. |
-| Nilai Tes | **0.15** | 0–100 | Indikator objektif, tapi hanya potret satu hari ujian tertulis. |
-| Nilai Wawancara | **0.15** | 0–100 | Indikator objektif dari sesi wawancara, sama levelnya dengan nilai tes. |
-| Kerja Keras | **0.125** | 1–10 | Trait subjektif, dinilai staff saat wawancara. |
-| Kepemimpinan | **0.125** | 1–10 | Trait subjektif. |
-| Komunikasi | **0.125** | 1–10 | Trait subjektif. |
-| Keberanian | **0.125** | 1–10 | Trait subjektif. |
+| IPK | **0.40** | 0–4 | Indikator akademik paling objektif, mencerminkan performa berkelanjutan lintas semester (bukan cuma satu momen ujian). |
+| Nilai Tes | **0.40** | 0–100 | Indikator objektif dari ujian tertulis, dibobot setara dengan IPK. |
+| Nilai Wawancara | **0.04** | 0–100 | Bagian dari "wawancara & kesesuaian karakter" — 0.20 dibagi rata 5 dimensi. |
+| Kerja Keras | **0.04** | 1–10 | Trait subjektif, dinilai staff saat wawancara. |
+| Kepemimpinan | **0.04** | 1–10 | Trait subjektif. |
+| Komunikasi | **0.04** | 1–10 | Trait subjektif. |
+| Keberanian | **0.04** | 1–10 | Trait subjektif. |
 
-**Total bobot = 1.00.** Tiga indikator "keras"/objektif (IPK, tes, wawancara)
-digabung berbobot **0.50**, seimbang 50:50 dengan empat trait "lunak"/subjektif
-wawancara yang juga digabung **0.50** — supaya rekomendasi tidak semata-mata
-akademik, tapi juga mempertimbangkan penilaian kualitatif staff terhadap
-karakter kandidat.
+**Total bobot = 1.00.** IPK dan Nilai Tes adalah dua indikator paling objektif
+dan paling bisa dibandingkan lurus antar kandidat, jadi masing-masing dibobot
+**0.40** (gabungan **0.80** dari total). Sisa **0.20** mewakili "wawancara dan
+kesesuaian karakter" — nilai wawancara ditambah empat trait kepribadian —
+dibagi rata ke lima dimensi itu (**0.04** masing-masing), bukan ditimbang
+berbeda satu sama lain.
 
 **Catatan:** `catatan_prestasi` dan `skor_prestasi_akademik` sengaja **tidak**
 diikutkan dalam rumus ini, supaya himpunan dimensi yang dihitung tetap kecil
@@ -133,24 +134,25 @@ shortfall_tes         = max(0, 0.85  − 0.88 ) = 0
 shortfall_wawancara   = max(0, 0.84  − 0.85 ) = 0
 ```
 
-**Langkah 3 — Kalikan tiap shortfall dengan bobotnya, jumlahkan:**
+**Langkah 3 — Kalikan tiap shortfall dengan bobotnya, jumlahkan** (bobot IPK
+dan Nilai Tes sekarang 0.40, Nilai Wawancara 0.04 — lihat tabel bagian 4):
 
 ```
-weightedShortfallSum = (0.20 × 0) + (0.15 × 0) + (0.15 × 0) = 0
+weightedShortfallSum = (0.40 × 0) + (0.40 × 0) + (0.04 × 0) = 0
 ```
 
 **Langkah 4 — Total bobot yang datanya tersedia** (di contoh ini cuma 3 dari 7
 dimensi yang punya data, jadi `weightTotal` bukan 1.0 penuh):
 
 ```
-weightTotal = 0.20 + 0.15 + 0.15 = 0.50
+weightTotal = 0.40 + 0.40 + 0.04 = 0.84
 ```
 
 **Langkah 5 — Hitung skor akhir:**
 
 ```
 Score = round( 100 × (1 − weightedShortfallSum / weightTotal) )
-      = round( 100 × (1 − 0 / 0.50) )
+      = round( 100 × (1 − 0 / 0.84) )
       = round( 100 × 1 )
       = 100
 ```
@@ -168,20 +170,23 @@ shortfall_ipk       = max(0, 0.925 − 0.9125) = 0.0125   (IPK 3.65/4 = 0.9125)
 shortfall_tes       = max(0, 0.85  − 0.79  ) = 0.06
 shortfall_wawancara = max(0, 0.84  − 0.82  ) = 0.02
 
-weightedShortfallSum = (0.20×0.0125) + (0.15×0.06) + (0.15×0.02) = 0.0145
-Score = round(100 × (1 − 0.0145/0.50)) = round(97.1) = 97
+weightedShortfallSum = (0.40×0.0125) + (0.40×0.06) + (0.04×0.02)
+                     = 0.005 + 0.024 + 0.0008
+                     = 0.0298
+Score = round(100 × (1 − 0.0298/0.84)) = round(96.45) = 96
 ```
 
-**Dimas mendapat skor 97** — tidak berubah dari rumus sebelumnya, karena dia
-memang di bawah profil di semua dimensi (rumus lama dan baru sama-sama
-menghukum kekurangan itu). Yang berubah hanya kasus Bagas: rumus lama
-menghukumnya juga (walau kecil) karena dianggap "terlalu jauh DI ATAS
-profil", sekarang tidak lagi.
+**Dimas mendapat skor 96.** Dengan bobot lama (IPK 0.20, Tes 0.15, Wawancara
+0.15) dia mendapat 97 — sekarang turun tipis jadi 96, karena Nilai Tes (di
+mana kekurangannya paling besar, 0.06) sekarang dibobot 0.40, bukan lagi
+0.15. Menaikkan bobot IPK & Tes membuat kekurangan di dimensi itu "lebih
+mahal" secara proporsional dibanding kekurangan di dimensi wawancara/karakter.
 
 > **Catatan verifikasi:** angka-angka ini dihasilkan dari menjalankan ulang
-> rumus `scoreCandidate()` (versi shortfall-only, lihat revisi di bagian 3)
-> secara manual di luar aplikasi, memakai persis nilai kandidat & profil yang
-> sudah ada di data contoh (`dummyRekomendasi`) — bukan angka yang dieyeball.
+> rumus `scoreCandidate()` (bobot IPK 0.40 / Tes 0.40 / lima dimensi
+> wawancara+karakter 0.04 masing-masing) secara manual di luar aplikasi,
+> memakai persis nilai kandidat & profil yang sudah ada di data contoh
+> (`dummyRekomendasi`) — bukan angka yang dieyeball.
 
 ## 7. Catatan tambahan untuk sesi tanya jawab
 

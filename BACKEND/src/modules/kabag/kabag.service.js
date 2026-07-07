@@ -125,24 +125,23 @@ export async function getPerkembangan() {
 // bar. Named constant so the threshold is a documented, tunable decision.
 const SUCCESS_IPK_THRESHOLD = 3.0
 
-// Recommendation dimensions and their weights (sum to 1). The 3 "hard"
-// academic/objective indicators (ipk, nilai_tes, nilai_wawancara) combine
-// to 0.50 of the total weight, split evenly with the 4 subjective interview
-// traits (also 0.50 combined, 0.125 each) — an even split between objective
-// and subjective evidence. Within the hard indicators, ipk (0.20) is
-// weighted above nilai_tes/nilai_wawancara (0.15 each) because it reflects
-// sustained multi-semester performance rather than a single test/interview
-// day. Full reasoning + a worked manual example: see RUMUS_REKOMENDASI.md.
-// skor_prestasi_akademik is captured at interview time but not folded into
-// this formula, keeping the weighted dimensions to a clean, explainable set.
+// Recommendation dimensions and their weights (sum to 1). IPK and nilai tes
+// are the two dominant indicators (0.40 each, 0.80 combined) since they're
+// the most objective, comparable-across-candidates signals. The remaining
+// 0.20 covers interview performance + character fit (nilai_wawancara plus
+// the 4 personality traits), split evenly five ways (0.04 each) rather than
+// weighted individually. Full reasoning + a worked manual example: see
+// RUMUS_REKOMENDASI.md. skor_prestasi_akademik is captured at interview time
+// but not folded into this formula, keeping the weighted dimensions to a
+// clean, explainable set.
 const DIMENSION_WEIGHTS = {
-  ipk: 0.20,
-  nilai_tes: 0.15,
-  nilai_wawancara: 0.15,
-  nilai_kerja_keras: 0.125,
-  nilai_kepemimpinan: 0.125,
-  nilai_komunikasi: 0.125,
-  nilai_keberanian: 0.125,
+  ipk: 0.40,
+  nilai_tes: 0.40,
+  nilai_wawancara: 0.04,
+  nilai_kerja_keras: 0.04,
+  nilai_kepemimpinan: 0.04,
+  nilai_komunikasi: 0.04,
+  nilai_keberanian: 0.04,
 }
 
 const DIMENSION_SCALE = {
