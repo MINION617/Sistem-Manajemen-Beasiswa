@@ -80,6 +80,10 @@
         <span class="nav-icon"><iconify-icon icon="solar:transfer-horizontal-bold-duotone"></iconify-icon></span>
         <span>Pencairan Dana</span>
       </a>
+      <a href="../TrackingPenerima/trackingPenerima.html" class="nav-item">
+        <span class="nav-icon"><iconify-icon icon="solar:graph-new-up-bold-duotone"></iconify-icon></span>
+        <span>Tracking Penerima</span>
+      </a>
 
       <div class="nav-section-label">Lainnya</div>
 
@@ -550,6 +554,22 @@
               type="date"
               id="fTanggalPenetapan"
               name="tanggal_penetapan"
+            />
+          </div>
+
+          <div class="form-group">
+            <label>IPK Minimum Dipertahankan</label>
+            <!-- beasiswa.ipk_minimum — dipakai Kabag di Perkembangan
+                 Penerima untuk menandai penerima yang IPK-nya turun di
+                 bawah syarat program ini -->
+            <input
+              type="number"
+              id="fIpkMinimum"
+              name="ipk_minimum"
+              placeholder="3.00"
+              step="0.01"
+              min="0"
+              max="4"
             />
           </div>
 

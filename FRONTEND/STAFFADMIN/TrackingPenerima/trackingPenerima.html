@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Penetapan Penerima — Beasiswa Kampus Staff</title>
+  <title>Tracking Penerima — Beasiswa Kampus Staff</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
   <script src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js"></script>
-  <link rel="stylesheet" href="penetapanPenerima.css" />
+  <link rel="stylesheet" href="trackingPenerima.css" />
 </head>
 <body>
 
@@ -27,9 +27,9 @@
       </button>
     </div>
     <div class="sidebar-user">
-      <div class="user-avatar" id="sidebarAvatar">S</div>
+      <div class="user-avatar" id="sidebarAvatar">R</div>
       <div class="user-info">
-        <div class="user-name" id="sidebarName">Staff Admin</div>
+        <div class="user-name" id="sidebarName">Rangga Adi Nugroho</div>
         <span class="user-role-tag">
           <iconify-icon icon="solar:folder-with-files-bold-duotone" width="11"></iconify-icon>
           Staff Admin
@@ -54,7 +54,7 @@
         <span class="nav-icon"><iconify-icon icon="solar:document-add-bold-duotone"></iconify-icon></span>
         <span>Input Hasil Seleksi</span>
       </a>
-      <a href="penetapanPenerima.html" class="nav-item active">
+      <a href="../penetapanPenerima/penetapanPenerima.html" class="nav-item">
         <span class="nav-icon"><iconify-icon icon="solar:cup-star-bold-duotone"></iconify-icon></span>
         <span>Penetapan Penerima</span>
       </a>
@@ -62,7 +62,7 @@
         <span class="nav-icon"><iconify-icon icon="solar:transfer-horizontal-bold-duotone"></iconify-icon></span>
         <span>Pencairan Dana</span>
       </a>
-      <a href="../TrackingPenerima/trackingPenerima.html" class="nav-item">
+      <a href="trackingPenerima.html" class="nav-item active">
         <span class="nav-icon"><iconify-icon icon="solar:graph-new-up-bold-duotone"></iconify-icon></span>
         <span>Tracking Penerima</span>
       </a>
@@ -70,6 +70,7 @@
       <a href="../pusatLaporanKendala/pusatLaporanKendala.html" class="nav-item">
         <span class="nav-icon"><iconify-icon icon="solar:chat-round-like-bold-duotone"></iconify-icon></span>
         <span>Pusat Laporan Kendala</span>
+        <span class="nav-badge" id="badgeLaporan"></span>
       </a>
 
       <a href="../profilStaff/profilStaff.html" class="nav-item">
@@ -94,19 +95,20 @@
           <svg viewBox="0 0 24 24" fill="none"><path d="M3 12h18M3 6h18M3 18h18" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
         </button>
         <div class="page-title">
-          <h1>Penetapan Penerima</h1>
-          <p>Tetapkan atau batalkan status lolos final penerima beasiswa</p>
+          <h1>Tracking Penerima</h1>
+          <p>Catat perkembangan IPK &amp; aktivitas penerima beasiswa setiap periode</p>
         </div>
       </div>
       <div class="topbar-right">
         <div class="topbar-search">
           <svg viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2"/><path d="M21 21l-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-          <input type="text" id="searchInput" placeholder="Cari nama mahasiswa atau beasiswa..." />
+          <input type="text" id="searchInput" placeholder="Cari nama penerima atau beasiswa..." />
         </div>
         <a href="../pusatLaporanKendala/pusatLaporanKendala.html" class="topbar-notif">
           <svg viewBox="0 0 24 24" fill="none"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="notif-dot" id="notifDot" style="display:none"></span>
         </a>
-        <a href="../profilStaff/profilStaff.html" class="topbar-avatar" id="topbarAvatar">S</a>
+        <a href="../profilStaff/profilStaff.html" class="topbar-avatar" id="topbarAvatar">R</a>
       </div>
     </header>
 
@@ -115,139 +117,132 @@
       <!-- BANNER -->
       <div class="welcome-banner">
         <div class="welcome-text">
-          <h2>🏆 Penetapan Penerima Beasiswa</h2>
-          <p id="bannerSubtitle">Tetapkan mahasiswa sebagai penerima resmi setelah semua nilai seleksi terpenuhi.</p>
+          <h2>Tracking Perkembangan Penerima</h2>
+          <p>Catat IPK terbaru dan aktivitas penerima setiap periode — hasilnya langsung terlihat di Perkembangan Penerima (Kabag).</p>
         </div>
         <div class="banner-stats-wrap">
           <div class="banner-stat">
-            <span id="bannerSiap" style="font-family:var(--font-display);font-size:28px;font-weight:900;color:white">0</span>
-            <span style="font-size:11px;color:rgba(255,255,255,.8)">Siap Ditetapkan</span>
+            <span id="bannerTotal" style="font-family:var(--font-display);font-size:28px;font-weight:900;color:white">0</span>
+            <span style="font-size:11px;color:rgba(255,255,255,.8)">Total Penerima</span>
           </div>
           <div class="banner-stat">
-            <span id="bannerDitetapkan" style="font-family:var(--font-display);font-size:28px;font-weight:900;color:#fbbf24">0</span>
-            <span style="font-size:11px;color:rgba(255,255,255,.8)">Sudah Ditetapkan</span>
+            <span id="bannerPerhatian" style="font-family:var(--font-display);font-size:28px;font-weight:900;color:#fbbf24">0</span>
+            <span style="font-size:11px;color:rgba(255,255,255,.8)">Perlu Perhatian</span>
           </div>
         </div>
       </div>
 
       <!-- STATS -->
       <div class="stats-grid">
-        <div class="stat-card stat-amber">
-          <div class="stat-icon"><iconify-icon icon="solar:hourglass-bold-duotone" style="color:#d97706"></iconify-icon></div>
+        <div class="stat-card stat-blue">
+          <div class="stat-icon"><iconify-icon icon="solar:users-group-rounded-bold-duotone" style="color:#2563eb"></iconify-icon></div>
           <div class="stat-info">
-            <div class="stat-num" id="statSiap">—</div>
-            <div class="stat-label">Siap Ditetapkan</div>
+            <div class="stat-num" id="statTotal">—</div>
+            <div class="stat-label">Total Penerima</div>
           </div>
-          <span class="stat-tag">Antre</span>
+          <span class="stat-tag">Aktif</span>
         </div>
         <div class="stat-card stat-green">
-          <div class="stat-icon"><iconify-icon icon="solar:cup-star-bold-duotone" style="color:#059669"></iconify-icon></div>
+          <div class="stat-icon"><iconify-icon icon="solar:document-text-bold-duotone" style="color:#059669"></iconify-icon></div>
           <div class="stat-info">
-            <div class="stat-num" id="statLolos">—</div>
-            <div class="stat-label">Penerima Ditetapkan</div>
+            <div class="stat-num" id="statSudahTrack">—</div>
+            <div class="stat-label">Sudah Ada Catatan</div>
           </div>
-          <span class="stat-tag">Final</span>
+          <span class="stat-tag">Tercatat</span>
         </div>
-        <div class="stat-card stat-blue">
-          <div class="stat-icon"><iconify-icon icon="solar:close-circle-bold-duotone" style="color:#2563eb"></iconify-icon></div>
+        <div class="stat-card stat-amber">
+          <div class="stat-icon"><iconify-icon icon="solar:clock-circle-bold-duotone" style="color:#d97706"></iconify-icon></div>
           <div class="stat-info">
-            <div class="stat-num" id="statTidakLolos">—</div>
-            <div class="stat-label">Tidak Lolos Final</div>
+            <div class="stat-num" id="statBelumTrack">—</div>
+            <div class="stat-label">Belum Ada Catatan</div>
           </div>
-          <span class="stat-tag">Ditolak</span>
+          <span class="stat-tag">Pending</span>
         </div>
         <div class="stat-card stat-purple">
-          <div class="stat-icon"><iconify-icon icon="solar:wallet-money-bold-duotone" style="color:#7c3aed"></iconify-icon></div>
+          <div class="stat-icon"><iconify-icon icon="solar:danger-triangle-bold-duotone" style="color:#be123c"></iconify-icon></div>
           <div class="stat-info">
-            <div class="stat-num" id="statTotalDana">—</div>
-            <div class="stat-label">Total Dana Ditetapkan</div>
+            <div class="stat-num" id="statPerhatian">—</div>
+            <div class="stat-label">IPK di Bawah Minimum</div>
           </div>
-          <span class="stat-tag" title="Dana yang dikomit untuk penerima yang sudah ditetapkan — belum tentu sudah benar-benar cair, lihat Pencairan Dana untuk status pencairan asli">Komitmen</span>
+          <span class="stat-tag">Perhatian</span>
         </div>
-      </div>
-
-      <!-- TAB FILTER -->
-      <div class="tab-bar">
-        <button class="tab-btn active" data-tab="siap">
-          <iconify-icon icon="solar:hourglass-bold-duotone" width="14"></iconify-icon>
-          Siap Ditetapkan
-          <span class="tab-count" id="tcSiap">0</span>
-        </button>
-        <button class="tab-btn" data-tab="lolos_final">
-          <iconify-icon icon="solar:cup-star-bold-duotone" width="14"></iconify-icon>
-          Sudah Ditetapkan
-          <span class="tab-count" id="tcLolos">0</span>
-        </button>
-        <button class="tab-btn" data-tab="tidak_lolos_final">
-          <iconify-icon icon="solar:close-circle-bold-duotone" width="14"></iconify-icon>
-          Tidak Lolos
-          <span class="tab-count" id="tcTidakLolos">0</span>
-        </button>
-        <button class="tab-btn" data-tab="all">
-          Semua
-          <span class="tab-count" id="tcAll">0</span>
-        </button>
       </div>
 
       <!-- TOOLBAR -->
       <div class="panel-toolbar">
-        <span class="panel-count" id="panelCount">0 peserta</span>
-        <div style="display:flex;gap:10px;align-items:center">
+        <span class="panel-count" id="panelCount">0 penerima</span>
+        <div style="display:flex;gap:10px">
           <select class="filter-select" id="filterBeasiswa">
             <option value="all">Semua Beasiswa</option>
-          </select>
-          <select class="filter-select" id="sortSelect">
-            <option value="nilai_desc">Nilai Tertinggi</option>
-            <option value="nilai_asc">Nilai Terendah</option>
-            <option value="nama_asc">Nama A–Z</option>
           </select>
         </div>
       </div>
 
       <!-- LIST -->
       <div class="list-area">
-        <div class="penerima-list" id="penerimaList"></div>
+        <div class="pencairan-list" id="trackingList"></div>
         <div class="empty-state" id="emptyState" style="display:none">
-          <iconify-icon icon="solar:cup-star-bold-duotone" width="52" style="color:var(--text-4);display:block;margin-bottom:12px"></iconify-icon>
-          <h3>Tidak ada data</h3>
-          <p>Tidak ada peserta pada kategori ini.</p>
+          <iconify-icon icon="solar:users-group-rounded-bold-duotone" width="52" style="color:var(--text-4);display:block;margin-bottom:12px"></iconify-icon>
+          <h3>Belum ada penerima</h3>
+          <p>Belum ada penerima beasiswa yang disahkan untuk ditrack.</p>
         </div>
       </div>
 
     </div>
   </div>
 
-  <!-- MODAL KONFIRMASI PENETAPAN -->
-  <div class="modal" id="modalKonfirmasi">
-    <div class="modal-overlay" id="modalKonfirmasiOverlay"></div>
-    <div class="modal-box">
-      <div class="modal-icon-wrap" id="konfirmasiIcon"></div>
-      <h3 id="konfirmasiTitle">Konfirmasi</h3>
-      <p id="konfirmasiDesc">Pastikan keputusan sudah tepat.</p>
-      <div class="form-group" style="margin-bottom:18px;text-align:left">
-        <label style="font-size:12px;font-weight:700;color:var(--text-2)">
-          Catatan Staff (akan dilihat mahasiswa)
-        </label>
-        <textarea
-          id="catatanPenetapan"
-          rows="2"
-          placeholder="Catatan opsional untuk mahasiswa..."
-          style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:10px;font-family:var(--font-body);font-size:13px;resize:none;outline:none;margin-top:4px"
-        ></textarea>
-      </div>
-      <div class="modal-actions">
-        <button class="btn-cancel" id="cancelKonfirmasi">Batal</button>
-        <button class="btn-konfirmasi" id="confirmPenetapan">Konfirmasi</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- MODAL DETAIL PESERTA -->
-  <div class="modal" id="modalDetail">
-    <div class="modal-overlay" id="modalDetailOverlay"></div>
+  <!-- MODAL CATAT PERKEMBANGAN -->
+  <div class="modal" id="modalTracking">
+    <div class="modal-overlay" id="modalTrackingOverlay"></div>
     <div class="modal-box modal-wide">
-      <button class="modal-close" id="modalDetailClose">×</button>
-      <div id="modalDetailContent"></div>
+      <button class="modal-close" id="modalTrackingClose">×</button>
+      <h3 id="modalTrackingTitle">Catat Perkembangan</h3>
+      <p class="modal-sub">
+        Catatan ini akan tersimpan di <code>perkembangan_penerima</code> dan langsung
+        terlihat di halaman <strong>Perkembangan Penerima</strong> milik Kabag.
+      </p>
+
+      <div id="trackingPenerimaInfo"></div>
+
+      <form id="formTracking" novalidate>
+        <div class="form-grid">
+
+          <div class="form-group">
+            <label>Periode <span class="req">*</span></label>
+            <input type="text" id="fPeriode" name="periode" placeholder="Semester 1 2026" required />
+          </div>
+
+          <div class="form-group">
+            <label>IPK Semester Ini</label>
+            <input type="number" id="fIpkSnapshot" name="ipk_snapshot" placeholder="3.75" step="0.01" min="0" max="4" />
+          </div>
+
+          <div class="form-group form-group-full">
+            <label>Catatan (opsional)</label>
+            <textarea id="fCatatanTracking" name="catatan" rows="3"
+              placeholder="Aktivitas, prestasi, atau hal lain yang perlu dicatat..."></textarea>
+          </div>
+
+        </div>
+
+        <div class="form-message" id="formTrackingMsg"></div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn-cancel" id="cancelTracking">Batal</button>
+          <button type="submit" class="btn-save" id="btnSimpanTracking">
+            <span class="btn-text">
+              <iconify-icon icon="solar:diskette-bold-duotone" width="15"></iconify-icon>
+              Simpan Catatan
+            </span>
+            <span class="btn-loader" id="loaderTracking" style="display:none">
+              <svg class="spinner" viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" stroke-dasharray="31.4" stroke-dashoffset="10"/>
+              </svg>
+              Menyimpan...
+            </span>
+          </button>
+        </div>
+      </form>
     </div>
   </div>
 
@@ -269,6 +264,6 @@
 
   <script src="../../shared/supabaseConfig.js"></script>
   <script src="../../shared/apiClient.js"></script>
-  <script src="penetapanPenerima.js"></script>
+  <script src="trackingPenerima.js"></script>
 </body>
 </html>

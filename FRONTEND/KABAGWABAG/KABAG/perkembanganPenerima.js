@@ -278,26 +278,70 @@ function initUserInfo() {
   if (topbarAv) topbarAv.textContent = initial;
 }
 
+/* ── PERLU PERHATIAN — IPK penerima turun di bawah syarat program.
+   IPK "terkini" diambil dari catatan perkembangan TERBARU (kalau ada),
+   kalau belum pernah dicatat sama sekali dipakai IPK profil saat ini.
+   Program tanpa ipk_minimum (null) tidak pernah dianggap butuh perhatian. */
+function ipkTerkini(p) {
+  const entries = p.perkembangan_penerima || [];
+  const sorted = [...entries].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+  const latest = sorted[0];
+  return latest?.ipk_snapshot ?? p.pendaftaran?.profiles?.ipk ?? null;
+}
+function butuhPerhatian(p) {
+  const min = p.pendaftaran?.beasiswa?.ipk_minimum;
+  const ipk = ipkTerkini(p);
+  return min != null && ipk != null && ipk < min;
+}
+
+let activeFilterPenerima = 'all';
+function setFilterPenerima(filter) {
+  activeFilterPenerima = filter;
+  document.getElementById('btnFilterSemua')?.style.setProperty('outline', filter === 'all' ? '2px solid #2563eb' : 'none');
+  document.getElementById('btnFilterPerhatian')?.style.setProperty('outline', filter === 'perhatian' ? '2px solid #be123c' : 'none');
+  renderList();
+}
+
 /* ── RENDER LIST ── */
 function renderList() {
   const el = document.getElementById('listPenerima');
   if (!el) return;
 
-  if (!penerimaData.length) {
-    el.innerHTML = '<div class="list-empty">Belum ada penerima beasiswa yang disahkan.</div>';
+  const perhatianCount = penerimaData.filter(butuhPerhatian).length;
+  const countEl = document.getElementById('countPerhatian');
+  if (countEl) countEl.textContent = `(${perhatianCount})`;
+
+  const data = activeFilterPenerima === 'perhatian' ? penerimaData.filter(butuhPerhatian) : penerimaData;
+
+  if (!data.length) {
+    el.innerHTML = `<div class="list-empty">${
+      activeFilterPenerima === 'perhatian'
+        ? 'Tidak ada penerima yang IPK-nya di bawah syarat minimum saat ini.'
+        : 'Belum ada penerima beasiswa yang disahkan.'
+    }</div>`;
     return;
   }
 
-  el.innerHTML = penerimaData.map(p => {
+  el.innerHTML = data.map(p => {
     const profil = p.pendaftaran?.profiles;
     const beasiswa = p.pendaftaran?.beasiswa;
     const entries = p.perkembangan_penerima || [];
+    const perhatian = butuhPerhatian(p);
+    const ipk = ipkTerkini(p);
 
     return `
-      <div class="penerima-card">
+      <div class="penerima-card" style="${perhatian ? 'border-left:3px solid #be123c' : ''}">
         <div class="penerima-card-head">
           <div>
-            <div class="penerima-nama">${profil?.nama_lengkap || '—'}</div>
+            <div class="penerima-nama">
+              ${profil?.nama_lengkap || '—'}
+              ${perhatian ? `
+                <span style="display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:700;color:#be123c;background:#fee2e2;border:1px solid #fecaca;border-radius:100px;padding:2px 8px;margin-left:6px">
+                  <iconify-icon icon="solar:danger-triangle-bold-duotone" width="10"></iconify-icon>
+                  IPK ${ipk?.toFixed(2)} di bawah minimum ${beasiswa?.ipk_minimum?.toFixed(2)}
+                </span>
+              ` : ''}
+            </div>
             <div class="penerima-sub">
               NIM: ${profil?.nim_nip || '—'} · ${profil?.program_studi || '—'} ·
               ${beasiswa?.nama_program || '—'} (${beasiswa?.sponsors?.nama_perusahaan || '—'})

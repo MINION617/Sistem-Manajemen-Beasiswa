@@ -103,7 +103,7 @@ const PENERIMA_PERKEMBANGAN_SELECT = `
   pendaftaran(
     mahasiswa_id, beasiswa_id,
     profiles!mahasiswa_id(nama_lengkap, nim_nip, program_studi, ipk),
-    beasiswa(nama_program, sponsors(nama_perusahaan))
+    beasiswa(nama_program, ipk_minimum, sponsors(nama_perusahaan))
   ),
   perkembangan_penerima(*)
 `

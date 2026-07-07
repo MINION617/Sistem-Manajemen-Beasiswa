@@ -19,6 +19,7 @@ import { dokumenRouter } from './modules/dokumen/dokumen.routes.js'
 import { seleksiRouter } from './modules/seleksi/seleksi.routes.js'
 import { penetapanRouter } from './modules/penetapan/penetapan.routes.js'
 import { profilRouter } from './modules/profil/profil.routes.js'
+import { perkembanganRouter } from './modules/perkembangan/perkembangan.routes.js'
 
 export const app = express()
 
@@ -46,6 +47,7 @@ app.use('/api/dokumen', dokumenRouter)
 app.use('/api/seleksi', seleksiRouter)
 app.use('/api/penetapan', penetapanRouter)
 app.use('/api/profil', profilRouter)
+app.use('/api/perkembangan', perkembanganRouter)
 
 app.use(notFound)
 app.use(errorHandler)

@@ -11,9 +11,10 @@ const PENERIMA_SELECT = `
   *,
   pendaftaran(
     id, mahasiswa_id, status,
-    profiles!mahasiswa_id(nama_lengkap, nim_nip, program_studi),
-    beasiswa(nama_program, nominal_dana, sponsors(nama_perusahaan))
-  )
+    profiles!mahasiswa_id(nama_lengkap, nim_nip, program_studi, ipk),
+    beasiswa(nama_program, nominal_dana, ipk_minimum, sponsors(nama_perusahaan))
+  ),
+  perkembangan_penerima(*)
 `
 
 /**

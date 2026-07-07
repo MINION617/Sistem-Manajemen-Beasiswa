@@ -170,6 +170,24 @@
             Daftar Penerima
           </h3>
         </div>
+        <div style="display:flex;gap:8px;margin-bottom:14px">
+          <button
+            class="btn-export"
+            id="btnFilterSemua"
+            style="background:#eff6ff;color:#2563eb"
+            onclick="setFilterPenerima('all')"
+          >Semua</button>
+          <button
+            class="btn-export"
+            id="btnFilterPerhatian"
+            style="background:#fee2e2;color:#be123c"
+            onclick="setFilterPenerima('perhatian')"
+          >
+            <iconify-icon icon="solar:danger-triangle-bold-duotone" width="14"></iconify-icon>
+            Perlu Perhatian
+            <span id="countPerhatian" style="margin-left:4px;font-weight:800">(0)</span>
+          </button>
+        </div>
         <div id="listPenerima">
           <!-- Dirender JS -->
         </div>

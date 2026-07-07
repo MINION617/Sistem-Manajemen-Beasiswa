@@ -20,12 +20,13 @@ const createSchema = z.object({
   tanggalTutup: z.string().min(1).optional(),
   tanggalTesWawancara: z.string().min(1).nullable().optional(),
   tanggalPenetapan: z.string().min(1).nullable().optional(),
+  ipkMinimum: z.number().min(0).max(4).nullable().optional(),
   persyaratan: z.array(z.string()).optional(),
 })
 
 const updateSchema = createSchema.partial()
 
-function toRow({ sponsorId, namaProgram, tahunAkademik, deskripsi, kategori, nominalDana, kuota, status, tanggalBuka, tanggalTutup, tanggalTesWawancara, tanggalPenetapan, persyaratan }) {
+function toRow({ sponsorId, namaProgram, tahunAkademik, deskripsi, kategori, nominalDana, kuota, status, tanggalBuka, tanggalTutup, tanggalTesWawancara, tanggalPenetapan, ipkMinimum, persyaratan }) {
   const row = {}
   if (sponsorId !== undefined) row.sponsor_id = sponsorId
   if (namaProgram !== undefined) row.nama_program = namaProgram
@@ -39,6 +40,7 @@ function toRow({ sponsorId, namaProgram, tahunAkademik, deskripsi, kategori, nom
   if (tanggalTutup !== undefined) row.tanggal_tutup = tanggalTutup
   if (tanggalTesWawancara !== undefined) row.tanggal_tes_wawancara = tanggalTesWawancara
   if (tanggalPenetapan !== undefined) row.tanggal_penetapan = tanggalPenetapan
+  if (ipkMinimum !== undefined) row.ipk_minimum = ipkMinimum
   if (persyaratan !== undefined) row.persyaratan = persyaratan
   return row
 }
