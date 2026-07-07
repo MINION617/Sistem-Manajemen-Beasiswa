@@ -235,14 +235,19 @@ function loadStats() {
   animateNum('statWawancara', sudahWawancara);
   animateNum('statLaporan',   laporanMasuk);
 
-  /* badge sidebar & notif */
+  /* badge sidebar & notif — dihitung dari laporan yang BELUM PERNAH dilihat
+     (bukan status mentah), supaya reset begitu Kabag membuka halaman
+     Laporan Kendala, bukan menunggu Staff memproses. Lihat catatan yang
+     sama di laporanKendala.js: 'bk_laporan_seen_<role>'. */
+  const laporanSeen   = Number(localStorage.getItem('bk_laporan_seen_kabag') || 0);
+  const laporanBelumDilihat = Math.max(0, laporanMasuk - laporanSeen);
   const badge = document.getElementById('badgeLaporan');
   if (badge) {
-    badge.textContent = laporanMasuk;
-    badge.classList.toggle('show', laporanMasuk > 0);
+    badge.textContent = laporanBelumDilihat;
+    badge.classList.toggle('show', laporanBelumDilihat > 0);
   }
   const dot = document.getElementById('notifDot');
-  if (dot) dot.style.display = laporanMasuk > 0 ? 'block' : 'none';
+  if (dot) dot.style.display = laporanBelumDilihat > 0 ? 'block' : 'none';
 }
 
 /* ── TOP NILAI ── */

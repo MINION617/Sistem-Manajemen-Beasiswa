@@ -91,6 +91,29 @@ function saveProfilData(patch) {
 let editMode       = false;
 let originalValues = {};
 
+const isRealSession = !!(session?.access_token && !session.access_token.startsWith('dummy-token-'));
+
+/* Ambil profil asli dari backend dan simpan ke localStorage supaya
+   getProfilData()/renderProfil() yang sudah ada langsung memakainya. */
+async function loadProfile() {
+  if (!isRealSession) return;
+  try {
+    const { data } = await api.get('/profil');
+    saveProfilData({
+      nama: data.nama_lengkap,
+      nip: data.nim_nip,
+      email: data.email,
+      telp: data.nomor_whatsapp,
+      jabatan: data.jabatan,
+      unit: data.unit,
+    });
+    initUserInfo();
+    renderProfil();
+  } catch (err) {
+    console.warn('Gagal memuat profil, pakai data lokal:', err);
+  }
+}
+
 
 /* ============================================================
  * 03. UTILS
@@ -144,14 +167,33 @@ function initUserInfo() {
   /* Topbar: foto avatar (jika sudah pernah upload) */
   loadAvatarFromStorage();
 
-  /* Badge laporan kendala (dummy: 2) */
-  const badge = document.getElementById('badgeLaporan');
-  if (badge) {
-    badge.textContent = '2';
-    badge.classList.add('show');
-  }
+  updateLaporanBadge();
+}
+
+/* Badge laporan kendala — dihitung dari laporan status 'masuk' yang BELUM
+   PERNAH dilihat (bukan status mentah), sinkron dengan mekanisme yang sama
+   di laporanKendala.js: 'bk_laporan_seen_<role>'. */
+async function updateLaporanBadge() {
+  const badge    = document.getElementById('badgeLaporan');
   const notifDot = document.getElementById('notifDot');
-  if (notifDot) notifDot.style.display = 'block';
+  if (!isRealSession) {
+    if (badge) { badge.textContent = '0'; badge.classList.remove('show'); }
+    if (notifDot) notifDot.style.display = 'none';
+    return;
+  }
+  try {
+    const { data } = await api.get('/laporan');
+    const masuk = data.filter(d => d.status === 'masuk').length;
+    const seen  = Number(localStorage.getItem('bk_laporan_seen_' + ROLE) || 0);
+    const belumDilihat = Math.max(0, masuk - seen);
+    if (badge) {
+      badge.textContent = belumDilihat;
+      badge.classList.toggle('show', belumDilihat > 0);
+    }
+    if (notifDot) notifDot.style.display = belumDilihat > 0 ? 'block' : 'none';
+  } catch (err) {
+    console.warn('Gagal memuat badge laporan:', err);
+  }
 }
 
 
@@ -298,14 +340,23 @@ function validateProfileForm() {
   return valid;
 }
 
-function handleSaveProfile() {
+async function handleSaveProfile() {
   if (!validateProfileForm()) return;
 
   const nama  = document.getElementById('inputNama').value.trim();
   const email = document.getElementById('inputEmail').value.trim();
   const telp  = (document.getElementById('inputTelp')?.value || '').trim();
 
-  /* Simpan ke localStorage */
+  if (isRealSession) {
+    try {
+      await api.patch('/profil', { nama_lengkap: nama, email, nomor_whatsapp: telp });
+    } catch (err) {
+      showToast(err?.message || 'Gagal menyimpan profil.', 'error');
+      return;
+    }
+  }
+
+  /* Simpan ke localStorage (juga dipakai sebagai cache tampilan saat real session) */
   const updated = saveProfilData({ nama, email, telp });
 
   /* Update tampilan kartu kiri & session */
@@ -494,8 +545,20 @@ function validatePasswordForm() {
   return valid;
 }
 
-function handleSavePassword() {
+async function handleSavePassword() {
   if (!validatePasswordForm()) return;
+
+  const oldPassword = document.getElementById('inputOldPass').value;
+  const newPassword = document.getElementById('inputNewPass').value;
+
+  if (isRealSession) {
+    try {
+      await api.patch('/profil/password', { oldPassword, newPassword });
+    } catch (err) {
+      showToast(err?.message || 'Gagal mengubah password.', 'error');
+      return;
+    }
+  }
 
   /* Reset field password setelah berhasil */
   ['inputOldPass', 'inputNewPass', 'inputConfirmPass'].forEach(function (id) {
@@ -744,6 +807,7 @@ document.addEventListener('DOMContentLoaded', function () {
   initParticles();
   initUserInfo();
   renderProfil();
+  loadProfile();
 
   /* Avatar upload */
   initAvatarUpload();

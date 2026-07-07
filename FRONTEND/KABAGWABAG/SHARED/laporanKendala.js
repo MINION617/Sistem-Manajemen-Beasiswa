@@ -326,15 +326,22 @@ function loadStats() {
   setEl('tcDiproses', diproses);
   setEl('tcSelesai',  selesai);
 
-  /* Badge sidebar & notif dot */
+  /* Kabag/Wabag cuma bisa memonitor (tidak bisa mengubah status — itu
+     wewenang Staff), jadi begitu halaman ini dibuka, tandai semua laporan
+     'masuk' yang sedang tampil sebagai "sudah dilihat". Badge di halaman
+     lain (dashboard, dll) akan mengikuti angka ini, bukan status mentah,
+     supaya tidak nyala terus selama Staff belum memproses. */
+  localStorage.setItem('bk_laporan_seen_' + ROLE, String(masuk));
+
+  /* Badge sidebar & notif dot — 0 karena baru saja ditandai "dilihat" */
   const badge = document.getElementById('badgeLaporan');
   if (badge) {
-    badge.textContent = masuk;
-    badge.classList.toggle('show', masuk > 0);
+    badge.textContent = '0';
+    badge.classList.remove('show');
   }
 
   const notifDot = document.getElementById('notifDot');
-  if (notifDot) notifDot.style.display = masuk > 0 ? 'block' : 'none';
+  if (notifDot) notifDot.style.display = 'none';
 }
 
 

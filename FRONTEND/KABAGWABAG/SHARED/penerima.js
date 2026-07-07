@@ -270,15 +270,33 @@ function loadStats() {
   setEl('tcProses', proses);
   setEl('tcBelum',  belumCair);
 
-  /* Badge laporan (dummy) */
-  const badge = document.getElementById('badgeLaporan');
-  if (badge) {
-    badge.textContent = '2';
-    badge.classList.add('show');
-  }
+  updateLaporanBadge();
+}
 
+/* Badge laporan kendala — dihitung dari laporan status 'masuk' yang BELUM
+   PERNAH dilihat (bukan status mentah), sinkron dengan mekanisme yang sama
+   di laporanKendala.js: 'bk_laporan_seen_<role>'. */
+async function updateLaporanBadge() {
+  const badge    = document.getElementById('badgeLaporan');
   const notifDot = document.getElementById('notifDot');
-  if (notifDot) notifDot.style.display = 'block';
+  if (!isRealSession) {
+    if (badge) { badge.textContent = '0'; badge.classList.remove('show'); }
+    if (notifDot) notifDot.style.display = 'none';
+    return;
+  }
+  try {
+    const { data } = await api.get('/laporan');
+    const masuk = data.filter(d => d.status === 'masuk').length;
+    const seen  = Number(localStorage.getItem('bk_laporan_seen_' + ROLE) || 0);
+    const belumDilihat = Math.max(0, masuk - seen);
+    if (badge) {
+      badge.textContent = belumDilihat;
+      badge.classList.toggle('show', belumDilihat > 0);
+    }
+    if (notifDot) notifDot.style.display = belumDilihat > 0 ? 'block' : 'none';
+  } catch (err) {
+    console.warn('Gagal memuat badge laporan:', err);
+  }
 }
 
 
