@@ -58,18 +58,22 @@ const ROLE_CFG = {
 const roleCfg = ROLE_CFG[ROLE] || ROLE_CFG.kabag;
 const isRealSession = !!(session?.access_token && !session.access_token.startsWith('dummy-token-'));
 
-/* GET /api/laporan row -> shape this page renders (mirrors kabagMapper.js style) */
+/* GET /api/laporan row -> shape this page renders (mirrors kabagMapper.js style).
+   Real fields are judul_laporan (not judul) and the mahasiswa join is aliased
+   `mahasiswa` (not `profiles`) — see LAPORAN_SELECT in laporan.service.js.
+   Previously mismatched, so every card showed "undefined" for the title and
+   "—" for the student's name/NIM regardless of the real data. */
 function mapLaporanRow(row) {
   return {
     id: row.id,
-    judul: row.judul,
+    judul: row.judul_laporan,
     deskripsi: row.deskripsi,
     kategori: row.kategori,
     status: row.status,
     tgl: row.tanggal_lapor,
     mahasiswa: {
-      nama: row.profiles?.nama_lengkap ?? '—',
-      nim: row.profiles?.nim_nip ?? '—',
+      nama: row.mahasiswa?.nama_lengkap ?? '—',
+      nim: row.mahasiswa?.nim_nip ?? '—',
     },
     beasiswa: row.beasiswa?.nama_program ?? null,
     tanggapan_staff: row.tanggapan_staff,
