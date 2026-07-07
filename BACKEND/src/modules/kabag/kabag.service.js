@@ -188,9 +188,21 @@ function computeSuccessProfile(dimensionRows) {
   return profile
 }
 
-/** Weighted-mean-absolute-difference score (0-100, higher = closer match). Missing dimensions are skipped, not zero-filled. */
+/**
+ * Weighted score (0-100, higher = better). Missing dimensions are skipped,
+ * not zero-filled.
+ *
+ * Only SHORTFALL below the successful-recipient profile is penalized — a
+ * candidate at or above the profile mean on a dimension gets full marks on
+ * it, same as one sitting exactly on the mean. Previously this used
+ * absolute distance in both directions, so a candidate far ABOVE the
+ * profile (e.g. IPK 4.0 against a 3.3 mean) scored WORSE than one sitting
+ * right on a mediocre mean — a low-IPK candidate could rank above a
+ * clearly stronger one just for being "typical". See RUMUS_REKOMENDASI.md
+ * for the previous symmetric-distance rationale this replaces.
+ */
 function scoreCandidate(dims, profile) {
-  let weightedDiffSum = 0
+  let weightedShortfallSum = 0
   let weightTotal = 0
   const breakdown = {}
 
@@ -200,14 +212,14 @@ function scoreCandidate(dims, profile) {
     if (candidateVal == null || profileVal == null) continue
 
     const normalizedCandidate = candidateVal / DIMENSION_SCALE[key]
-    const diff = Math.abs(normalizedCandidate - profileVal)
-    weightedDiffSum += weight * diff
+    const shortfall = Math.max(0, profileVal - normalizedCandidate)
+    weightedShortfallSum += weight * shortfall
     weightTotal += weight
-    breakdown[key] = { candidate: candidateVal, profileMean: profileVal * DIMENSION_SCALE[key], diff }
+    breakdown[key] = { candidate: candidateVal, profileMean: profileVal * DIMENSION_SCALE[key], diff: Math.abs(normalizedCandidate - profileVal) }
   }
 
   if (weightTotal === 0) return { score: null, breakdown }
-  const score = Math.round(100 * (1 - weightedDiffSum / weightTotal))
+  const score = Math.round(100 * (1 - weightedShortfallSum / weightTotal))
   return { score, breakdown }
 }
 

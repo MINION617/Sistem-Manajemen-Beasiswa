@@ -39,15 +39,29 @@ profileMean_k = rata-rata( nilai_k / skala_k )   dari semua penerima berhasil
                 yang punya nilai_k (tidak null)
 ```
 
-## 3. Skor kemiripan kandidat
+## 3. Skor kandidat
+
+> **Revisi:** versi awal rumus ini mengukur jarak absolut dua arah (lihat
+> catatan di bagian 7) — kandidat yang nilainya jauh DI ATAS profil penerima
+> berhasil ikut kena "penalti jarak" yang sama besarnya dengan kandidat yang
+> nilainya jauh DI BAWAH profil. Efeknya, kandidat IPK rendah yang kebetulan
+> dekat dengan rata-rata historis bisa mengalahkan kandidat IPK tinggi yang
+> jauh di atas rata-rata. Rumus di bawah ini sudah direvisi: nilai yang SAMA
+> DENGAN atau DI ATAS profil tidak lagi dikurangi sama sekali.
 
 Untuk tiap kandidat (pendaftar tahap wawancara) pada satu program beasiswa:
 
 ```
-similarity_k = 1 − | (nilai_kandidat_k / skala_k) − profileMean_k |
+shortfall_k = max( 0, profileMean_k − (nilai_kandidat_k / skala_k) )
 
-Score = round( 100 × Σ(bobot_k × similarity_k) / Σ(bobot_k yang datanya tersedia) )
+Score = round( 100 × ( 1 − Σ(bobot_k × shortfall_k) / Σ(bobot_k yang datanya tersedia) ) )
 ```
+
+Kandidat yang nilainya menyamai atau melampaui `profileMean_k` pada suatu
+dimensi mendapat skor penuh (`shortfall_k = 0`) di dimensi itu — tidak ada
+lagi pengurangan karena "terlalu jauh di atas rata-rata". Hanya kandidat yang
+nilainya di BAWAH profil yang skornya berkurang, sebanding dengan seberapa
+jauh kekurangannya.
 
 Dimensi yang datanya kosong pada kandidat ATAU pada profil (`profileMean_k`)
 **dilewati sepenuhnya** — baik dari pembilang maupun penyebut (`weightTotal`).
@@ -110,20 +124,19 @@ Nilai Tes:        kandidat = 88   / 100 = 0.88       profil = 85   / 100 = 0.85
 Nilai Wawancara:  kandidat = 85   / 100 = 0.85       profil = 84   / 100 = 0.84
 ```
 
-**Langkah 2 — Selisih absolut (`diff`) per dimensi:**
+**Langkah 2 — Shortfall (kekurangan di bawah profil) per dimensi** — kandidat
+di sini unggul di ketiga dimensi, jadi semua shortfall-nya 0:
 
 ```
-diff_ipk         = |0.955 − 0.925| = 0.030
-diff_tes         = |0.88  − 0.85 | = 0.030
-diff_wawancara   = |0.85  − 0.84 | = 0.010
+shortfall_ipk         = max(0, 0.925 − 0.955) = 0
+shortfall_tes         = max(0, 0.85  − 0.88 ) = 0
+shortfall_wawancara   = max(0, 0.84  − 0.85 ) = 0
 ```
 
-**Langkah 3 — Kalikan tiap diff dengan bobotnya, jumlahkan:**
+**Langkah 3 — Kalikan tiap shortfall dengan bobotnya, jumlahkan:**
 
 ```
-weightedDiffSum = (0.20 × 0.030) + (0.15 × 0.030) + (0.15 × 0.010)
-                = 0.0060 + 0.0045 + 0.0015
-                = 0.0120
+weightedShortfallSum = (0.20 × 0) + (0.15 × 0) + (0.15 × 0) = 0
 ```
 
 **Langkah 4 — Total bobot yang datanya tersedia** (di contoh ini cuma 3 dari 7
@@ -136,40 +149,57 @@ weightTotal = 0.20 + 0.15 + 0.15 = 0.50
 **Langkah 5 — Hitung skor akhir:**
 
 ```
-Score = round( 100 × (1 − weightedDiffSum / weightTotal) )
-      = round( 100 × (1 − 0.0120 / 0.50) )
-      = round( 100 × (1 − 0.024) )
-      = round( 100 × 0.976 )
-      = round( 97.6 )
-      = 98
+Score = round( 100 × (1 − weightedShortfallSum / weightTotal) )
+      = round( 100 × (1 − 0 / 0.50) )
+      = round( 100 × 1 )
+      = 100
 ```
 
-**Hasil: Bagas Pratama Wijaya mendapat skor rekomendasi 98/100** — sangat
-dekat dengan profil rata-rata penerima yang sudah terbukti berhasil di program
-ini, karena selisih di ketiga dimensi yang tersedia semuanya kecil (≤ 0.03
-pada skala 0–1).
+**Hasil: Bagas Pratama Wijaya mendapat skor rekomendasi 100/100** — unggul
+atau menyamai profil rata-rata penerima berhasil di ketiga dimensi yang
+tersedia, jadi tidak ada shortfall sama sekali.
 
 Sebagai pembanding, kandidat p-002 (Dimas Surya Atmaja: IPK 3.65, Tes 79,
-Wawancara 82) dengan profil yang sama menghasilkan skor **97** — sedikit lebih
-rendah, terutama karena selisih nilai tesnya lebih besar (`|0.79−0.85|=0.06`,
-dua kali lipat selisih Bagas).
+Wawancara 82) dengan profil yang sama berada DI BAWAH profil di ketiga
+dimensi, jadi shortfall-nya bukan nol:
 
-> **Catatan verifikasi:** kedua angka ini (98 dan 97) dihasilkan dari
-> menjalankan ulang rumus `scoreCandidate()` secara manual di luar aplikasi,
-> memakai persis nilai kandidat & profil yang sudah ada di data contoh
-> (`dummyRekomendasi`) — bukan angka yang dieyeball. Nilai `score` di
-> `rekomendasiKandidat.js` sudah disesuaikan supaya cocok dengan hasil ini.
+```
+shortfall_ipk       = max(0, 0.925 − 0.9125) = 0.0125   (IPK 3.65/4 = 0.9125)
+shortfall_tes       = max(0, 0.85  − 0.79  ) = 0.06
+shortfall_wawancara = max(0, 0.84  − 0.82  ) = 0.02
+
+weightedShortfallSum = (0.20×0.0125) + (0.15×0.06) + (0.15×0.02) = 0.0145
+Score = round(100 × (1 − 0.0145/0.50)) = round(97.1) = 97
+```
+
+**Dimas mendapat skor 97** — tidak berubah dari rumus sebelumnya, karena dia
+memang di bawah profil di semua dimensi (rumus lama dan baru sama-sama
+menghukum kekurangan itu). Yang berubah hanya kasus Bagas: rumus lama
+menghukumnya juga (walau kecil) karena dianggap "terlalu jauh DI ATAS
+profil", sekarang tidak lagi.
+
+> **Catatan verifikasi:** angka-angka ini dihasilkan dari menjalankan ulang
+> rumus `scoreCandidate()` (versi shortfall-only, lihat revisi di bagian 3)
+> secara manual di luar aplikasi, memakai persis nilai kandidat & profil yang
+> sudah ada di data contoh (`dummyRekomendasi`) — bukan angka yang dieyeball.
 
 ## 7. Catatan tambahan untuk sesi tanya jawab
 
-- **Kenapa dua kandidat contoh sama-sama skornya tinggi (97–98), padahal salah
-  satu terlihat "lebih baik"?** Karena rumus ini mengukur *jarak relatif
-  terhadap skala penuh dimensi* (mis. skala nilai tes 0–100). Selisih beberapa
-  poin nilai tes hanya menggeser skor sedikit karena dibagi skala besar (100).
-  Efek praktisnya: kandidat dengan profil yang berdekatan dengan penerima
-  sukses cenderung sama-sama mendapat skor tinggi di rentang atas — rumus ini
-  lebih cocok dibaca sebagai "seberapa dekat", bukan "seberapa jauh lebih
-  unggul" satu kandidat dari yang lain.
+- **Kenapa dua kandidat yang jelas unggul di semua dimensi bisa sama-sama
+  dapat skor 100?** Karena rumus (versi shortfall-only) tidak memberi bonus
+  untuk melampaui profil — begitu kandidat menyamai atau melewati
+  `profileMean_k` di suatu dimensi, dimensi itu langsung dianggap "penuh",
+  berapa pun jauhnya dia melampaui. Ini didesain sengaja: tujuan rumus ini
+  adalah menyaring kandidat yang **tidak kekurangan** dibanding profil
+  penerima berhasil, bukan meranking siapa yang paling jauh melampauinya.
+  Kalau butuh pembeda di antara sesama kandidat yang sudah skor 100, lihat
+  nilai mentahnya langsung di breakdown/grafik radar, bukan dari skor akhir.
+- **Kenapa versi sebelumnya bisa merekomendasikan kandidat IPK rendah di atas
+  kandidat IPK tinggi?** Rumus versi awal (lihat riwayat git) mengukur jarak
+  absolut dua arah — kandidat yang jauh DI ATAS profil kena "penalti jarak"
+  yang sama seperti yang jauh DI BAWAH. Kandidat IPK rendah yang kebetulan
+  dekat rata-rata historis bisa menang atas kandidat IPK tinggi yang jauh di
+  atas rata-rata. Revisi di bagian 3 (shortfall-only) menutup celah ini.
 - **Kenapa bukan model Machine Learning?** Karena data historis penerima masih
   sangat sedikit (belum cukup untuk melatih model yang andal), dan rumus
   weighted-similarity ini transparan — setiap angka bisa dilacak dan
