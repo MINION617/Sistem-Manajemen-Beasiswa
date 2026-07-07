@@ -15,8 +15,24 @@ const PENERIMA_SELECT = `
   )
 `
 
-/** SELE-02: staff proposes a pendaftaran (already lolos_final) as a recipient. */
+/**
+ * SELE-02: staff proposes a pendaftaran (already lolos_final) as a recipient.
+ * Manual find-then-insert (no unique constraint on pendaftaran_id) — without
+ * this check, re-tetapkan/batal/tetapkan cycles on the same pendaftaran each
+ * insert a fresh 'diusulkan' row, so Kabag ends up ratifying duplicates of
+ * the same student.
+ */
 export async function propose(pendaftaranId, staffId) {
+  const { data: existing, error: findError } = await supabaseAdmin
+    .from('penerima_beasiswa')
+    .select(PENERIMA_SELECT)
+    .eq('pendaftaran_id', pendaftaranId)
+    .eq('status', STATUS_DIUSULKAN)
+    .maybeSingle()
+
+  if (findError) throw Object.assign(new Error(findError.message), { status: 502 })
+  if (existing) return existing
+
   const { data, error } = await supabaseAdmin
     .from('penerima_beasiswa')
     .insert({ pendaftaran_id: pendaftaranId, status: STATUS_DIUSULKAN, diusulkan_oleh: staffId })

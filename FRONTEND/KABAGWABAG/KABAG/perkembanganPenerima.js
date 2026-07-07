@@ -42,7 +42,19 @@ const dummyPenerima = [
   },
 ];
 
+/* ── DUMMY DATA — proposal menunggu ratifikasi (penerima_beasiswa: diusulkan) ── */
+const dummyRatifikasi = [
+  {
+    id: 'pb-101',
+    pendaftaran: {
+      profiles: { nama_lengkap: 'Ivan Rizki Ramadhan', nim_nip: '2020230045', program_studi: 'Teknik Kimia', ipk: 3.86 },
+      beasiswa: { nama_program: 'Pertamina Sobat Bumi', nominal_dana: 7500000, sponsors: { nama_perusahaan: 'Pertamina' } },
+    },
+  },
+];
+
 let penerimaData = dummyPenerima;
+let ratifikasiData = dummyRatifikasi;
 let ipkChart = null;
 
 async function loadData() {
@@ -57,6 +69,79 @@ async function loadData() {
   }
   renderList();
   renderChart();
+  loadRatifikasi();
+}
+
+/* ── MENUNGGU RATIFIKASI (penerima_beasiswa: diusulkan) ──
+   Staff menetapkan pendaftaran lolos_final -> otomatis membuat baris
+   penerima_beasiswa berstatus 'diusulkan' (lihat BACKEND penetapan.service.js).
+   Sebelumnya TIDAK ADA UI di manapun buat Kabag mengesahkan/membatalkan
+   proposal ini — endpoint backend-nya (PATCH /penerima/:id/sahkan|batalkan)
+   sudah ada tapi tidak pernah dipanggil, jadi proposal nyangkut selamanya
+   dan Wabag tidak pernah melihat penerima baru. */
+async function loadRatifikasi() {
+  if (isRealSession) {
+    try {
+      const { data } = await api.get('/penerima?status=diusulkan');
+      ratifikasiData = data;
+    } catch (err) {
+      console.warn('Gagal memuat daftar ratifikasi, pakai data contoh:', err);
+      ratifikasiData = dummyRatifikasi;
+    }
+  }
+  renderRatifikasi();
+}
+
+function renderRatifikasi() {
+  const el = document.getElementById('listRatifikasi');
+  if (!el) return;
+
+  if (!ratifikasiData.length) {
+    el.innerHTML = '<div class="list-empty">Tidak ada proposal yang menunggu ratifikasi saat ini.</div>';
+    return;
+  }
+
+  el.innerHTML = ratifikasiData.map(p => {
+    const profil = p.pendaftaran?.profiles;
+    const beasiswa = p.pendaftaran?.beasiswa;
+    return `
+      <div class="penerima-card" id="ratifikasi-${p.id}">
+        <div class="penerima-card-head">
+          <div>
+            <div class="penerima-nama">${profil?.nama_lengkap || '—'}</div>
+            <div class="penerima-sub">
+              NIM: ${profil?.nim_nip || '—'} · ${profil?.program_studi || '—'} ·
+              ${beasiswa?.nama_program || '—'} (${beasiswa?.sponsors?.nama_perusahaan || '—'})
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;flex-shrink:0">
+            <button class="btn-export" style="background:#dcfce7;color:#059669" onclick="ratifikasiAksi('${p.id}','sahkan')">
+              <iconify-icon icon="solar:check-circle-bold-duotone" width="14"></iconify-icon> Sahkan
+            </button>
+            <button class="btn-export" style="background:#fee2e2;color:#be123c" onclick="ratifikasiAksi('${p.id}','batalkan')">
+              <iconify-icon icon="solar:close-circle-bold-duotone" width="14"></iconify-icon> Batalkan
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+async function ratifikasiAksi(penerimaId, aksi) {
+  if (!isRealSession) {
+    ratifikasiData = ratifikasiData.filter(p => p.id !== penerimaId);
+    renderRatifikasi();
+    return;
+  }
+  try {
+    await api.patch(`/penerima/${penerimaId}/${aksi}`);
+    ratifikasiData = ratifikasiData.filter(p => p.id !== penerimaId);
+    renderRatifikasi();
+    if (aksi === 'sahkan') loadData(); // penerima baru harus muncul di "Daftar Penerima" + grafik IPK
+  } catch (err) {
+    alert(err?.message || 'Gagal menyimpan keputusan ratifikasi.');
+  }
 }
 
 /* ── RENDER CHART: rata-rata IPK per periode, lintas semua penerima ── */
