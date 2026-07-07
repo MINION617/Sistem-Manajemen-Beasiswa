@@ -192,6 +192,11 @@ function loadStats() {
   const siap       = dummyData.filter(d => d.status === 'wawancara').length;
   const lolos      = dummyData.filter(d => d.status === 'lolos_final').length;
   const tidakLolos = dummyData.filter(d => d.status === 'tidak_lolos_final').length;
+  /* "Total Dana Ditetapkan" — dana yang DIKOMIT untuk penerima yang sudah
+     ditetapkan (nominal_dana program beasiswa), BUKAN dana yang benar-benar
+     sudah cair. Pencairan asli dicatat terpisah di penyaluran_dana
+     (PencairanDana/pencairanDana.html) — sebelumnya kartu ini berlabel
+     "Total Dana Dicairkan" yang menyesatkan seolah dananya sudah ditransfer. */
   const totalDana  = dummyData.filter(d => d.status === 'lolos_final')
                                .reduce((s, d) => s + (d.beasiswa?.nominal_dana || 0), 0);
 
