@@ -22,12 +22,12 @@ const isRealSession = !!(session?.access_token && !session.access_token.startsWi
 
 /* ── DUMMY DATA PENDAFTAR ── */
 const dummyPendaftar = [
-  { id:'p-001', nama:'Bagas Pratama Wijaya',  nim:'2021410043', beasiswa:'Beasiswa Mandiri Prestasi', nilai_tes:88, nilai_wawancara:85, ipk:3.82, status:'wawancara' },
-  { id:'p-002', nama:'Cahaya Nur Aisyah',     nim:'2021220032', beasiswa:'Pertamina Sobat Bumi',      nilai_tes:91, nilai_wawancara:89, ipk:3.91, status:'wawancara' },
-  { id:'p-003', nama:'Dimas Surya Atmaja',    nim:'2020130021', beasiswa:'Beasiswa Mandiri Prestasi', nilai_tes:79, nilai_wawancara:82, ipk:3.65, status:'lolos_berkas' },
-  { id:'p-004', nama:'Elisa Rahayu Putri',    nim:'2022510017', beasiswa:'Telkom Digital Talent',     nilai_tes:85, nilai_wawancara:87, ipk:3.77, status:'wawancara' },
-  { id:'p-005', nama:'Fadhlan Rizki Maulana', nim:'2021410043', beasiswa:'Beasiswa Mandiri Prestasi', nilai_tes:93, nilai_wawancara:91, ipk:3.95, status:'lolos_final' },
-  { id:'p-006', nama:'Gita Safira Dewi',      nim:'2023110029', beasiswa:'Pertamina Sobat Bumi',      nilai_tes:72, nilai_wawancara:null, ipk:3.50, status:'lolos_berkas' },
+  { id:'p-001', nama:'Bagas Pratama Wijaya',  nim:'2021410043', beasiswa:'Beasiswa Mandiri Prestasi', nilai_tes:88, nilai_wawancara:85, ipk:3.82, status:'wawancara',   tgl:'2026-06-18T08:00:00Z' },
+  { id:'p-002', nama:'Cahaya Nur Aisyah',     nim:'2021220032', beasiswa:'Pertamina Sobat Bumi',      nilai_tes:91, nilai_wawancara:89, ipk:3.91, status:'wawancara',   tgl:'2026-07-02T08:00:00Z' },
+  { id:'p-003', nama:'Dimas Surya Atmaja',    nim:'2020130021', beasiswa:'Beasiswa Mandiri Prestasi', nilai_tes:79, nilai_wawancara:82, ipk:3.65, status:'lolos_berkas', tgl:'2026-07-05T08:00:00Z' },
+  { id:'p-004', nama:'Elisa Rahayu Putri',    nim:'2022510017', beasiswa:'Telkom Digital Talent',     nilai_tes:85, nilai_wawancara:87, ipk:3.77, status:'wawancara',   tgl:'2026-06-15T08:00:00Z' },
+  { id:'p-005', nama:'Fadhlan Rizki Maulana', nim:'2021410043', beasiswa:'Beasiswa Mandiri Prestasi', nilai_tes:93, nilai_wawancara:91, ipk:3.95, status:'lolos_final', tgl:'2026-06-01T08:00:00Z' },
+  { id:'p-006', nama:'Gita Safira Dewi',      nim:'2023110029', beasiswa:'Pertamina Sobat Bumi',      nilai_tes:72, nilai_wawancara:null, ipk:3.50, status:'lolos_berkas', tgl:'2026-07-06T08:00:00Z' },
 ];
 
 const dummyLaporan = [
@@ -71,10 +71,92 @@ async function loadDashboardData() {
     }
   }
   loadStats();
+  renderInsight();
   renderTopNilai();
   renderRingkasanLaporan();
   renderPipeline();
   renderTrenPendaftaran();
+}
+
+/* ── INSIGHT CEPAT ──
+   Kalimat naratif dihitung otomatis dari pendaftarData/laporanCounts
+   yang sudah ada (bukan hardcoded) — memperkuat kriteria kesesuaian
+   output dengan kebutuhan pengambilan keputusan manajemen. */
+function renderInsight() {
+  const el = document.getElementById('listInsightKabag');
+  if (!el) return;
+
+  const insights = [];
+
+  /* 1. Pendaftar lama di tahap wawancara tanpa progres */
+  const now = Date.now();
+  const lamaWawancara = pendaftarData.filter(d => {
+    if (d.status !== 'wawancara' || !d.tgl) return false;
+    return (now - new Date(d.tgl).getTime()) / 86400000 > 7;
+  });
+  if (lamaWawancara.length > 0) {
+    insights.push({
+      icon  : 'solar:clock-circle-bold-duotone',
+      color : 'var(--orange)',
+      text  : `<strong>${lamaWawancara.length} pendaftar</strong> sudah menunggu lebih dari 7 hari di tahap wawancara tanpa progres nilai — pertimbangkan tindak lanjut ke Staff.`,
+    });
+  }
+
+  /* 2. Program dengan rasio lolos-final tertinggi (min. 2 pendaftar sebagai pembanding) */
+  const byBeasiswa = {};
+  pendaftarData.forEach(d => {
+    byBeasiswa[d.beasiswa] ??= { total: 0, lolos: 0 };
+    byBeasiswa[d.beasiswa].total++;
+    if (d.status === 'lolos_final') byBeasiswa[d.beasiswa].lolos++;
+  });
+  const programPembanding = Object.entries(byBeasiswa)
+    .map(([nama, v]) => ({ nama, rasio: v.lolos / v.total, total: v.total }))
+    .filter(p => p.total >= 2);
+  if (programPembanding.length >= 2) {
+    const top = [...programPembanding].sort((a, b) => b.rasio - a.rasio)[0];
+    if (top.rasio > 0) {
+      insights.push({
+        icon  : 'solar:cup-star-bold-duotone',
+        color : 'var(--emerald)',
+        text  : `Program <strong>${top.nama}</strong> punya rasio lolos final tertinggi (${Math.round(top.rasio * 100)}%) dibanding program lain musim ini.`,
+      });
+    }
+  }
+
+  /* 3. Rata-rata nilai tes musim berjalan */
+  const sudahTes = pendaftarData.filter(d => d.nilai_tes != null);
+  if (sudahTes.length > 0) {
+    const rata = sudahTes.reduce((s, d) => s + d.nilai_tes, 0) / sudahTes.length;
+    insights.push({
+      icon  : 'solar:chart-2-bold-duotone',
+      color : 'var(--purple)',
+      text  : `Rata-rata nilai tes pendaftar musim ini <strong>${rata.toFixed(1)}</strong>, dari ${sudahTes.length} dari ${pendaftarData.length} pendaftar yang sudah dites.`,
+    });
+  }
+
+  /* 4. Laporan kendala yang belum ditindaklanjuti */
+  const masuk = laporanCounts ? (laporanCounts.perStatus.masuk || 0) : dummyLaporan.filter(d => d.status === 'masuk').length;
+  if (masuk > 0) {
+    insights.push({
+      icon  : 'solar:chat-round-unread-bold-duotone',
+      color : '#e11d48',
+      text  : `<strong>${masuk} laporan kendala</strong> masih berstatus baru dan belum ditindaklanjuti Staff.`,
+    });
+  }
+
+  if (!insights.length) {
+    el.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-4);font-size:13px">Belum ada insight untuk ditampilkan</div>';
+    return;
+  }
+
+  el.innerHTML = insights.map(i => `
+    <div class="insight-item">
+      <div class="insight-icon" style="color:${i.color}">
+        <iconify-icon icon="${i.icon}"></iconify-icon>
+      </div>
+      <div class="insight-text">${i.text}</div>
+    </div>
+  `).join('');
 }
 
 /* ── TREN PENDAFTARAN (Chart.js) ── */

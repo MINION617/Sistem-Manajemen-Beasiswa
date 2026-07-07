@@ -1,7 +1,12 @@
 /* ============================================================
    MONITORINGPENDAFTAR.JS
-   Beasiswa Kampus — Role: Kabag / Wabag (SHARED)
+   Beasiswa Kampus — Role: Kabag (khusus)
    Read-only monitoring, tidak ada aksi approve / reject
+
+   Catatan: file ini ada di folder /SHARED/ tapi secara navigasi
+   nyata hanya diakses Kabag — sidebar dan link "Dashboard" di
+   seluruh /KABAG/ mengarah ke sini, sementara /WABAG/ punya
+   halamannya sendiri dan tidak pernah menautkan ke folder ini.
    ============================================================ */
 
 
@@ -41,6 +46,10 @@ const ROLE_CFG = {
     label        : 'Kabag',
     dashboardUrl : '../KABAG/dashboardKabag.html',
   },
+  /* Cabang ini tidak pernah tercapai lewat navigasi manapun saat ini —
+     tidak ada halaman di /WABAG/ yang menautkan ke folder /SHARED/.
+     Dipertahankan (bukan dihapus) supaya halaman ini tetap berfungsi
+     benar kalau suatu saat memang dibuka lewat sesi wabag. */
   wabag : {
     label        : 'Wabag',
     dashboardUrl : '../WABAG/dashboardWabag.html',

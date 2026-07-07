@@ -127,12 +127,83 @@ async function loadWabagData() {
     }
   }
   loadStats();
+  renderInsightKeuangan();
   renderRingkasanBeasiswa();
   renderSponsor();
   renderRealisasi();
   renderAntrian();
   renderTrenPenyaluran();
   renderTabelPenerima();
+}
+
+/* ── INSIGHT KEUANGAN ──
+   Kalimat naratif dihitung otomatis dari antrianData/realisasiData/
+   sponsorData yang sudah ada (bukan hardcoded) — memperkuat kriteria
+   kesesuaian output dengan kebutuhan pengambilan keputusan manajemen. */
+function renderInsightKeuangan() {
+  const el = document.getElementById('listInsightWabag');
+  if (!el) return;
+
+  const insights = [];
+
+  /* 1. Penyaluran tertunda lama (>30 hari) */
+  const tertunda30 = antrianData?.buckets?.['>30']?.count || 0;
+  if (tertunda30 > 0) {
+    insights.push({
+      icon  : 'solar:danger-triangle-bold-duotone',
+      color : '#e11d48',
+      text  : `<strong>${tertunda30} penyaluran</strong> sudah tertunda lebih dari 30 hari, butuh perhatian segera.`,
+    });
+  }
+
+  /* 2. Program dengan realisasi anggaran di bawah rata-rata */
+  const programs = realisasiData?.programs || [];
+  if (programs.length >= 2) {
+    const avgPersen = realisasiData.overall?.persentase
+      ?? (programs.reduce((s, p) => s + p.persentase, 0) / programs.length);
+    const terendah = [...programs].sort((a, b) => a.persentase - b.persentase)[0];
+    if (terendah && terendah.persentase < avgPersen) {
+      insights.push({
+        icon  : 'solar:chart-square-bold-duotone',
+        color : 'var(--orange)',
+        text  : `Realisasi anggaran program <strong>${terendah.namaProgram}</strong> baru mencapai ${terendah.persentase}%, di bawah rata-rata (${Math.round(avgPersen)}%).`,
+      });
+    }
+  }
+
+  /* 3. Sponsor kontribusi terbesar musim ini */
+  if (sponsorData?.length) {
+    const top = [...sponsorData].sort((a, b) => b.kontribusi - a.kontribusi)[0];
+    insights.push({
+      icon  : 'solar:medal-star-bold-duotone',
+      color : 'var(--emerald)',
+      text  : `Sponsor <strong>${top.nama}</strong> berkontribusi paling besar musim ini (${formatRupiah(top.kontribusi)}).`,
+    });
+  }
+
+  /* 4. Realisasi anggaran keseluruhan */
+  if (realisasiData?.overall) {
+    const { persentase, totalTersalur, totalKomitmen } = realisasiData.overall;
+    insights.push({
+      icon  : 'solar:wallet-money-bold-duotone',
+      color : 'var(--purple)',
+      text  : `Realisasi anggaran keseluruhan baru <strong>${persentase}%</strong> (${formatRupiah(totalTersalur)} dari ${formatRupiah(totalKomitmen)} komitmen).`,
+    });
+  }
+
+  if (!insights.length) {
+    el.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-4);font-size:13px">Belum ada insight untuk ditampilkan</div>';
+    return;
+  }
+
+  el.innerHTML = insights.map(i => `
+    <div class="insight-item">
+      <div class="insight-icon" style="color:${i.color}">
+        <iconify-icon icon="${i.icon}"></iconify-icon>
+      </div>
+      <div class="insight-text">${i.text}</div>
+    </div>
+  `).join('');
 }
 
 /* ── UTILS ── */

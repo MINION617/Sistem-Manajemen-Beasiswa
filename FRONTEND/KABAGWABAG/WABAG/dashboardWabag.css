@@ -339,6 +339,21 @@ a{color:inherit;text-decoration:none}
 .link-more{font-size:13px;font-weight:600;color:var(--navy-600);transition:color .2s}
 .link-more:hover{color:var(--navy-500);text-decoration:underline}
 
+/* ── 11b. INSIGHT KEUANGAN ── */
+.insight-item{
+  display:flex;align-items:flex-start;gap:12px;
+  padding:13px 20px;border-bottom:1px solid var(--border);
+  transition:background .2s,padding-left .2s;position:relative}
+.insight-item:last-child{border-bottom:none}
+.insight-item::before{
+  content:'';position:absolute;left:0;top:0;bottom:0;
+  width:0;background:var(--purple);transition:width .2s var(--ease);border-radius:0 2px 2px 0}
+.insight-item:hover{background:rgba(124,58,237,.04);padding-left:24px}
+.insight-item:hover::before{width:3px}
+.insight-icon{flex-shrink:0;font-size:18px;margin-top:1px}
+.insight-text{flex:1;font-size:13px;line-height:1.5;color:var(--text-2)}
+.insight-text strong{color:var(--text);font-weight:700}
+
 /* ── 12. DASHBOARD GRID & CARDS ── */
 .dashboard-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start}
 .card{

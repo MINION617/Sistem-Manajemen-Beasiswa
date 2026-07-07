@@ -1,7 +1,11 @@
 /* ============================================================
  * PROFIL.JS — Beasiswa Kampus
- * Role   : Kabag & Wabag (shared)
+ * Role   : Kabag (khusus)
  * Fitur  : lihat & edit data diri, ganti foto, ganti password
+ *
+ * Catatan: file ini ada di folder /SHARED/ tapi secara navigasi
+ * nyata hanya diakses Kabag. Wabag punya halaman profil sendiri
+ * (/WABAG/profilWabag.*), berdiri sendiri, terpisah dari file ini.
  * ============================================================ */
 
 
@@ -31,6 +35,11 @@ const ROLE_CFG = {
     dashboardUrl : '../KABAG/dashboardKabag.html',
     icon         : 'solar:star-bold-duotone',
   },
+  /* Cabang ini tidak pernah tercapai lewat navigasi manapun saat ini —
+     Wabag punya halaman profil sendiri (/WABAG/profilWabag.*) dan tidak
+     pernah menautkan ke folder /SHARED/. Dipertahankan (bukan dihapus)
+     supaya halaman ini tetap berfungsi benar kalau suatu saat memang
+     dibuka lewat sesi wabag. */
   wabag : {
     label        : 'Wabag',
     dashboardUrl : '../WABAG/dashboardWabag.html',

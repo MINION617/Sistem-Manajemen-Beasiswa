@@ -439,6 +439,21 @@ a{color:inherit;text-decoration:none}
 .laporan-sum-num{font-family:var(--font-display);font-size:22px;font-weight:700;color:var(--text)}
 .laporan-sum-label{font-size:10px;color:var(--text-3);font-weight:500}
 
+/* ── 14b. INSIGHT CEPAT ── */
+.insight-item{
+  display:flex;align-items:flex-start;gap:12px;
+  padding:13px 20px;border-bottom:1px solid var(--border);
+  transition:background .2s,padding-left .2s;position:relative}
+.insight-item:last-child{border-bottom:none}
+.insight-item::before{
+  content:'';position:absolute;left:0;top:0;bottom:0;
+  width:0;background:var(--purple);transition:width .2s var(--ease);border-radius:0 2px 2px 0}
+.insight-item:hover{background:rgba(124,58,237,.04);padding-left:24px}
+.insight-item:hover::before{width:3px}
+.insight-icon{flex-shrink:0;font-size:18px;margin-top:1px}
+.insight-text{flex:1;font-size:13px;line-height:1.5;color:var(--text-2)}
+.insight-text strong{color:var(--text);font-weight:700}
+
 /* ── 15. PIPELINE (Alur Seleksi) ── */
 .workflow{
   background:var(--surface);border:1.5px solid var(--border);

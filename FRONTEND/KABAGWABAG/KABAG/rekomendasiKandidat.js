@@ -40,8 +40,11 @@ const dummyRekomendasi = {
   profileAvailable: true,
   candidates: [
     {
+      // Skor dihitung ulang persis mengikuti rumus scoreCandidate() di
+      // BACKEND/src/modules/kabag/kabag.service.js — lihat perhitungan
+      // manualnya di RUMUS_REKOMENDASI.md (contoh kandidat p-001).
       id: 'p-001', mahasiswa: { nama_lengkap: 'Bagas Pratama Wijaya', nim_nip: '2021410043', ipk: 3.82 },
-      score: 87,
+      score: 98,
       breakdown: {
         ipk: { candidate: 3.82, profileMean: 3.7 },
         nilai_tes: { candidate: 88, profileMean: 85 },
@@ -50,7 +53,7 @@ const dummyRekomendasi = {
     },
     {
       id: 'p-002', mahasiswa: { nama_lengkap: 'Dimas Surya Atmaja', nim_nip: '2020130021', ipk: 3.65 },
-      score: 72,
+      score: 97,
       breakdown: {
         ipk: { candidate: 3.65, profileMean: 3.7 },
         nilai_tes: { candidate: 79, profileMean: 85 },

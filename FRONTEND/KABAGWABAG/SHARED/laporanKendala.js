@@ -1,8 +1,12 @@
 /* ============================================================
    LAPORANKENDALA.JS
-   Beasiswa Kampus — Role: Kabag / Wabag (SHARED)
+   Beasiswa Kampus — Role: Kabag (khusus)
    Monitoring laporan kendala mahasiswa — read-only,
    tidak bisa menangani (hanya Staff Admin yang bisa)
+
+   Catatan: file ini ada di folder /SHARED/ tapi secara navigasi
+   nyata hanya diakses Kabag — /WABAG/ punya halamannya sendiri
+   dan tidak pernah menautkan ke folder ini.
    ============================================================ */
 
 
@@ -41,6 +45,10 @@ const ROLE_CFG = {
     label        : 'Kabag',
     dashboardUrl : '../KABAG/dashboardKabag.html',
   },
+  /* Cabang ini tidak pernah tercapai lewat navigasi manapun saat ini —
+     tidak ada halaman di /WABAG/ yang menautkan ke folder /SHARED/.
+     Dipertahankan (bukan dihapus) supaya halaman ini tetap berfungsi
+     benar kalau suatu saat memang dibuka lewat sesi wabag. */
   wabag : {
     label        : 'Wabag',
     dashboardUrl : '../WABAG/dashboardWabag.html',
