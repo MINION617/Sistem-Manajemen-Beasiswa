@@ -40,7 +40,7 @@ export async function listOwn(mahasiswaId) {
 export async function listAll() {
   const { data, error } = await supabaseAdmin
     .from('laporan_kendala')
-    .select(`${LAPORAN_SELECT}, profiles!mahasiswa_id(nama_lengkap, nim_nip)`)
+    .select(`${LAPORAN_SELECT}, mahasiswa:profiles!mahasiswa_id(nama_lengkap, nim_nip)`)
     .order('tanggal_lapor', { ascending: false })
 
   if (error) throw Object.assign(new Error(error.message), { status: 502 })

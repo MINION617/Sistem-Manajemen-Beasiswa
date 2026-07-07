@@ -419,9 +419,14 @@ document.getElementById('formNilai')?.addEventListener('submit', async (e) => {
 
     if (isRealSession) {
       const payload = {
-        nilaiTes       : nilaiTes ? parseFloat(nilaiTes) : null,
-        nilaiWawancara : nilaiWaw ? parseFloat(nilaiWaw) : null,
-        catatanStaff   : catatan || null,
+        nilaiTes             : nilaiTes ? parseFloat(nilaiTes) : null,
+        nilaiWawancara       : nilaiWaw ? parseFloat(nilaiWaw) : null,
+        catatanStaff         : catatan || null,
+        nilaiKerjaKeras      : kerjaKeras   ? parseFloat(kerjaKeras)   : null,
+        nilaiKepemimpinan    : kepemimpinan ? parseFloat(kepemimpinan) : null,
+        nilaiKomunikasi      : komunikasi   ? parseFloat(komunikasi)   : null,
+        nilaiKeberanian      : keberanian   ? parseFloat(keberanian)   : null,
+        skorPrestasiAkademik : skorPrestasi ? parseFloat(skorPrestasi) : null,
       };
       const res = await api.patch(`/seleksi/${editingId}`, payload);
       if (idx !== -1) {
@@ -431,10 +436,15 @@ document.getElementById('formNilai')?.addEventListener('submit', async (e) => {
       await delay(900);
       if (idx !== -1) {
         dummyData[idx].hasil_seleksi = {
-          nilai_tes        : nilaiTes  ? parseFloat(nilaiTes)  : null,
-          nilai_wawancara  : nilaiWaw  ? parseFloat(nilaiWaw)  : null,
-          catatan_staff    : catatan   || null,
-          jadwal_wawancara : existingJadwal,
+          nilai_tes              : nilaiTes      ? parseFloat(nilaiTes)      : null,
+          nilai_wawancara        : nilaiWaw      ? parseFloat(nilaiWaw)      : null,
+          catatan_staff          : catatan       || null,
+          nilai_kerja_keras      : kerjaKeras    ? parseFloat(kerjaKeras)    : null,
+          nilai_kepemimpinan     : kepemimpinan  ? parseFloat(kepemimpinan)  : null,
+          nilai_komunikasi       : komunikasi    ? parseFloat(komunikasi)    : null,
+          nilai_keberanian       : keberanian    ? parseFloat(keberanian)    : null,
+          skor_prestasi_akademik : skorPrestasi  ? parseFloat(skorPrestasi)  : null,
+          jadwal_wawancara       : existingJadwal,
         };
         if (nilaiTes && dummyData[idx].status === 'lolos_berkas') {
           dummyData[idx].status = 'wawancara';

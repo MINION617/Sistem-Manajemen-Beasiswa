@@ -36,6 +36,7 @@ if (!session || session.role !== 'staff') {
   // window.location.href = '../LOGIN/login.html';
 }
 const demoSession = session || { nama_lengkap: 'Rangga Adi Nugroho', role: 'staff', id: 'demo-staff-uuid' };
+const isRealSession = !!(session?.access_token && !session.access_token.startsWith('dummy-token-'));
 
 /* ── DUMMY DATA ──
    Struktur JOIN: pendaftaran + profiles + beasiswa + hasil_seleksi
@@ -118,6 +119,25 @@ let dummyData = [
     hasil_seleksi   : { nilai_tes: 72.0, nilai_wawancara: 68.5, catatan_staff: 'Perlu meningkatkan kemampuan komunikasi teknis.' },
   },
 ];
+
+/* ── LOAD DATA ── */
+function mapPenetapanRow(d) {
+  return { ...d, catatan_staff: d.catatan_penetapan };
+}
+
+async function loadCandidates() {
+  if (isRealSession) {
+    try {
+      const { data } = await api.get('/penetapan');
+      dummyData = data.map(mapPenetapanRow);
+    } catch (err) {
+      console.warn('Gagal memuat data penetapan, pakai data contoh:', err);
+    }
+  }
+  loadStats();
+  populateFilter();
+  renderList();
+}
 
 /* ── STATE ── */
 let activeTab   = 'siap';
@@ -405,24 +425,35 @@ document.getElementById('confirmPenetapan')?.addEventListener('click', async () 
   const idx = dummyData.findIndex(d => d.id === id);
   if (idx === -1) { closeKonfirmasi(); return; }
 
-  /* UPDATE status & catatan — field sinkron dengan pendaftaranSaya.js mahasiswa */
-  if (aksi === 'tetapkan') {
-    dummyData[idx].status        = 'lolos_final';
-    dummyData[idx].catatan_staff = catatan || 'Selamat! Kamu dinyatakan sebagai penerima beasiswa.';
-    dummyData[idx].updated_at    = new Date().toISOString();
-  } else if (aksi === 'tolak') {
-    dummyData[idx].status        = 'tidak_lolos_final';
-    dummyData[idx].catatan_staff = catatan || 'Maaf, kamu belum berhasil lolos seleksi final kali ini.';
-    dummyData[idx].updated_at    = new Date().toISOString();
-  } else {
-    dummyData[idx].status        = 'wawancara';
-    dummyData[idx].catatan_staff = catatan;
-    dummyData[idx].updated_at    = new Date().toISOString();
-  }
+  try {
+    if (isRealSession) {
+      const res = await api.patch(`/penetapan/${id}`, { decision: aksi, catatan: catatan ?? undefined });
+      dummyData[idx] = mapPenetapanRow(res.data);
+    } else {
+      await delay(600);
+      /* UPDATE status & catatan — field sinkron dengan pendaftaranSaya.js mahasiswa */
+      if (aksi === 'tetapkan') {
+        dummyData[idx].status        = 'lolos_final';
+        dummyData[idx].catatan_staff = catatan || 'Selamat! Kamu dinyatakan sebagai penerima beasiswa.';
+        dummyData[idx].updated_at    = new Date().toISOString();
+      } else if (aksi === 'tolak') {
+        dummyData[idx].status        = 'tidak_lolos_final';
+        dummyData[idx].catatan_staff = catatan || 'Maaf, kamu belum berhasil lolos seleksi final kali ini.';
+        dummyData[idx].updated_at    = new Date().toISOString();
+      } else {
+        dummyData[idx].status        = 'wawancara';
+        dummyData[idx].catatan_staff = catatan;
+        dummyData[idx].updated_at    = new Date().toISOString();
+      }
+    }
 
-  closeKonfirmasi();
-  loadStats();
-  renderList();
+    closeKonfirmasi();
+    loadStats();
+    renderList();
+  } catch (err) {
+    console.warn('Gagal menyimpan keputusan penetapan:', err);
+    closeKonfirmasi();
+  }
 });
 
 /* ── MODAL DETAIL ── */
@@ -639,10 +670,8 @@ document.addEventListener('DOMContentLoaded', () => {
   initBgCanvas();
   initParticles();
   initUserInfo();
-  loadStats();
-  populateFilter();
   initTabs();
   initSearch();
-  renderList();
+  loadCandidates();
   console.log('🏆 penetapanPenerima.js loaded | Staff:', demoSession?.nama_lengkap);
 });

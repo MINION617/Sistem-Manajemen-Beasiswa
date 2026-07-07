@@ -1,15 +1,22 @@
 import { z } from 'zod'
 import * as seleksiService from './seleksi.service.js'
 
+const traitScore = z.number().min(1).max(10).nullable()
+
 const nilaiSchema = z
   .object({
     nilaiTes: z.number().min(0).max(100).nullable().optional(),
     nilaiWawancara: z.number().min(0).max(100).nullable().optional(),
     catatanStaff: z.string().nullable().optional(),
+    nilaiKerjaKeras: traitScore.optional(),
+    nilaiKepemimpinan: traitScore.optional(),
+    nilaiKomunikasi: traitScore.optional(),
+    nilaiKeberanian: traitScore.optional(),
+    skorPrestasiAkademik: traitScore.optional(),
   })
   .refine(
-    (v) => v.nilaiTes !== undefined || v.nilaiWawancara !== undefined,
-    { message: 'Isi minimal salah satu nilai (Tes atau Wawancara)' }
+    (v) => Object.values(v).some((val) => val !== undefined),
+    { message: 'Isi minimal salah satu nilai' }
   )
 
 export async function getList(req, res) {

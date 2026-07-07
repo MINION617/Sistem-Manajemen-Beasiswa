@@ -34,18 +34,35 @@ export async function listActive() {
 }
 
 /**
- * SELE-01: staff menyimpan nilai tes/wawancara. Upsert manual (bukan
- * supabase .upsert()) karena constraint unik belum ada di kolom
- * pendaftaran_id — insert kalau belum ada baris, update kalau sudah.
- * Hanya field yang dikirim yang ditulis, supaya kolom skor lain yang
- * sudah terisi (nilai_kepemimpinan, dll — belum dipakai UI mana pun)
- * tidak ikut tertimpa null.
+ * SELE-01: staff menyimpan nilai tes/wawancara + skor kepribadian (dasar
+ * fitur rekomendasi kandidat Kabag). Upsert manual (bukan supabase
+ * .upsert()) karena constraint unik belum ada di kolom pendaftaran_id —
+ * insert kalau belum ada baris, update kalau sudah. Hanya field yang
+ * dikirim yang ditulis, supaya kolom lain yang sudah terisi tidak ikut
+ * tertimpa null.
  */
-export async function upsertNilai(pendaftaranId, { nilaiTes, nilaiWawancara, catatanStaff }) {
+export async function upsertNilai(
+  pendaftaranId,
+  {
+    nilaiTes,
+    nilaiWawancara,
+    catatanStaff,
+    nilaiKerjaKeras,
+    nilaiKepemimpinan,
+    nilaiKomunikasi,
+    nilaiKeberanian,
+    skorPrestasiAkademik,
+  }
+) {
   const patch = {}
   if (nilaiTes !== undefined) patch.nilai_tes = nilaiTes
   if (nilaiWawancara !== undefined) patch.nilai_wawancara = nilaiWawancara
   if (catatanStaff !== undefined) patch.catatan_staff = catatanStaff
+  if (nilaiKerjaKeras !== undefined) patch.nilai_kerja_keras = nilaiKerjaKeras
+  if (nilaiKepemimpinan !== undefined) patch.nilai_kepemimpinan = nilaiKepemimpinan
+  if (nilaiKomunikasi !== undefined) patch.nilai_komunikasi = nilaiKomunikasi
+  if (nilaiKeberanian !== undefined) patch.nilai_keberanian = nilaiKeberanian
+  if (skorPrestasiAkademik !== undefined) patch.skor_prestasi_akademik = skorPrestasiAkademik
 
   const { data: existing, error: findError } = await supabaseAdmin
     .from('hasil_seleksi')

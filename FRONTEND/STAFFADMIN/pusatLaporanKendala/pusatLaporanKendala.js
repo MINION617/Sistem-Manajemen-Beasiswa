@@ -33,6 +33,7 @@ if (!session || session.role !== 'staff') {
   // window.location.href = '../LOGIN/login.html';
 }
 const demoSession = session || { nama_lengkap: 'Rangga Adi Nugroho', role: 'staff', id: 'demo-staff-uuid' };
+const isRealSession = !!(session?.access_token && !session.access_token.startsWith('dummy-token-'));
 
 /* ── DUMMY DATA ──
    Field name IDENTIK dengan laporanKendala.js mahasiswa:
@@ -180,6 +181,20 @@ function initUserInfo() {
   setEl('sidebarName', nama);
   setEl('sidebarAvatar', nama.charAt(0).toUpperCase());
   setEl('topbarAvatar', nama.charAt(0).toUpperCase());
+}
+
+/* ── LOAD DATA ── */
+async function loadLaporan() {
+  if (isRealSession) {
+    try {
+      const { data } = await api.get('/laporan');
+      dummyData = data;
+    } catch (err) {
+      console.warn('Gagal memuat laporan kendala, pakai data contoh:', err);
+    }
+  }
+  loadStats();
+  renderList();
 }
 
 /* ── STATS ── */
@@ -430,28 +445,41 @@ document.getElementById('formTanggapan')?.addEventListener('submit', async (e) =
   }
 
   setLoading('btnKirimTanggapan', 'loaderTanggapan', true);
-  await delay(900);
 
-  /* UPDATE — field sinkron dengan laporanKendala.js mahasiswa */
-  const idx = dummyData.findIndex(d => d.id === editingId);
-  if (idx !== -1) {
-    dummyData[idx].tanggapan_staff = tanggapan;
-    dummyData[idx].status          = status || 'diproses';
-    if (status === 'selesai') {
-      dummyData[idx].tanggal_selesai = new Date().toISOString();
+  try {
+    const idx = dummyData.findIndex(d => d.id === editingId);
+
+    if (isRealSession) {
+      const res = await api.patch(`/laporan/${editingId}`, {
+        status: status || 'diproses',
+        tanggapanStaff: tanggapan,
+      });
+      if (idx !== -1) dummyData[idx] = res.data;
+    } else {
+      await delay(900);
+      if (idx !== -1) {
+        dummyData[idx].tanggapan_staff = tanggapan;
+        dummyData[idx].status          = status || 'diproses';
+        if (status === 'selesai') {
+          dummyData[idx].tanggal_selesai = new Date().toISOString();
+        }
+      }
     }
+
+    showFormMsg('formTanggapanMsg', 'success',
+      status === 'selesai'
+        ? '✓ Laporan ditandai selesai! Mahasiswa dapat melihat tanggapan di halaman Laporan Kendala.'
+        : '✓ Tanggapan terkirim! Status diperbarui ke "Diproses".'
+    );
+    setLoading('btnKirimTanggapan', 'loaderTanggapan', false);
+
+    loadStats();
+    renderList();
+    setTimeout(closeTangani, 1600);
+  } catch (err) {
+    setLoading('btnKirimTanggapan', 'loaderTanggapan', false);
+    showFormMsg('formTanggapanMsg', 'error', '⚠ ' + (err?.message || 'Gagal menyimpan tanggapan.'));
   }
-
-  showFormMsg('formTanggapanMsg', 'success',
-    status === 'selesai'
-      ? '✓ Laporan ditandai selesai! Mahasiswa dapat melihat tanggapan di halaman Laporan Kendala.'
-      : '✓ Tanggapan terkirim! Status diperbarui ke "Diproses".'
-  );
-  setLoading('btnKirimTanggapan', 'loaderTanggapan', false);
-
-  loadStats();
-  renderList();
-  setTimeout(closeTangani, 1600);
 });
 
 document.getElementById('modalTanganiClose')?.addEventListener('click',   closeTangani);
@@ -578,6 +606,6 @@ function initParticles() {
 /* ── INIT ── */
 document.addEventListener('DOMContentLoaded', () => {
   initBgCanvas(); initParticles(); initUserInfo();
-  loadStats(); initTabs(); initFilter(); initSearch(); renderList();
+  initTabs(); initFilter(); initSearch(); loadLaporan();
   console.log('💬 pusatLaporanKendala.js loaded | Staff:', demoSession?.nama_lengkap);
 });

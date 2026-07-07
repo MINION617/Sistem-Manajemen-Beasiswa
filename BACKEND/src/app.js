@@ -17,6 +17,8 @@ import { sponsorsRouter } from './modules/sponsors/sponsors.routes.js'
 import { pendaftaranRouter } from './modules/pendaftaran/pendaftaran.routes.js'
 import { dokumenRouter } from './modules/dokumen/dokumen.routes.js'
 import { seleksiRouter } from './modules/seleksi/seleksi.routes.js'
+import { penetapanRouter } from './modules/penetapan/penetapan.routes.js'
+import { profilRouter } from './modules/profil/profil.routes.js'
 
 export const app = express()
 
@@ -42,6 +44,8 @@ app.use('/api/sponsors', sponsorsRouter)
 app.use('/api/pendaftaran', pendaftaranRouter)
 app.use('/api/dokumen', dokumenRouter)
 app.use('/api/seleksi', seleksiRouter)
+app.use('/api/penetapan', penetapanRouter)
+app.use('/api/profil', profilRouter)
 
 app.use(notFound)
 app.use(errorHandler)
