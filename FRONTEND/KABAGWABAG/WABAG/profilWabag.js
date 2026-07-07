@@ -43,6 +43,28 @@ function getProfil() {
 
 let profil = getProfil();
 
+const isRealSession = !!(session?.access_token && !session.access_token.startsWith('dummy-token-'));
+
+async function loadProfile() {
+  if (!isRealSession) return;
+  try {
+    const { data } = await api.get('/profil');
+    profil = {
+      ...profil,
+      nama: data.nama_lengkap ?? profil.nama,
+      nip: data.nim_nip ?? profil.nip,
+      email: data.email ?? profil.email,
+      telp: data.nomor_whatsapp ?? profil.telp,
+      alamat: data.alamat ?? profil.alamat,
+      jabatan: data.jabatan ?? profil.jabatan,
+      unit: data.unit ?? profil.unit,
+    };
+    renderProfil();
+  } catch (err) {
+    console.warn('Gagal memuat profil, pakai data lokal:', err);
+  }
+}
+
 /* ── RENDER ── */
 function setEl(id, val) { const e = document.getElementById(id); if (e) e.textContent = val; }
 
@@ -84,15 +106,40 @@ function renderProfil() {
 }
 
 /* ── SIMPAN ── */
-document.getElementById('formProfil')?.addEventListener('submit', (e) => {
+document.getElementById('formProfil')?.addEventListener('submit', async (e) => {
   e.preventDefault();
-  profil.nama   = document.getElementById('inpNama')?.value.trim() || profil.nama;
-  profil.email  = document.getElementById('inpEmail')?.value.trim() || '';
-  profil.telp   = document.getElementById('inpTelp')?.value.trim() || '';
-  profil.alamat = document.getElementById('inpAlamat')?.value.trim() || '';
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(profil));
-  renderProfil();
+  const nama   = document.getElementById('inpNama')?.value.trim() || profil.nama;
+  const email  = document.getElementById('inpEmail')?.value.trim() || '';
+  const telp   = document.getElementById('inpTelp')?.value.trim() || '';
+  const alamat = document.getElementById('inpAlamat')?.value.trim() || '';
+
   const note = document.getElementById('saveNote');
+
+  if (isRealSession) {
+    try {
+      const { data } = await api.patch('/profil', {
+        nama_lengkap: nama,
+        email,
+        nomor_whatsapp: telp,
+        alamat,
+      });
+      profil.nama   = data.nama_lengkap;
+      profil.email  = data.email;
+      profil.telp   = data.nomor_whatsapp;
+      profil.alamat = data.alamat;
+    } catch (err) {
+      if (note) note.textContent = '⚠ Gagal menyimpan: ' + (err?.message || 'error');
+      return;
+    }
+  } else {
+    profil.nama   = nama;
+    profil.email  = email;
+    profil.telp   = telp;
+    profil.alamat = alamat;
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(profil));
+  }
+
+  renderProfil();
   if (note) {
     note.textContent = 'Tersimpan ✓';
     setTimeout(() => { note.textContent = ''; }, 2500);
@@ -170,5 +217,6 @@ document.addEventListener('DOMContentLoaded', () => {
   initBgCanvas();
   initParticles();
   renderProfil();
+  loadProfile();
   console.log('👤 profilWabag.js loaded | User:', profil.nama);
 });

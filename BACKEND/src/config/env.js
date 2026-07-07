@@ -2,7 +2,7 @@ import dotenv from 'dotenv'
 
 dotenv.config()
 
-const REQUIRED = ['VITE_SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY']
+const REQUIRED = ['VITE_SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY', 'VITE_SUPABASE_ANON_KEY']
 
 const missing = REQUIRED.filter((key) => !process.env[key])
 if (missing.length > 0) {
@@ -16,4 +16,5 @@ export const env = Object.freeze({
   CORS_ORIGIN: process.env.CORS_ORIGIN || '*',
   SUPABASE_URL: process.env.VITE_SUPABASE_URL,
   SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
+  SUPABASE_ANON_KEY: process.env.VITE_SUPABASE_ANON_KEY,
 })

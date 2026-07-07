@@ -757,6 +757,16 @@
         novalidate
       >
         <div class="form-group" style="margin-bottom: 14px;">
+          <label for="pwdLama">Password Lama</label>
+          <input
+            type="password"
+            id="pwdLama"
+            placeholder="Masukkan password saat ini"
+            required
+          />
+          <span class="field-error" id="errPwdLama"></span>
+        </div>
+        <div class="form-group" style="margin-bottom: 14px;">
           <label for="pwdBaru">Password Baru</label>
           <input
             type="password"
@@ -820,6 +830,7 @@
 
 
   <script src="../shared/supabaseConfig.js"></script>
+  <script src="../shared/apiClient.js"></script>
   <script src="profilMahasiswa.js"></script>
 </body>
 </html>

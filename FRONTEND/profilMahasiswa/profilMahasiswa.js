@@ -47,6 +47,19 @@ const demoSession = session || {
 };
 
 
+const isRealSession = !!(session?.access_token && !session.access_token.startsWith('dummy-token-'));
+
+async function loadProfile() {
+  if (!isRealSession) return;
+  try {
+    const { data } = await api.get('/profil');
+    Object.assign(demoSession, data);
+    initUserInfo();
+  } catch (err) {
+    console.warn('Gagal memuat profil, pakai data sesi:', err);
+  }
+}
+
 /* ============================================================
    UTILS
    ============================================================ */
@@ -245,10 +258,8 @@ document.getElementById('formProfil')?.addEventListener('submit', async (e) => {
   }
 
   setLoading(true);
-  await delay(1000);
 
-  /* Update session lokal */
-  const updated = {
+  let updated = {
     ...demoSession,
     nama_lengkap   : namaVal,
     program_studi  : prodiVal,
@@ -257,12 +268,32 @@ document.getElementById('formProfil')?.addEventListener('submit', async (e) => {
     nomor_whatsapp : waVal,
   };
 
+  if (isRealSession) {
+    try {
+      const { data } = await api.patch('/profil', {
+        nama_lengkap: namaVal,
+        program_studi: prodiVal,
+        ipk: ipkVal,
+        alamat: alamatVal,
+        nomor_whatsapp: waVal,
+      });
+      updated = { ...demoSession, ...data };
+    } catch (err) {
+      showFormMsg('error', '⚠ ' + (err?.message || 'Gagal menyimpan profil.'));
+      setLoading(false);
+      return;
+    }
+  } else {
+    await delay(1000);
+  }
+
   sessionStorage.setItem('bk_user', JSON.stringify(updated));
 
   if (localStorage.getItem('bk_user')) {
     localStorage.setItem('bk_user', JSON.stringify(updated));
   }
 
+  Object.assign(demoSession, updated);
   initUserInfo();
   disableEdit();
   showFormMsg('success', '✓ Profil berhasil diperbarui!');
@@ -296,16 +327,23 @@ pwdOverlay?.addEventListener('click', closePwdModal);
 document.getElementById('formPwd')?.addEventListener('submit', async (e) => {
   e.preventDefault();
 
+  const lama    = document.getElementById('pwdLama')?.value || '';
   const baru    = document.getElementById('pwdBaru').value;
   const konfirm = document.getElementById('pwdKonfirm').value;
   let valid     = true;
 
+  const errLama = document.getElementById('errPwdLama');
   const err1 = document.getElementById('errPwdBaru');
   const err2 = document.getElementById('errPwdKonfirm');
 
+  if (errLama) errLama.textContent = '';
   if (err1) err1.textContent = '';
   if (err2) err2.textContent = '';
 
+  if (!lama) {
+    if (errLama) errLama.textContent = '⚠ Masukkan password lama';
+    valid = false;
+  }
   if (!baru || baru.length < 8) {
     if (err1) err1.textContent = '⚠ Password minimal 8 karakter';
     valid = false;
@@ -323,9 +361,19 @@ document.getElementById('formPwd')?.addEventListener('submit', async (e) => {
     msg.style.display = 'block';
   }
 
-  await delay(1200);
-
-  /* Production: supabase.auth.updateUser({ password: baru }) */
+  if (isRealSession) {
+    try {
+      await api.patch('/profil/password', { oldPassword: lama, newPassword: baru });
+    } catch (err) {
+      if (msg) {
+        msg.className   = 'form-message error';
+        msg.textContent = '⚠ ' + (err?.message || 'Gagal mengubah password.');
+      }
+      return;
+    }
+  } else {
+    await delay(1200);
+  }
 
   if (msg) msg.textContent = '✓ Password berhasil diubah!';
 
@@ -601,6 +649,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initNavbarScroll();
   initMobileNav();
   initLogout();
+  loadProfile();
 
   setTimeout(initScrollReveal, 100);
 

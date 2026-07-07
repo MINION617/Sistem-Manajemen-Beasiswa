@@ -62,11 +62,25 @@ const demoSession = session || {
 };
 
 
+const isRealSession = !!(session?.access_token && !session.access_token.startsWith('dummy-token-'));
+
 /* ============================================================
    02. STATE
    ============================================================ */
 
 let profileData = { ...demoSession };
+
+async function loadProfile() {
+  if (!isRealSession) return;
+  try {
+    const { data } = await api.get('/profil');
+    profileData = { ...profileData, ...data };
+    initUserInfo();
+    renderInfoRows();
+  } catch (err) {
+    console.warn('Gagal memuat profil, pakai data sesi:', err);
+  }
+}
 
 /* Warna avatar yang tersedia */
 const AVATAR_COLORS = [
@@ -215,7 +229,7 @@ function closeEditInfo() {
    06. SIMPAN INFORMASI PRIBADI
    ============================================================ */
 
-formEditInfo?.addEventListener('submit', (e) => {
+formEditInfo?.addEventListener('submit', async (e) => {
   e.preventDefault();
   const msgEl = document.getElementById('msgInfo');
 
@@ -236,13 +250,29 @@ formEditInfo?.addEventListener('submit', (e) => {
     return;
   }
 
-  /* Update state & session */
-  profileData.nama_lengkap   = nama;
-  profileData.nim_nip        = nip;
-  profileData.email          = email;
-  profileData.nomor_whatsapp = wa;
-  profileData.jabatan        = jabatan;
-  profileData.unit           = unit;
+  if (isRealSession) {
+    try {
+      const { data } = await api.patch('/profil', {
+        nama_lengkap: nama,
+        email,
+        nomor_whatsapp: wa,
+        jabatan,
+        unit,
+      });
+      profileData = { ...profileData, ...data };
+    } catch (err) {
+      showMsg('msgInfo', 'error', '⚠ ' + (err?.message || 'Gagal menyimpan profil.'));
+      return;
+    }
+  } else {
+    /* Update state & session (dummy fallback) */
+    profileData.nama_lengkap   = nama;
+    profileData.nim_nip        = nip;
+    profileData.email          = email;
+    profileData.nomor_whatsapp = wa;
+    profileData.jabatan        = jabatan;
+    profileData.unit           = unit;
+  }
 
   saveSession(profileData);
 
@@ -353,7 +383,7 @@ function resetPwdMeter() {
    09. SIMPAN PASSWORD
    ============================================================ */
 
-formEditPwd?.addEventListener('submit', (e) => {
+formEditPwd?.addEventListener('submit', async (e) => {
   e.preventDefault();
 
   const lama       = document.getElementById('pwdLama').value;
@@ -363,12 +393,6 @@ formEditPwd?.addEventListener('submit', (e) => {
   /* Validasi */
   if (!lama) {
     showMsg('msgPwd', 'error', '⚠ Masukkan password lama.');
-    return;
-  }
-
-  /* Dev: dummy password lama = demo1234 */
-  if (lama !== 'demo1234' && lama !== (profileData.password || '')) {
-    showMsg('msgPwd', 'error', '⚠ Password lama tidak sesuai.');
     return;
   }
 
@@ -382,9 +406,22 @@ formEditPwd?.addEventListener('submit', (e) => {
     return;
   }
 
-  /* Simpan (demo — di produksi → API) */
-  profileData.password = baru;
-  saveSession(profileData);
+  if (isRealSession) {
+    try {
+      await api.patch('/profil/password', { oldPassword: lama, newPassword: baru });
+    } catch (err) {
+      showMsg('msgPwd', 'error', '⚠ ' + (err?.message || 'Gagal mengubah password.'));
+      return;
+    }
+  } else {
+    /* Dev: dummy password lama = demo1234 */
+    if (lama !== 'demo1234' && lama !== (profileData.password || '')) {
+      showMsg('msgPwd', 'error', '⚠ Password lama tidak sesuai.');
+      return;
+    }
+    profileData.password = baru;
+    saveSession(profileData);
+  }
 
   /* Update tampilan "Terakhir Diubah" */
   const lastChange = document.getElementById('lastPwdChange');
@@ -783,6 +820,7 @@ document.addEventListener('DOMContentLoaded', () => {
   restoreAvatarColor();
   renderInfoRows();
   renderSesi();
+  loadProfile();
 
   /* Scroll reveal setelah paint */
   setTimeout(initScrollReveal, 80);
