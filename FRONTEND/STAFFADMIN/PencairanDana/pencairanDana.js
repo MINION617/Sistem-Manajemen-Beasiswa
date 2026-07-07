@@ -4,7 +4,7 @@
    ──────────────────────────────────────────────────────────
    TABEL YANG DIGUNAKAN:
      penyaluran_dana  — id, pendaftaran_id, mahasiswa_id,
-                        nominal_transfer, tanggal_transfer,
+                        nominal, tanggal_pencairan,
                         periode_bulan, no_rekening_tujuan,
                         bank_tujuan, no_referensi,
                         bukti_transfer_url, catatan,
@@ -17,7 +17,7 @@
      penyaluran_dana.status enum IDENTIK:
        pending | sedang_diproses | sudah_cair
      Field yang dilihat mahasiswa:
-       nominal_transfer, tanggal_transfer, periode_bulan,
+       nominal, tanggal_pencairan, periode_bulan,
        bukti_transfer_url, status, catatan, bank_tujuan,
        no_referensi
    ============================================================ */
@@ -45,8 +45,8 @@ let dummyData = [
     id                  : 'pd-001',
     pendaftaran_id      : 'p-201',
     mahasiswa_id        : 'u-007',
-    nominal_transfer    : 5000000,
-    tanggal_transfer    : null,
+    nominal    : 5000000,
+    tanggal_pencairan    : null,
     periode_bulan       : '2026-07',
     no_rekening_tujuan  : '1230004567890',
     bank_tujuan         : 'BCA',
@@ -65,8 +65,8 @@ let dummyData = [
     id                  : 'pd-002',
     pendaftaran_id      : 'p-202',
     mahasiswa_id        : 'u-008',
-    nominal_transfer    : 7500000,
-    tanggal_transfer    : null,
+    nominal    : 7500000,
+    tanggal_pencairan    : null,
     periode_bulan       : '2026-07',
     no_rekening_tujuan  : '0088123456789',
     bank_tujuan         : 'BRI',
@@ -82,8 +82,8 @@ let dummyData = [
     id                  : 'pd-003',
     pendaftaran_id      : 'p-203',
     mahasiswa_id        : 'u-009',
-    nominal_transfer    : 4500000,
-    tanggal_transfer    : '2026-06-15',
+    nominal    : 4500000,
+    tanggal_pencairan    : '2026-06-15',
     periode_bulan       : '2026-06',
     no_rekening_tujuan  : '5678901234567',
     bank_tujuan         : 'Mandiri',
@@ -99,8 +99,8 @@ let dummyData = [
     id                  : 'pd-004',
     pendaftaran_id      : 'p-204',
     mahasiswa_id        : 'u-010',
-    nominal_transfer    : 6000000,
-    tanggal_transfer    : '2026-06-18',
+    nominal    : 6000000,
+    tanggal_pencairan    : '2026-06-18',
     periode_bulan       : '2026-06',
     no_rekening_tujuan  : '9900112233445',
     bank_tujuan         : 'BNI',
@@ -116,8 +116,8 @@ let dummyData = [
     id                  : 'pd-005',
     pendaftaran_id      : 'p-205',
     mahasiswa_id        : 'u-011',
-    nominal_transfer    : 5000000,
-    tanggal_transfer    : null,
+    nominal    : 5000000,
+    tanggal_pencairan    : null,
     periode_bulan       : '2026-07',
     no_rekening_tujuan  : '3344556677889',
     bank_tujuan         : 'BSI',
@@ -192,7 +192,7 @@ function loadStats() {
   const proses  = dummyData.filter(d => d.status === 'sedang_diproses').length;
   const cair    = dummyData.filter(d => d.status === 'sudah_cair').length;
   const totalDana = dummyData.filter(d => d.status === 'sudah_cair')
-                              .reduce((s, d) => s + (d.nominal_transfer || 0), 0);
+                              .reduce((s, d) => s + (d.nominal || 0), 0);
 
   animateNum('statPending', pending);
   animateNum('statProses',  proses);
@@ -311,7 +311,7 @@ function renderList() {
         </div>
 
         <div class="card-right">
-          <div class="card-nominal">${formatRpShort(d.nominal_transfer)}</div>
+          <div class="card-nominal">${formatRpShort(d.nominal)}</div>
           <div class="card-beasiswa">${d.beasiswa?.nama_program || '—'}</div>
           <span class="status-pill ${cfg.cls}">
             <iconify-icon icon="${cfg.icon}" width="10"></iconify-icon>
@@ -345,7 +345,7 @@ function openUpload(id) {
         <div class="pib-sub">
           NIM: ${d.mahasiswa?.nim_nip}
           &nbsp;·&nbsp; ${d.beasiswa?.nama_program}
-          &nbsp;·&nbsp; <strong>${formatRpShort(d.nominal_transfer)}/bln</strong>
+          &nbsp;·&nbsp; <strong>${formatRpShort(d.nominal)}/bln</strong>
         </div>
       </div>
     </div>
@@ -353,8 +353,8 @@ function openUpload(id) {
 
   /* Pre-fill form */
   const set = (fieldId, val) => { const el = document.getElementById(fieldId); if (el) el.value = val || ''; };
-  set('fNominal',       d.nominal_transfer);
-  set('fTanggalTransfer', d.tanggal_transfer);
+  set('fNominal',       d.nominal);
+  set('fTanggalTransfer', d.tanggal_pencairan);
   set('fPeriodeBulan',  d.periode_bulan);
   set('fRekening',      d.no_rekening_tujuan);
   set('fBank',          d.bank_tujuan);
@@ -440,8 +440,8 @@ document.getElementById('formUpload')?.addEventListener('submit', async (e) => {
   if (idx !== -1) {
     dummyData[idx] = {
       ...dummyData[idx],
-      nominal_transfer   : parseFloat(nominal) || 0,
-      tanggal_transfer   : document.getElementById('fTanggalTransfer').value || null,
+      nominal   : parseFloat(nominal) || 0,
+      tanggal_pencairan   : document.getElementById('fTanggalTransfer').value || null,
       periode_bulan      : document.getElementById('fPeriodeBulan').value || null,
       no_rekening_tujuan : document.getElementById('fRekening').value || null,
       bank_tujuan        : document.getElementById('fBank').value || null,
@@ -487,8 +487,8 @@ function openDetail(id) {
     <div class="info-row"><span class="info-label">Sponsor</span><span class="info-val">${d.beasiswa?.sponsors?.nama_perusahaan || '—'}</span></div>
 
     <div class="detail-section-title">Data Transfer</div>
-    <div class="info-row"><span class="info-label">Nominal Transfer</span><span class="info-val" style="color:var(--blue-700);font-size:16px;font-family:var(--font-display)">${formatRp(d.nominal_transfer)}</span></div>
-    <div class="info-row"><span class="info-label">Tanggal Transfer</span><span class="info-val">${formatTgl(d.tanggal_transfer)}</span></div>
+    <div class="info-row"><span class="info-label">Nominal Transfer</span><span class="info-val" style="color:var(--blue-700);font-size:16px;font-family:var(--font-display)">${formatRp(d.nominal)}</span></div>
+    <div class="info-row"><span class="info-label">Tanggal Transfer</span><span class="info-val">${formatTgl(d.tanggal_pencairan)}</span></div>
     <div class="info-row"><span class="info-label">Periode</span><span class="info-val">${d.periode_bulan || '—'}</span></div>
     <div class="info-row"><span class="info-label">Rekening Tujuan</span><span class="info-val">${d.bank_tujuan || '—'} · ${d.no_rekening_tujuan || '—'}</span></div>
     <div class="info-row"><span class="info-label">No. Referensi</span><span class="info-val">${d.no_referensi || '—'}</span></div>
