@@ -16,6 +16,10 @@ const updateSchema = z
     message: 'At least one field must be provided',
   })
 
+const staffUpdateSchema = z.object({
+  ipk: z.number().min(0).max(4).nullable(),
+})
+
 const passwordSchema = z.object({
   oldPassword: z.string().min(1),
   newPassword: z.string().min(8),
@@ -32,6 +36,15 @@ export async function patchMe(req, res) {
     return res.status(400).json({ error: parsed.error.issues[0]?.message || 'Invalid body' })
   }
   const data = await profilService.updateOwn(req.user.id, parsed.data)
+  res.json({ data })
+}
+
+export async function patchByStaff(req, res) {
+  const parsed = staffUpdateSchema.safeParse(req.body)
+  if (!parsed.success) {
+    return res.status(400).json({ error: parsed.error.issues[0]?.message || 'Invalid body' })
+  }
+  const data = await profilService.updateByStaff(req.params.mahasiswaId, parsed.data)
   res.json({ data })
 }
 

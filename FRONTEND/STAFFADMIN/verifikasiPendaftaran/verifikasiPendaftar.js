@@ -582,10 +582,29 @@ function openDetail(id) {
           </span>
           <span class="detail-meta-item">
             <iconify-icon icon="solar:star-bold-duotone" width="12" style="color:var(--text-4)"></iconify-icon>
-            IPK: ${p.mahasiswa?.ipk?.toFixed(2) || '—'}
+            IPK: <span id="headerIpkVal">${p.mahasiswa?.ipk?.toFixed(2) || '—'}</span>
           </span>
         </div>
       </div>
+    </div>
+
+    <div class="detail-section">
+      <div class="detail-section-title">Verifikasi IPK (dari Transkrip Nilai)</div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input
+          type="number" id="inputIpkVerifikasi" min="0" max="4" step="0.01"
+          value="${p.mahasiswa?.ipk ?? ''}" placeholder="cth. 3.75"
+          style="flex:1;padding:9px 12px;border:1.5px solid var(--border);border-radius:10px;font-family:var(--font-body);font-size:13px;outline:none"
+        />
+        <button
+          class="btn-setuju" style="white-space:nowrap"
+          onclick="saveIpk('${p.mahasiswa_id}')"
+        >
+          <iconify-icon icon="solar:diskette-bold-duotone" width="13"></iconify-icon>
+          Simpan
+        </button>
+      </div>
+      <div id="ipkSaveMsg" style="font-size:12px;margin-top:6px"></div>
     </div>
 
     <div class="detail-section">
@@ -658,6 +677,42 @@ function closeDetail() {
   modalDetail?.classList.remove('active');
   document.body.style.overflow = '';
   openDetailId = null;
+}
+
+/* Staff mengoreksi IPK mahasiswa berdasarkan transkrip nilai yang diunggah —
+   mahasiswa sendiri tidak bisa lagi mengubah field ini (lihat
+   profilMahasiswa.js), jadi staff butuh jalur tulis sendiri lewat
+   PATCH /api/profil/:mahasiswaId (staff-only). */
+async function saveIpk(mahasiswaId) {
+  const input = document.getElementById('inputIpkVerifikasi');
+  const msgEl = document.getElementById('ipkSaveMsg');
+  const raw   = input?.value.trim();
+  const ipk   = raw ? parseFloat(raw) : null;
+
+  if (ipk !== null && (isNaN(ipk) || ipk < 0 || ipk > 4)) {
+    if (msgEl) { msgEl.style.color = '#be123c'; msgEl.textContent = '⚠ IPK harus antara 0.00 – 4.00'; }
+    return;
+  }
+
+  const headerEl = document.getElementById('headerIpkVal');
+
+  if (!isRealSession) {
+    pendaftaranData.filter(p => p.mahasiswa_id === mahasiswaId).forEach(p => { p.mahasiswa.ipk = ipk; });
+    if (msgEl) { msgEl.style.color = '#059669'; msgEl.textContent = '✓ IPK diperbarui (mode contoh, tidak tersimpan permanen).'; }
+    if (headerEl) headerEl.textContent = ipk !== null ? ipk.toFixed(2) : '—';
+    renderList();
+    return;
+  }
+
+  try {
+    await api.patch(`/profil/${mahasiswaId}`, { ipk });
+    pendaftaranData.filter(p => p.mahasiswa_id === mahasiswaId).forEach(p => { p.mahasiswa.ipk = ipk; });
+    if (msgEl) { msgEl.style.color = '#059669'; msgEl.textContent = '✓ IPK berhasil disimpan.'; }
+    if (headerEl) headerEl.textContent = ipk !== null ? ipk.toFixed(2) : '—';
+    renderList();
+  } catch (err) {
+    if (msgEl) { msgEl.style.color = '#be123c'; msgEl.textContent = '⚠ ' + (err?.message || 'Gagal menyimpan IPK.'); }
+  }
 }
 
 document.getElementById('modalDetailClose')?.addEventListener('click',  closeDetail);

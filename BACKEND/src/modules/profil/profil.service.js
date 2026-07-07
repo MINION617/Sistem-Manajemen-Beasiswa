@@ -34,6 +34,25 @@ export async function updateOwn(userId, patch) {
 }
 
 /**
+ * SELE-01/COMP: staff corrects a specific mahasiswa's IPK after reviewing
+ * their transcript during verification — mahasiswa can no longer self-report
+ * this (see profilMahasiswa.js), so staff needs their own write path.
+ */
+export async function updateByStaff(mahasiswaId, patch) {
+  const { data, error } = await supabaseAdmin
+    .from('profiles')
+    .update(patch)
+    .eq('id', mahasiswaId)
+    .eq('role', 'mahasiswa')
+    .select(PROFIL_SELECT)
+    .single()
+
+  if (error) throw Object.assign(new Error(error.message), { status: 502 })
+  if (!data) throw Object.assign(new Error('Mahasiswa not found'), { status: 404 })
+  return data
+}
+
+/**
  * Changes the caller's own password. Re-verifies `oldPassword` via a real
  * sign-in (anon client) before writing — proves the caller still knows the
  * current credential, not just that their session token hasn't expired yet
