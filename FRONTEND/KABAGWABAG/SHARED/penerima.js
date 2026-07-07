@@ -179,7 +179,22 @@ async function loadData() {
     }
   }
   loadStats();
+  populateFilterBeasiswa();
   renderList();
+}
+
+/* Dropdown filter sebelumnya HARDCODE 3 nama program dummy lama
+   ("Beasiswa Mandiri Prestasi", dll) di HTML — begitu data asli dimuat
+   (nama program berbeda), memilih opsi apa pun di filter tidak pernah
+   cocok dengan d.beasiswa manapun. Sekarang diisi ulang dari data yang
+   benar-benar dimuat. */
+function populateFilterBeasiswa() {
+  const sel = document.getElementById('filterBeasiswa');
+  if (!sel) return;
+  const uniq = [...new Set(penerimaData.map(d => d.beasiswa).filter(Boolean))];
+  sel.innerHTML = '<option value="all">Semua Beasiswa</option>' +
+    uniq.map(nama => `<option value="${nama}">${nama}</option>`).join('');
+  filterBeasiswa = 'all';
 }
 
 
