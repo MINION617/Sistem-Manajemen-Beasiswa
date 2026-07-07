@@ -150,11 +150,26 @@ function updateBadge() {
 }
 
 // ===== NAVBAR: BADGE PENDAFTARAN SAYA =====
-function updateBadgePendaftaran() {
+// Hitungan asli kalau sesi login-nya nyata (sinkron dengan dashboard.js/
+// pendaftaranSaya.js/historyBeasiswa.js); dummy kalau belum login.
+async function updateBadgePendaftaran() {
   const bp = document.getElementById('badgePendaftaran');
-  if (bp && dummyPendaftaranProses > 0) {
-    bp.textContent = dummyPendaftaranProses;
-    bp.classList.add('show');
+  if (!isRealSession) {
+    if (bp && dummyPendaftaranProses > 0) {
+      bp.textContent = dummyPendaftaranProses;
+      bp.classList.add('show');
+    }
+    return;
+  }
+  try {
+    const { data } = await api.get('/status/saya');
+    const proses = data.filter(d => ['menunggu_verifikasi', 'lolos_berkas', 'wawancara'].includes(d.status)).length;
+    if (bp) {
+      bp.textContent = proses;
+      bp.classList.toggle('show', proses > 0);
+    }
+  } catch (err) {
+    console.warn('Gagal memuat status pendaftaran untuk badge:', err);
   }
 }
 

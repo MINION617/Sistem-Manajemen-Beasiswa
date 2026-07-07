@@ -150,23 +150,58 @@ function initUserInfo() {
 const dummyNotifUnread = 2;
 
 // Jumlah pendaftaran yang sedang diproses — dipakai untuk badge
-// "Pendaftaran Saya" di navbar. TODO: ganti dengan hitungan asli dari
-// data pendaftaran saat sudah terhubung ke backend.
+// "Pendaftaran Saya" di navbar. Dummy dipakai kalau belum ada sesi asli;
+// kalau ada, diganti hitungan asli lewat updatePendaftaranBadge().
 const dummyPendaftaranProses = 2;
 
 function initNavbarBadges() {
   const dot = document.getElementById('notifDot');
   const badge = document.getElementById('badgeNotif');
-  if (dot && dummyNotifUnread > 0) dot.classList.add('show');
-  if (badge && dummyNotifUnread > 0) {
+  if (!isRealSession && dot && dummyNotifUnread > 0) dot.classList.add('show');
+  if (!isRealSession && badge && dummyNotifUnread > 0) {
     badge.textContent = dummyNotifUnread;
     badge.classList.add('show');
   }
 
   const bp = document.getElementById('badgePendaftaran');
-  if (bp && dummyPendaftaranProses > 0) {
+  if (!isRealSession && bp && dummyPendaftaranProses > 0) {
     bp.textContent = dummyPendaftaranProses;
     bp.classList.add('show');
+  }
+}
+
+/* Badge "Pendaftaran Saya" — hitungan asli (sinkron dengan dashboard.js/
+   pendaftaranSaya.js/historyBeasiswa.js: status menunggu_verifikasi/
+   lolos_berkas/wawancara dianggap "sedang diproses"). */
+async function updateNotifBadge() {
+  if (!isRealSession) return;
+  const dot = document.getElementById('notifDot');
+  const badge = document.getElementById('badgeNotif');
+  try {
+    const { data } = await api.get('/notifikasi');
+    const unread = data.filter(n => !n.is_read).length;
+    if (dot) dot.classList.toggle('show', unread > 0);
+    if (badge) {
+      badge.textContent = unread;
+      badge.classList.toggle('show', unread > 0);
+    }
+  } catch (err) {
+    console.warn('Gagal memuat notifikasi untuk badge:', err);
+  }
+}
+
+async function updatePendaftaranBadge() {
+  if (!isRealSession) return;
+  const bp = document.getElementById('badgePendaftaran');
+  try {
+    const { data } = await api.get('/status/saya');
+    const proses = data.filter(d => ['menunggu_verifikasi', 'lolos_berkas', 'wawancara'].includes(d.status)).length;
+    if (bp) {
+      bp.textContent = proses;
+      bp.classList.toggle('show', proses > 0);
+    }
+  } catch (err) {
+    console.warn('Gagal memuat status pendaftaran untuk badge:', err);
   }
 }
 
@@ -433,5 +468,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initMobileNav();
   initLogout();
   loadSponsors();
+  updatePendaftaranBadge();
+  updateNotifBadge();
   console.log('🏢 kumpulanPerusahaanBeasiswa loaded');
 });

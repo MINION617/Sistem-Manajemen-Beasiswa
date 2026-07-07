@@ -163,6 +163,11 @@ let dummyLaporan = [
   },
 ];
 
+/* Jumlah laporan belum selesai — dipisah dari dummyLaporan karena
+   dummyLaporan (di atas atau hasil real fetch) dipotong ke 3 item untuk
+   panel preview, sedangkan badge butuh hitungan penuh. */
+let laporanOpenCount = dummyLaporan.filter(l => l.status !== 'done').length;
+
 /* ── Quick actions — 6 aksi cepat ── */
 const dummyActions = [
   {
@@ -277,6 +282,10 @@ async function loadStaffDashboardData() {
       status     : LAPORAN_STATUS_BACKEND_TO_DASHBOARD[l.status] || 'new',
       created_at : l.tanggal_lapor,
     }));
+    /* Hitungan penuh (bukan cuma 3 item preview di atas) — dipakai badge
+       sidebar supaya sinkron dengan pusatLaporanKendala.js yang menghitung
+       dari seluruh data, bukan potongan buat panel "terbaru". */
+    laporanOpenCount = laporan.data.filter(l => l.status !== 'selesai').length;
   } catch (err) {
     console.warn('Gagal memuat data dashboard staff dari backend, pakai data contoh:', err);
     /* dummyStats / dummyPipeline / dummyVerifikasi / dummyLaporan tetap nilai dummy di atas */
@@ -381,17 +390,16 @@ function loadStats() {
     bv.classList.add('show');
   }
 
-  /* Badge sidebar — Laporan */
-  const laporanOpen = dummyLaporan.filter(l => l.status !== 'done').length;
-  const bl          = document.getElementById('badgeLaporan');
-  if (bl && laporanOpen > 0) {
-    bl.textContent = laporanOpen;
+  /* Badge sidebar — Laporan (hitungan penuh, lihat laporanOpenCount) */
+  const bl = document.getElementById('badgeLaporan');
+  if (bl && laporanOpenCount > 0) {
+    bl.textContent = laporanOpenCount;
     bl.classList.add('show');
   }
 
   /* Titik notif di topbar */
   const dot = document.getElementById('notifDot');
-  if (dot && laporanOpen > 0) dot.style.display = 'block';
+  if (dot && laporanOpenCount > 0) dot.style.display = 'block';
 }
 
 

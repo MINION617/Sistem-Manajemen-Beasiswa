@@ -15,8 +15,29 @@ const PENYALURAN_SELECT = `
   )
 `
 
-/** PAY-01: staff records a disbursement with transfer proof. */
+/**
+ * PAY-01: staff records a disbursement with transfer proof. Only allowed for
+ * applications already ratified as `lolos_final` — otherwise funds could be
+ * recorded against a still-pending or rejected application (a data state
+ * that has no legitimate meaning and previously showed up as inconsistent
+ * "dana sudah cair" on a rejected mahasiswa's Penerimaan Dana page).
+ */
 export async function record(pendaftaranId, nominal, buktiTransferUrl) {
+  const { data: pendaftaran, error: pendaftaranError } = await supabaseAdmin
+    .from('pendaftaran')
+    .select('id, status')
+    .eq('id', pendaftaranId)
+    .single()
+
+  if (pendaftaranError) throw Object.assign(new Error(pendaftaranError.message), { status: 502 })
+  if (!pendaftaran) throw Object.assign(new Error('Pendaftaran not found'), { status: 404 })
+  if (pendaftaran.status !== 'lolos_final') {
+    throw Object.assign(
+      new Error('Pencairan dana hanya bisa dibuat untuk pendaftaran berstatus lolos_final'),
+      { status: 409 }
+    )
+  }
+
   const { data, error } = await supabaseAdmin
     .from('penyaluran_dana')
     .insert({

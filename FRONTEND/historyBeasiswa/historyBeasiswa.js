@@ -130,12 +130,32 @@ function initUserInfo() {
   setEl('mobileAvatar', init);
 }
 
+/* Lonceng notifikasi — hitungan asli (sinkron dengan dashboard.js/
+   notifikasi.js), bukan dummyNotifUnread yang selalu nyala. */
+async function updateNotifBadge() {
+  if (!isRealSession) return;
+  const dot = document.getElementById('notifDot');
+  const badge = document.getElementById('badgeNotif');
+  try {
+    const { data } = await api.get('/notifikasi');
+    const unread = data.filter(n => !n.is_read).length;
+    if (dot) dot.classList.toggle('show', unread > 0);
+    if (badge) {
+      badge.textContent = unread;
+      badge.classList.toggle('show', unread > 0);
+    }
+  } catch (err) {
+    console.warn('Gagal memuat notifikasi untuk badge:', err);
+  }
+}
+
 /* ===== NOTIFIKASI & BADGE NAVBAR ===== */
 function initNavbarBadges() {
   const dot = document.getElementById('notifDot');
   const badge = document.getElementById('badgeNotif');
-  if (dot && dummyNotifUnread > 0) dot.classList.add('show');
-  if (badge && dummyNotifUnread > 0) { badge.textContent = dummyNotifUnread; badge.classList.add('show'); }
+  if (!isRealSession && dot && dummyNotifUnread > 0) dot.classList.add('show');
+  if (!isRealSession && badge && dummyNotifUnread > 0) { badge.textContent = dummyNotifUnread; badge.classList.add('show'); }
+  updateNotifBadge();
 
   const prosesCount = allData.filter(d => STATUS_CFG[d.status]?.group === 'proses').length;
   const bp = document.getElementById('badgePendaftaran');

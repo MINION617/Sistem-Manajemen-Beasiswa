@@ -307,6 +307,31 @@ function mapBeasiswaFromApi(b) {
   };
 }
 
+/* Jumlah pendaftaran berstatus "sedang diproses" — diisi ulang oleh
+   loadBeasiswaData() dari data /pendaftaran/saya yang sama, supaya badge
+   "Pendaftaran Saya" konsisten dengan dashboard.js/pendaftaranSaya.js/
+   historyBeasiswa.js (bukan lagi hardcode). */
+let pendaftaranProsesReal = null;
+
+/* Lonceng notifikasi — hitungan asli (sinkron dengan dashboard.js/
+   notifikasi.js), bukan dummyNotifUnread yang selalu nyala. */
+async function updateNotifBadge() {
+  if (!isRealSession) return;
+  const dot = document.getElementById('notifDot');
+  const badge = document.getElementById('badgeNotif');
+  try {
+    const { data } = await api.get('/notifikasi');
+    const unread = data.filter(n => !n.is_read).length;
+    if (dot) dot.classList.toggle('show', unread > 0);
+    if (badge) {
+      badge.textContent = unread;
+      badge.classList.toggle('show', unread > 0);
+    }
+  } catch (err) {
+    console.warn('Gagal memuat notifikasi untuk badge:', err);
+  }
+}
+
 /** Ganti data contoh dengan data asli backend kalau sesi login-nya nyata. */
 async function loadBeasiswaData() {
   if (!isRealSession) return;
@@ -318,6 +343,9 @@ async function loadBeasiswaData() {
 
     beasiswaList = beasiswaRes.data.map(mapBeasiswaFromApi);
     pendaftaranRes.data.forEach(p => sudahDaftar.add(p.beasiswa_id));
+    pendaftaranProsesReal = pendaftaranRes.data.filter(p =>
+      ['menunggu_verifikasi', 'lolos_berkas', 'wawancara'].includes(p.status)
+    ).length;
   } catch (err) {
     console.warn('Gagal memuat data beasiswa dari backend, pakai data contoh:', err);
   }
@@ -1012,19 +1040,21 @@ document.addEventListener('DOMContentLoaded', async () => {
   animateNum('heroBadgeNum', beasiswaList.length);
 
   const bp = document.getElementById('badgePendaftaran');
-  if (bp && dummyPendaftaranProses > 0) {
-    bp.textContent = dummyPendaftaranProses;
+  const proses = pendaftaranProsesReal !== null ? pendaftaranProsesReal : dummyPendaftaranProses;
+  if (bp && proses > 0) {
+    bp.textContent = proses;
     bp.classList.add('show');
   }
 
   const notifDot = document.getElementById('notifDot');
-  if (notifDot && dummyNotifUnread > 0) notifDot.classList.add('show');
+  if (!isRealSession && notifDot && dummyNotifUnread > 0) notifDot.classList.add('show');
 
   const badgeNotif = document.getElementById('badgeNotif');
-  if (badgeNotif && dummyNotifUnread > 0) {
+  if (!isRealSession && badgeNotif && dummyNotifUnread > 0) {
     badgeNotif.textContent = dummyNotifUnread;
     badgeNotif.classList.add('show');
   }
+  updateNotifBadge();
 
   setTimeout(triggerStatsShimmer, 500);
 

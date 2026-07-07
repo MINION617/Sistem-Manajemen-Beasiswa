@@ -205,16 +205,52 @@ function initUserInfo() {
 function initNavbarBadges() {
   const dot = document.getElementById('notifDot');
   const badge = document.getElementById('badgeNotif');
-  if (dot && dummyNotifUnread > 0) dot.classList.add('show');
-  if (badge && dummyNotifUnread > 0) {
+  if (!isRealSession && dot && dummyNotifUnread > 0) dot.classList.add('show');
+  if (!isRealSession && badge && dummyNotifUnread > 0) {
     badge.textContent = dummyNotifUnread;
     badge.classList.add('show');
   }
 
   const bp = document.getElementById('badgePendaftaran');
-  if (bp && dummyPendaftaranProses > 0) {
+  if (!isRealSession && bp && dummyPendaftaranProses > 0) {
     bp.textContent = dummyPendaftaranProses;
     bp.classList.add('show');
+  }
+}
+
+/* Badge "Pendaftaran Saya" — hitungan asli (sinkron dengan dashboard.js/
+   pendaftaranSaya.js/historyBeasiswa.js). */
+async function updatePendaftaranBadge() {
+  if (!isRealSession) return;
+  const bp = document.getElementById('badgePendaftaran');
+  try {
+    const { data } = await api.get('/status/saya');
+    const proses = data.filter(d => ['menunggu_verifikasi', 'lolos_berkas', 'wawancara'].includes(d.status)).length;
+    if (bp) {
+      bp.textContent = proses;
+      bp.classList.toggle('show', proses > 0);
+    }
+  } catch (err) {
+    console.warn('Gagal memuat status pendaftaran untuk badge:', err);
+  }
+}
+
+/* Lonceng notifikasi — hitungan asli (sinkron dengan dashboard.js/
+   notifikasi.js), bukan dummyNotifUnread yang selalu nyala. */
+async function updateNotifBadge() {
+  if (!isRealSession) return;
+  const dot = document.getElementById('notifDot');
+  const badge = document.getElementById('badgeNotif');
+  try {
+    const { data } = await api.get('/notifikasi');
+    const unread = data.filter(n => !n.is_read).length;
+    if (dot) dot.classList.toggle('show', unread > 0);
+    if (badge) {
+      badge.textContent = unread;
+      badge.classList.toggle('show', unread > 0);
+    }
+  } catch (err) {
+    console.warn('Gagal memuat notifikasi untuk badge:', err);
   }
 }
 
@@ -225,6 +261,7 @@ function initNavbarBadges() {
 function renderStats() {
   const cair         = allData.filter(d => d.status === 'sudah_cair');
   const proses       = allData.filter(d => d.status === 'sedang_diproses');
+  const pending      = allData.filter(d => d.status === 'pending');
   const totalNominal = cair.reduce((s, d) => s + d.nominal, 0);
 
   setEl('statTotalDana', formatRupiah(totalNominal));
@@ -232,6 +269,27 @@ function renderStats() {
   animateNum('statProses',   proses.length);
   animateNum('statBeasiswa', allData.length);
   setEl('heroBadgeNum', allData.length);
+
+  /* Kartu "floating" di hero — dulu 3 nama program hardcode yang gak ada
+     hubungannya dengan data mahasiswa yang login (bikin kelihatan "gak
+     sinkron"). Sekarang diisi dari program nyata per kategori status;
+     kalau mahasiswa gak punya program di kategori itu, kartu disembunyikan
+     daripada nampilin nama yang salah. */
+  const heroCards = [
+    { item: cair[0],    labelId: 'fcCairVal',    cardId: 'fcCair' },
+    { item: proses[0],  labelId: 'fcProsesVal',  cardId: 'fcProses' },
+    { item: pending[0], labelId: 'fcPendingVal', cardId: 'fcPending' },
+  ];
+  heroCards.forEach(({ item, labelId, cardId }) => {
+    const cardEl = document.getElementById(cardId);
+    if (!cardEl) return;
+    if (item) {
+      setEl(labelId, item.pendaftaran?.beasiswa?.nama_program || '—');
+      cardEl.style.display = '';
+    } else {
+      cardEl.style.display = 'none';
+    }
+  });
 
   document.querySelectorAll('.stat-tile').forEach((tile, i) => {
     setTimeout(() => {
@@ -734,6 +792,8 @@ document.addEventListener('DOMContentLoaded', () => {
   initParticles();
   initUserInfo();
   initNavbarBadges();
+  updatePendaftaranBadge();
+  updateNotifBadge();
   initFilterTabs();
   initNavbarScroll();
   initMobileNav();
