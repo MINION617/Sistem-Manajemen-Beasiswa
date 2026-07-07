@@ -245,14 +245,17 @@
 
       </div>
 
-      <!-- TREN LAPORAN PER BULAN -->
+      <!-- DISTRIBUSI LAPORAN PER KATEGORI -->
       <div class="section-wrap reveal">
         <div class="section-head">
           <h3 class="section-title">
             <iconify-icon icon="solar:chart-2-bold-duotone" style="color:var(--navy-600)"></iconify-icon>
-            Tren Laporan per Bulan
+            Distribusi Laporan per Kategori
           </h3>
-          <div style="display:flex;gap:8px">
+          <div style="display:flex;gap:8px;align-items:center">
+            <select class="filter-select" id="filterTahunChart">
+              <option value="all">Semua Tahun</option>
+            </select>
             <button class="btn-export btn-export-excel" id="btnExportLaporanExcel" title="Export ke Excel">
               <iconify-icon icon="solar:file-download-bold-duotone" width="14"></iconify-icon> Excel
             </button>

@@ -216,42 +216,54 @@ async function loadData() {
   }
   loadStats();
   renderList();
-  renderTrenLaporan();
+  populateFilterTahunChart();
+  renderLaporanKategoriChart();
 }
 
-/* ── TREN LAPORAN PER BULAN (Chart.js) ──
-   Dipecah per status (masuk/diproses/selesai) per bulan, sama pola dengan
-   grafik tren di halaman lain (Tren Pendaftaran, Tren Penyaluran, dst) —
-   supaya Kabag/Wabag bisa lihat naik-turunnya volume laporan dari waktu
-   ke waktu, bukan cuma angka kumulatif saat ini. */
-let trenLaporanChart = null;
+/* ── DISTRIBUSI LAPORAN PER KATEGORI (Chart.js) ──
+   Sumbu-x = kategori laporan, tiap kategori dipecah jadi 3 bar berdampingan
+   (Baru Masuk/Diproses/Selesai) supaya kategori-kategori bisa dibandingkan
+   langsung satu sama lain — bukan tren waktu seperti grafik di halaman lain,
+   karena yang mau dilihat di sini adalah kategori mana yang paling banyak/
+   paling lama macet, bukan naik-turun volume dari bulan ke bulan. Bisa
+   difilter per tahun lewat dropdown di atas grafik. */
+let laporanKategoriChart = null;
+let filterTahunChart = 'all';
 
-function bulanKey(tglStr) {
-  const d = new Date(tglStr);
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-}
-function bulanLabel(key) {
-  const [y, m] = key.split('-').map(Number);
-  return new Date(y, m - 1, 1).toLocaleDateString('id-ID', { month: 'short', year: 'numeric' });
+function populateFilterTahunChart() {
+  const sel = document.getElementById('filterTahunChart');
+  if (!sel) return;
+  const tahunSet = new Set(laporanData.filter(d => d.tgl).map(d => new Date(d.tgl).getFullYear()));
+  const tahunList = [...tahunSet].sort((a, b) => b - a);
+  sel.innerHTML = '<option value="all">Semua Tahun</option>' +
+    tahunList.map(t => `<option value="${t}">${t}</option>`).join('');
+  sel.value = filterTahunChart;
+  sel.addEventListener('change', () => {
+    filterTahunChart = sel.value;
+    renderLaporanKategoriChart();
+  });
 }
 
-function renderTrenLaporan() {
+function renderLaporanKategoriChart() {
   const canvas = document.getElementById('chartTrenLaporan');
   if (!canvas || typeof Chart === 'undefined') return;
 
-  const byBulan = {};
-  laporanData.forEach(d => {
-    if (!d.tgl) return;
-    const key = bulanKey(d.tgl);
-    if (!byBulan[key]) byBulan[key] = { masuk: 0, diproses: 0, selesai: 0 };
-    if (byBulan[key][d.status] != null) byBulan[key][d.status] += 1;
+  const data = filterTahunChart === 'all'
+    ? laporanData
+    : laporanData.filter(d => d.tgl && new Date(d.tgl).getFullYear() === Number(filterTahunChart));
+
+  const kategoriKeys = Object.keys(KATEGORI_CFG); // dokumen, status, dana, teknis, lainnya
+  const byKategori = {};
+  kategoriKeys.forEach(k => { byKategori[k] = { masuk: 0, diproses: 0, selesai: 0 }; });
+
+  data.forEach(d => {
+    const key = KATEGORI_CFG[d.kategori] ? d.kategori : 'lainnya';
+    if (byKategori[key][d.status] != null) byKategori[key][d.status] += 1;
   });
 
-  const bulanKeys = Object.keys(byBulan).sort();
+  if (laporanKategoriChart) { laporanKategoriChart.destroy(); laporanKategoriChart = null; }
 
-  if (trenLaporanChart) { trenLaporanChart.destroy(); trenLaporanChart = null; }
-
-  if (!bulanKeys.length) {
+  if (!data.length) {
     canvas.style.display = 'none';
     const parent = canvas.parentElement;
     if (parent && !parent.querySelector('.tren-empty')) {
@@ -260,23 +272,24 @@ function renderTrenLaporan() {
     return;
   }
   canvas.style.display = 'block';
+  canvas.parentElement.querySelector('.tren-empty')?.remove();
 
-  const labels = bulanKeys.map(bulanLabel);
-  trenLaporanChart = new Chart(canvas, {
+  const labels = kategoriKeys.map(k => KATEGORI_CFG[k].label);
+  laporanKategoriChart = new Chart(canvas, {
     type: 'bar',
     data: {
       labels,
       datasets: [
-        { label: 'Baru Masuk', data: bulanKeys.map(k => byBulan[k].masuk), backgroundColor: '#e11d48' },
-        { label: 'Diproses', data: bulanKeys.map(k => byBulan[k].diproses), backgroundColor: '#d97706' },
-        { label: 'Selesai', data: bulanKeys.map(k => byBulan[k].selesai), backgroundColor: '#059669' },
+        { label: 'Baru Masuk', data: kategoriKeys.map(k => byKategori[k].masuk), backgroundColor: '#e11d48' },
+        { label: 'Diproses', data: kategoriKeys.map(k => byKategori[k].diproses), backgroundColor: '#d97706' },
+        { label: 'Selesai', data: kategoriKeys.map(k => byKategori[k].selesai), backgroundColor: '#059669' },
       ],
     },
     options: {
       responsive: true,
       maintainAspectRatio: false,
       plugins: { legend: { display: true, position: 'bottom', labels: { usePointStyle: true, boxWidth: 8, font: { size: 11 } } } },
-      scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true, ticks: { stepSize: 1 } } },
+      scales: { x: { stacked: false }, y: { stacked: false, beginAtZero: true, ticks: { stepSize: 1 } } },
     },
   });
 }
@@ -303,9 +316,9 @@ function laporanExportRows() {
     tglFmt: formatTgl(d.tgl),
   }));
 }
-function trenLaporanChartAspectRatio() {
-  if (!trenLaporanChart) return 16 / 9;
-  return trenLaporanChart.canvas.width / trenLaporanChart.canvas.height;
+function laporanKategoriChartAspectRatio() {
+  if (!laporanKategoriChart) return 16 / 9;
+  return laporanKategoriChart.canvas.width / laporanKategoriChart.canvas.height;
 }
 
 document.getElementById('btnExportLaporanExcel')?.addEventListener('click', () => {
@@ -314,7 +327,7 @@ document.getElementById('btnExportLaporanExcel')?.addEventListener('click', () =
     'Laporan Kendala',
     LAPORAN_EXPORT_COLUMNS,
     laporanExportRows(),
-    trenLaporanChart ? trenLaporanChart.toBase64Image() : null
+    laporanKategoriChart ? laporanKategoriChart.toBase64Image() : null
   );
 });
 
@@ -325,8 +338,8 @@ document.getElementById('btnExportLaporanPdf')?.addEventListener('click', () => 
     LAPORAN_EXPORT_COLUMNS,
     laporanExportRows(),
     null,
-    trenLaporanChart ? trenLaporanChart.toBase64Image() : null,
-    trenLaporanChartAspectRatio()
+    laporanKategoriChart ? laporanKategoriChart.toBase64Image() : null,
+    laporanKategoriChartAspectRatio()
   );
 });
 
