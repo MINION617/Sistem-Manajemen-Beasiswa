@@ -33,11 +33,14 @@ function uploadSingle(fieldName) {
 export const dokumenRouter = Router()
 
 // DOCS-01: mahasiswa mengunggah dokumen pendukung pendaftaran (sebelum baris
-// pendaftaran dibuat — lihat catatan di dokumen.service.js).
+// pendaftaran dibuat — lihat catatan di dokumen.service.js). Staff juga
+// dibolehkan lewat endpoint yang sama untuk mengunggah bukti transfer di
+// Pencairan Dana (PAY-01) — storage path-nya sudah diprefiks per-uploader
+// id jadi tidak bentrok antar peran.
 dokumenRouter.post(
   '/upload',
   auth,
-  requireRole('mahasiswa'),
+  requireRole('mahasiswa', 'staff'),
   uploadSingle('file'),
   asyncHandler(dokumenController.postUpload)
 )

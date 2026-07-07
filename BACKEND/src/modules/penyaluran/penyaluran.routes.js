@@ -9,6 +9,12 @@ export const penyaluranRouter = Router()
 // PAY-01: staff records a disbursement and marks it paid.
 penyaluranRouter.post('/', auth, requireRole('staff'), asyncHandler(penyaluranController.postRecord))
 penyaluranRouter.patch(
+  '/:penyaluranId',
+  auth,
+  requireRole('staff'),
+  asyncHandler(penyaluranController.patchUpdate)
+)
+penyaluranRouter.patch(
   '/:penyaluranId/cair',
   auth,
   requireRole('staff'),

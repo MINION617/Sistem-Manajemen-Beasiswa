@@ -1,5 +1,6 @@
 import { supabaseAdmin } from '../../config/supabase.js'
 import { notify } from '../notifikasi/notifikasi.service.js'
+import * as penyaluranService from '../penyaluran/penyaluran.service.js'
 
 // status_penerima enum (DATABASE/migrations/0000_baseline.sql):
 export const STATUS_DIUSULKAN = 'diusulkan'
@@ -43,7 +44,13 @@ export async function propose(pendaftaranId, staffId) {
   return data
 }
 
-/** SELE-02/MGMT: Kabag ratifies a proposed recipient in the plenary decision. */
+/**
+ * SELE-02/MGMT: Kabag ratifies a proposed recipient in the plenary decision.
+ * Also opens the disbursement pipeline: auto-creates a pending
+ * penyaluran_dana row so the recipient immediately shows up in Staff's
+ * Pencairan Dana queue — previously nothing created this row at all, so
+ * ratified recipients had no way to ever get their money recorded.
+ */
 export async function approve(penerimaId, kabagId) {
   const { data, error } = await supabaseAdmin
     .from('penerima_beasiswa')
@@ -54,6 +61,14 @@ export async function approve(penerimaId, kabagId) {
 
   if (error) throw Object.assign(new Error(error.message), { status: 502 })
   if (!data) throw Object.assign(new Error('Penerima not found'), { status: 404 })
+
+  const pendaftaranId = data.pendaftaran?.id
+  const nominalDana = data.pendaftaran?.beasiswa?.nominal_dana
+  if (pendaftaranId && nominalDana != null) {
+    await penyaluranService.ensurePending(pendaftaranId, nominalDana).catch((err) =>
+      console.error('Failed to create pending penyaluran_dana:', err.message)
+    )
+  }
 
   const mahasiswaId = data.pendaftaran?.mahasiswa_id
   const namaProgram = data.pendaftaran?.beasiswa?.nama_program ?? ''

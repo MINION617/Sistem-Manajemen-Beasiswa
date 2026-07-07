@@ -16,6 +16,77 @@ const PENYALURAN_SELECT = `
 `
 
 /**
+ * Auto-creates a pending disbursement record the moment Kabag ratifies a
+ * recipient (see penerima.service.js's approve()) — mirrors the
+ * find-then-insert pattern in penerima.service.js's propose(), so a
+ * double-click/retry doesn't create duplicate pending rows for the same
+ * pendaftaran. No transfer proof yet at this point (money hasn't moved),
+ * so bukti_transfer_url starts null — staff attaches it later via
+ * PATCH /:penyaluranId (update()).
+ */
+export async function ensurePending(pendaftaranId, nominal) {
+  const { data: existing, error: findError } = await supabaseAdmin
+    .from('penyaluran_dana')
+    .select(PENYALURAN_SELECT)
+    .eq('pendaftaran_id', pendaftaranId)
+    .maybeSingle()
+
+  if (findError) throw Object.assign(new Error(findError.message), { status: 502 })
+  if (existing) return existing
+
+  const { data, error } = await supabaseAdmin
+    .from('penyaluran_dana')
+    .insert({ pendaftaran_id: pendaftaranId, nominal, status: STATUS_PENDING })
+    .select(PENYALURAN_SELECT)
+    .single()
+
+  if (error) throw Object.assign(new Error(error.message), { status: 502 })
+  return data
+}
+
+/**
+ * Staff updates a disbursement's editable fields (nominal, transfer proof,
+ * status) — the "Upload Bukti Transfer" form's write path. Previously this
+ * form only mutated frontend-local state and never reached the database
+ * (PencairanDana/pencairanDana.js's submit handler had no real-session
+ * branch at all), so nothing staff entered here was ever persisted.
+ * Setting status to sudah_cair here also stamps tanggal_pencairan and
+ * notifies the recipient, matching markPaid()'s behavior.
+ */
+export async function update(penyaluranId, { nominal, buktiTransferUrl, status }) {
+  const patch = {}
+  if (nominal !== undefined) patch.nominal = nominal
+  if (buktiTransferUrl !== undefined) patch.bukti_transfer_url = buktiTransferUrl
+  if (status !== undefined) {
+    patch.status = status
+    if (status === STATUS_SUDAH_CAIR) patch.tanggal_pencairan = new Date().toISOString()
+  }
+
+  const { data, error } = await supabaseAdmin
+    .from('penyaluran_dana')
+    .update(patch)
+    .eq('id', penyaluranId)
+    .select(PENYALURAN_SELECT)
+    .single()
+
+  if (error) throw Object.assign(new Error(error.message), { status: 502 })
+  if (!data) throw Object.assign(new Error('Penyaluran not found'), { status: 404 })
+
+  if (status === STATUS_SUDAH_CAIR) {
+    const mahasiswaId = data.pendaftaran?.mahasiswa_id
+    if (mahasiswaId) {
+      await notify(
+        mahasiswaId,
+        'Dana Beasiswa Sudah Cair',
+        `Dana sebesar Rp${Number(data.nominal).toLocaleString('id-ID')} sudah ditransfer.`
+      ).catch((err) => console.error('Failed to send penyaluran notification:', err.message))
+    }
+  }
+
+  return data
+}
+
+/**
  * PAY-01: staff records a disbursement with transfer proof. Only allowed for
  * applications already ratified as `lolos_final` — otherwise funds could be
  * recorded against a still-pending or rejected application (a data state

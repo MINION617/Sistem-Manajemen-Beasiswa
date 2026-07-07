@@ -51,23 +51,27 @@ const PIPELINE_STAGES = [
 let pendaftarData = dummyPendaftar;
 let laporanCounts = null; // {total, perStatus} from /kabag/laporan-statistik; null → derive from dummyLaporan
 let trenPendaftaran = null; // {years, byYear} from /kabag/tren-pendaftaran; null → hide the section
+let danaDicairkanCount = 0; // count of penyaluran_dana rows with status sudah_cair, from /penyaluran
 
 async function loadDashboardData() {
   if (isRealSession) {
     try {
-      const [{ data: pendaftar }, { data: laporanStat }, { data: tren }] = await Promise.all([
+      const [{ data: pendaftar }, { data: laporanStat }, { data: tren }, { data: penyaluran }] = await Promise.all([
         api.get('/kabag/pendaftar'),
         api.get('/kabag/laporan-statistik'),
         api.get('/kabag/tren-pendaftaran'),
+        api.get('/penyaluran?status=sudah_cair'),
       ]);
       pendaftarData = pendaftar.map(mapKabagApplicantRow);
       laporanCounts = laporanStat;
       trenPendaftaran = tren;
+      danaDicairkanCount = penyaluran.length;
     } catch (err) {
       console.warn('Gagal memuat data kabag, pakai data contoh:', err);
       pendaftarData = dummyPendaftar;
       laporanCounts = null;
       trenPendaftaran = null;
+      danaDicairkanCount = 0;
     }
   }
   loadStats();
@@ -422,12 +426,18 @@ function renderPipeline() {
   const el = document.getElementById('pipeline');
   if (!el) return;
 
+  /* "pencairan" TIDAK PERNAH menjadi nilai pendaftaran.status (enum-nya cuma
+     6 nilai: menunggu_verifikasi/lolos_berkas/ditolak_berkas/wawancara/
+     lolos_final/tidak_lolos_final) — pencairan dana dicatat di tabel
+     terpisah, penyaluran_dana. Filter status==='pencairan' di bawah selalu
+     mengembalikan 0 apa pun keadaan aslinya; diganti dengan hitungan asli
+     dari /penyaluran (danaDicairkanCount, lihat loadDashboardData()). */
   const counts = {
     menunggu_verifikasi : pendaftarData.filter(d => d.status === 'menunggu_verifikasi').length,
     lolos_berkas        : pendaftarData.filter(d => d.status === 'lolos_berkas').length,
     wawancara           : pendaftarData.filter(d => d.status === 'wawancara').length,
     lolos_final         : pendaftarData.filter(d => d.status === 'lolos_final').length,
-    pencairan           : pendaftarData.filter(d => d.status === 'pencairan').length,
+    pencairan           : danaDicairkanCount,
   };
 
   el.innerHTML = PIPELINE_STAGES.map(s => `

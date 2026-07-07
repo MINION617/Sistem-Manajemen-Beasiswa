@@ -433,30 +433,54 @@ document.getElementById('formUpload')?.addEventListener('submit', async (e) => {
   if (!tanggal && statusV === 'sudah_cair') { showFormMsg('formUploadMsg', 'error', '⚠ Tanggal transfer wajib diisi jika status sudah cair.'); return; }
 
   setLoading('btnSimpanUpload', 'loaderUpload', true);
-  await delay(1000);
 
-  /* UPDATE — field sinkron dengan penerimaBeasiswa.js mahasiswa */
-  const idx = dummyData.findIndex(d => d.id === editingId);
-  if (idx !== -1) {
-    dummyData[idx] = {
-      ...dummyData[idx],
-      nominal   : parseFloat(nominal) || 0,
-      tanggal_pencairan   : document.getElementById('fTanggalTransfer').value || null,
-      periode_bulan      : document.getElementById('fPeriodeBulan').value || null,
-      no_rekening_tujuan : document.getElementById('fRekening').value || null,
-      bank_tujuan        : document.getElementById('fBank').value || null,
-      no_referensi       : document.getElementById('fReferensi').value || null,
-      catatan            : document.getElementById('fCatatanTransfer').value.trim() || null,
-      bukti_transfer_url : selectedFile ? selectedFile.name : dummyData[idx].bukti_transfer_url,
-      status             : statusV || 'sedang_diproses',
-    };
+  try {
+    if (isRealSession) {
+      /* Sebelumnya handler ini SELALU cuma menulis ke dummyData lokal, gak
+         peduli sesi real atau bukan — jadi apa pun yang staff isi di form
+         ini tidak pernah benar-benar tersimpan ke database. */
+      let buktiTransferUrl;
+      if (selectedFile) {
+        const formData = new FormData();
+        formData.append('file', selectedFile);
+        formData.append('jenisDokumen', 'bukti_transfer');
+        const uploaded = await api.upload('/dokumen/upload', formData);
+        buktiTransferUrl = uploaded.data.fileUrl;
+      }
+      const payload = { nominal: parseFloat(nominal) || 0, status: statusV || 'sedang_diproses' };
+      if (buktiTransferUrl) payload.buktiTransferUrl = buktiTransferUrl;
+
+      const res = await api.patch(`/penyaluran/${editingId}`, payload);
+      const idx = dummyData.findIndex(d => d.id === editingId);
+      if (idx !== -1) dummyData[idx] = mapPenyaluranRow(res.data);
+    } else {
+      await delay(1000);
+      const idx = dummyData.findIndex(d => d.id === editingId);
+      if (idx !== -1) {
+        dummyData[idx] = {
+          ...dummyData[idx],
+          nominal            : parseFloat(nominal) || 0,
+          tanggal_pencairan  : document.getElementById('fTanggalTransfer').value || null,
+          periode_bulan      : document.getElementById('fPeriodeBulan').value || null,
+          no_rekening_tujuan : document.getElementById('fRekening').value || null,
+          bank_tujuan        : document.getElementById('fBank').value || null,
+          no_referensi       : document.getElementById('fReferensi').value || null,
+          catatan            : document.getElementById('fCatatanTransfer').value.trim() || null,
+          bukti_transfer_url : selectedFile ? selectedFile.name : dummyData[idx].bukti_transfer_url,
+          status             : statusV || 'sedang_diproses',
+        };
+      }
+    }
+
+    showFormMsg('formUploadMsg', 'success', '✓ Data transfer berhasil disimpan! Mahasiswa dapat melihatnya di Penerimaan Dana.');
+    loadStats();
+    renderList();
+    setTimeout(closeUpload, 1600);
+  } catch (err) {
+    showFormMsg('formUploadMsg', 'error', '⚠ ' + (err?.message || 'Gagal menyimpan data transfer.'));
+  } finally {
+    setLoading('btnSimpanUpload', 'loaderUpload', false);
   }
-
-  showFormMsg('formUploadMsg', 'success', '✓ Data transfer berhasil disimpan! Mahasiswa dapat melihatnya di Penerimaan Dana.');
-  setLoading('btnSimpanUpload', 'loaderUpload', false);
-  loadStats();
-  renderList();
-  setTimeout(closeUpload, 1600);
 });
 
 document.getElementById('modalUploadClose')?.addEventListener('click',   closeUpload);
