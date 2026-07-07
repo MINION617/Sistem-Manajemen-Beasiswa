@@ -144,23 +144,51 @@ async function ratifikasiAksi(penerimaId, aksi) {
   }
 }
 
-/* ── RENDER CHART: rata-rata IPK per periode, lintas semua penerima ── */
+/* ── RENDER CHART: rata-rata IPK per periode, dipecah per PROGRAM BEASISWA ──
+   Sebelumnya satu garis gabungan semua penerima — bisa menutupi masalah
+   (satu program menurun, program lain naik, garis rata-rata kelihatan
+   baik-baik saja). Per-mahasiswa juga tidak dipakai karena garisnya akan
+   sebanyak jumlah penerima (sudah 42+) dan tidak kebaca; kasus "mahasiswa
+   mana yang perlu diperhatikan" sudah ditangani lewat badge & filter
+   "Perlu Perhatian" di daftar penerima, bukan lewat grafik. */
+const CHART_PROGRAM_COLORS = ['#1e3a8a', '#059669', '#d97706', '#7c3aed', '#be123c', '#0891b2'];
+
+/* periode adalah teks bebas ("Semester 1 2026") — urutkan kronologis
+   berdasarkan tahun lalu nomor semester, bukan urutan kemunculan di data
+   (yang ikut urutan created_at terbaru dulu dan jadi acak di grafik). */
+function periodeSortKey(periode) {
+  const m = /semester\s*(\d+)\D+(\d{4})/i.exec(periode || '');
+  if (!m) return [9999, 9];
+  return [parseInt(m[2], 10), parseInt(m[1], 10)];
+}
+function sortPeriodes(periodes) {
+  return [...periodes].sort((a, b) => {
+    const [ya, sa] = periodeSortKey(a);
+    const [yb, sb] = periodeSortKey(b);
+    return ya - yb || sa - sb;
+  });
+}
+
 function renderChart() {
   const canvas = document.getElementById('chartIpk');
   if (!canvas || typeof Chart === 'undefined') return;
 
-  const byPeriode = {};
+  const byProgram = {};
+  const periodeSet = new Set();
   penerimaData.forEach(p => {
+    const program = p.pendaftaran?.beasiswa?.nama_program || 'Tidak diketahui';
     (p.perkembangan_penerima || []).forEach(en => {
       if (en.ipk_snapshot == null) return;
-      if (!byPeriode[en.periode]) byPeriode[en.periode] = { sum: 0, count: 0 };
-      byPeriode[en.periode].sum += en.ipk_snapshot;
-      byPeriode[en.periode].count += 1;
+      periodeSet.add(en.periode);
+      if (!byProgram[program]) byProgram[program] = {};
+      if (!byProgram[program][en.periode]) byProgram[program][en.periode] = { sum: 0, count: 0 };
+      byProgram[program][en.periode].sum += en.ipk_snapshot;
+      byProgram[program][en.periode].count += 1;
     });
   });
 
-  const periodes = Object.keys(byPeriode);
-  const averages = periodes.map(p => +(byPeriode[p].sum / byPeriode[p].count).toFixed(2));
+  const periodes = sortPeriodes(periodeSet);
+  const programs = Object.keys(byProgram);
 
   if (ipkChart) ipkChart.destroy();
 
@@ -174,24 +202,27 @@ function renderChart() {
   }
   canvas.style.display = 'block';
 
+  const datasets = programs.map((program, i) => ({
+    label: program,
+    data: periodes.map(periode => {
+      const cell = byProgram[program][periode];
+      return cell ? +(cell.sum / cell.count).toFixed(2) : null;
+    }),
+    borderColor: CHART_PROGRAM_COLORS[i % CHART_PROGRAM_COLORS.length],
+    backgroundColor: CHART_PROGRAM_COLORS[i % CHART_PROGRAM_COLORS.length] + '20',
+    tension: 0.3,
+    fill: false,
+    pointRadius: 4,
+    spanGaps: true,
+  }));
+
   ipkChart = new Chart(canvas, {
     type: 'line',
-    data: {
-      labels: periodes,
-      datasets: [{
-        label: 'Rata-rata IPK',
-        data: averages,
-        borderColor: '#1e3a8a',
-        backgroundColor: 'rgba(30,58,138,0.12)',
-        tension: 0.3,
-        fill: true,
-        pointRadius: 4,
-      }],
-    },
+    data: { labels: periodes, datasets },
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
+      plugins: { legend: { display: true, position: 'bottom', labels: { usePointStyle: true, boxWidth: 8, font: { size: 11 } } } },
       scales: { y: { min: 0, max: 4 } },
     },
   });
