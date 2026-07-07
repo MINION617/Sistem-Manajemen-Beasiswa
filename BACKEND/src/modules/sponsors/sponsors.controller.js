@@ -6,6 +6,7 @@ const listQuerySchema = z.object({
     .enum(['true', 'false'])
     .optional()
     .transform((v) => (v === undefined ? undefined : v === 'true')),
+  withStats: z.enum(['true', 'false']).optional(),
 })
 
 const createSchema = z.object({
@@ -43,13 +44,21 @@ export async function getList(req, res) {
   if (!parsed.success) {
     return res.status(400).json({ error: parsed.error.issues[0]?.message || 'Invalid query' })
   }
-  const data = await sponsorsService.list(parsed.data)
-  res.json({ data })
+  const data = await sponsorsService.list({ aktif: parsed.data.aktif })
+  if (parsed.data.withStats !== 'true') return res.json({ data })
+
+  const withStats = await Promise.all(
+    data.map(async (s) => ({ ...s, stats: await sponsorsService.getStats(s.id) }))
+  )
+  res.json({ data: withStats })
 }
 
 export async function getOne(req, res) {
   const data = await sponsorsService.getById(req.params.sponsorId)
-  res.json({ data })
+  if (req.query.withStats !== 'true') return res.json({ data })
+
+  const stats = await sponsorsService.getStats(data.id)
+  res.json({ data: { ...data, stats } })
 }
 
 export async function postCreate(req, res) {

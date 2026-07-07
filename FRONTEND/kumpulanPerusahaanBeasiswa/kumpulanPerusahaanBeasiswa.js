@@ -77,8 +77,37 @@ const INDUSTRI_ICON = {
   'FMCG':           'solar:shop-bold-duotone',
 };
 
+const isRealSession = !!(session?.access_token && !session.access_token.startsWith('dummy-token-'));
+
 let activeFilter = 'all';
 let searchTerm   = '';
+
+/* ── LOAD DATA ──
+   sponsors table tidak punya kolom slug — untuk sesi asli, link ke profil
+   pakai id (UUID) sponsor lewat query param yang sama (?sponsor=). */
+async function loadSponsors() {
+  if (!isRealSession) return;
+  try {
+    const { data } = await api.get('/sponsors?aktif=true&withStats=true');
+    perusahaanList.length = 0;
+    data.forEach(s => perusahaanList.push({
+      id: s.id,
+      slug: s.id,
+      nama_perusahaan: s.nama_perusahaan,
+      jenis_industri: s.jenis_industri || 'Lainnya',
+      deskripsi: s.tagline || s.tentang || '',
+      jumlah_program: s.stats?.jumlahProgram || 0,
+      total_kuota: s.stats?.totalKuota || 0,
+      penerima_aktif: s.stats?.penerimaAktif || 0,
+      color: s.warna || '#2563eb',
+    }));
+    renderIntroStats();
+    renderFilterTabs();
+    renderGrid();
+  } catch (err) {
+    console.warn('Gagal memuat daftar sponsor, pakai data contoh:', err);
+  }
+}
 
 /* ===== UTILS ===== */
 function setEl(id, val) {
@@ -403,5 +432,6 @@ document.addEventListener('DOMContentLoaded', () => {
   initNavbarScroll();
   initMobileNav();
   initLogout();
+  loadSponsors();
   console.log('🏢 kumpulanPerusahaanBeasiswa loaded');
 });

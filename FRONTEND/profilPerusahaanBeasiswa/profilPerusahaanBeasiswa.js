@@ -25,6 +25,8 @@ const demoSession = session || {
   id:           'demo-uuid',
 };
 
+const isRealSession = !!(session?.access_token && !session.access_token.startsWith('dummy-token-'));
+
 
 /* ============================================================
    DATA PERUSAHAAN
@@ -599,18 +601,103 @@ function initUserInfo() {
 }
 
 
+function inisialPerusahaan(nama) {
+  return (nama || '?').split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
+}
+
+/** sponsors table punya kolom real (tagline/tentang/narahubung/dll) tapi
+ * tidak punya slug, tags, sosmed, atau breakdown demografis (gender/wilayah/
+ * IPK/universitas) — kolom itu memang tidak ada di skema. Untuk sesi asli,
+ * bagian yang punya data nyata dipetakan dari API; breakdown demografis
+ * tetap dummy (lihat renderChartsAndStats: isDataIlustratif). */
+async function loadSponsorReal(sponsorId) {
+  const [{ data: sponsor }, { data: beasiswaList }] = await Promise.all([
+    api.get(`/sponsors/${sponsorId}?withStats=true`),
+    api.get(`/beasiswa?sponsorId=${sponsorId}&status=aktif`),
+  ]);
+
+  const stats = sponsor.stats || { jumlahProgram: 0, totalKuota: 0, penerimaAktif: 0, totalDanaDisalurkan: 0 };
+  const tahunMulai = sponsor.created_at ? new Date(sponsor.created_at).getFullYear() : null;
+
+  const data = {
+    id: sponsor.id,
+    slug: sponsor.id,
+    nama_perusahaan: sponsor.nama_perusahaan,
+    industri: sponsor.jenis_industri || 'Lainnya',
+    tagline: sponsor.tagline || '',
+    tentang: sponsor.tentang || 'Belum ada deskripsi perusahaan.',
+    narahubung: sponsor.narahubung || '—',
+    kontak: sponsor.kontak_perusahaan || '—',
+    email: sponsor.email || '—',
+    alamat: sponsor.alamat_perusahaan || '—',
+    warna: sponsor.warna || '#2563eb',
+    inisial: inisialPerusahaan(sponsor.nama_perusahaan),
+    tags: [sponsor.jenis_industri].filter(Boolean),
+    sosmed: [],
+    stats: {
+      total_penerima: stats.penerimaAktif,
+      total_dana_miliar: stats.totalDanaDisalurkan / 1_000_000_000,
+      tahun_mulai: tahunMulai,
+      rata_dana_tahunan: null,
+    },
+  };
+
+  /* Suntikkan ke dictionary yang dipakai renderBeasiswa()/renderChartsAndStats()
+     supaya kode render yang sudah ada bisa dipakai apa adanya. */
+  BEASISWA_DATA[sponsor.id] = beasiswaList.map(b => ({
+    id: b.id,
+    nama_program: b.nama_program,
+    deskripsi: b.deskripsi || '',
+    kuota_penerima: b.kuota || 0,
+    nominal_dana: b.nominal_dana || 0,
+    tanggal_buka: b.tanggal_buka,
+    tanggal_tutup: b.tanggal_tutup,
+    status: b.status,
+    kategori: b.kategori || 'lainnya',
+    icon: 'solar:cup-star-bold-duotone',
+    iconColor: data.warna,
+    bg: data.warna + '18',
+  }));
+
+  /* Satu titik data nyata (bukan tren multi-tahun fiktif) supaya kartu
+     "Penerima Aktif" tetap terisi angka sungguhan. */
+  PENERIMA_PER_TAHUN[sponsor.id] = [
+    { tahun: new Date().getFullYear(), jumlah: stats.penerimaAktif, aktif: stats.penerimaAktif },
+  ];
+  /* PENERIMA_BREAKDOWN sengaja TIDAK diisi — tidak ada kolom gender/wilayah
+     di skema profiles. renderChartsAndStats() akan pakai fallback + label
+     "Data ilustratif" (isDataIlustratif=true). */
+
+  return data;
+}
+
 /* ============================================================
    MAIN INIT — baca URL param dan render
    ============================================================ */
-function init() {
+async function init() {
   console.log('🚀 Initializing profil perusahaan...');
 
-  const urlParams    = new URLSearchParams(window.location.search);
-  const sponsorSlug  = urlParams.get('sponsor') || 'bank-mandiri';
-  const data         = PERUSAHAAN_DATA[sponsorSlug];
+  const urlParams   = new URLSearchParams(window.location.search);
+  const sponsorParam = urlParams.get('sponsor') || 'bank-mandiri';
+
+  let data = null;
+  let isDataIlustratif = false;
+
+  if (isRealSession) {
+    try {
+      data = await loadSponsorReal(sponsorParam);
+      isDataIlustratif = true; /* breakdown demografis selalu dummy untuk sesi asli */
+    } catch (err) {
+      console.warn('Gagal memuat profil sponsor dari backend, pakai data contoh:', err);
+    }
+  }
 
   if (!data) {
-    console.error('❌ Sponsor tidak ditemukan:', sponsorSlug);
+    data = PERUSAHAAN_DATA[sponsorParam] || PERUSAHAAN_DATA['bank-mandiri'];
+  }
+
+  if (!data) {
+    console.error('❌ Sponsor tidak ditemukan:', sponsorParam);
     document.body.innerHTML = `
       <div style="
         padding: 60px 20px;
@@ -632,14 +719,14 @@ function init() {
   }
 
   console.log('✅ Data loaded untuk:', data.nama_perusahaan);
-  renderPage(data, sponsorSlug);
+  renderPage(data, data.slug, isDataIlustratif);
 }
 
 
 /* ============================================================
    RENDER PAGE
    ============================================================ */
-function renderPage(data, slug) {
+function renderPage(data, slug, isDataIlustratif) {
   console.log('📝 Rendering page...');
 
   /* Set company color CSS var */
@@ -758,7 +845,7 @@ function renderPage(data, slug) {
   /* Render charts setelah sedikit delay */
   setTimeout(() => {
     console.log('📊 Rendering charts...');
-    renderChartsAndStats(data, slug);
+    renderChartsAndStats(data, slug, isDataIlustratif);
   }, 120);
 
   console.log('✅ Page rendering complete!');
@@ -839,7 +926,7 @@ function renderBeasiswa(data) {
 /* ============================================================
    RENDER CHARTS & STATS — diinsert setelah #beasiswa
    ============================================================ */
-function renderChartsAndStats(data, slug) {
+function renderChartsAndStats(data, slug, isDataIlustratif) {
   const penerimaData = PENERIMA_PER_TAHUN[data.id] || [];
   const breakdown    = PENERIMA_BREAKDOWN[data.id]  || {};
 
@@ -878,6 +965,15 @@ function renderChartsAndStats(data, slug) {
           <p style="font-size: 14px; color: var(--text-3);">
             Analisis detail tentang penerima beasiswa tahun-tahun sebelumnya.
           </p>
+          ${isDataIlustratif ? `
+          <span style="
+            display: inline-flex; align-items: center; gap: 5px; margin-top: 8px;
+            font-size: 11px; font-weight: 700; color: #92400e; background: #fef3c7;
+            border: 1px solid #fde68a; border-radius: 100px; padding: 3px 10px;
+          ">
+            <iconify-icon icon="solar:info-circle-bold-duotone" width="12"></iconify-icon>
+            Data ilustratif — belum ada pengumpulan data gender/wilayah/riwayat multi-tahun
+          </span>` : ''}
         </div>
 
         <div class="charts-grid">

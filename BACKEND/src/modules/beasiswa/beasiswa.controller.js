@@ -4,6 +4,7 @@ import * as beasiswaService from './beasiswa.service.js'
 const listQuerySchema = z.object({
   status: z.string().min(1).optional(),
   kategori: z.string().min(1).optional(),
+  sponsorId: z.string().uuid().optional(),
 })
 
 const createSchema = z.object({

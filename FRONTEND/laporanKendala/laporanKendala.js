@@ -74,8 +74,35 @@ const dummyLaporan = [
   },
 ];
 
+const isRealSession = !!(session?.access_token && !session.access_token.startsWith('dummy-token-'));
+
 let activeFilter = 'all';
 let allData = [...dummyLaporan];
+
+/* ── LOAD DATA ── */
+async function loadLaporan() {
+  if (!isRealSession) return;
+  try {
+    const { data } = await api.get('/laporan/saya');
+    allData = data;
+  } catch (err) {
+    console.warn('Gagal memuat laporan kendala, pakai data contoh:', err);
+  }
+  updateBadge();
+  renderList();
+}
+
+async function loadBeasiswaOptions() {
+  if (!isRealSession) return;
+  try {
+    const { data } = await api.get('/beasiswa?status=aktif');
+    beasiswaOptions.length = 0;
+    data.forEach(b => beasiswaOptions.push({ id: b.id, nama_program: b.nama_program }));
+    populateBeasiswaSelect();
+  } catch (err) {
+    console.warn('Gagal memuat daftar beasiswa, pakai data contoh:', err);
+  }
+}
 
 // Jumlah notifikasi belum dibaca — dipakai untuk titik merah di lonceng
 // notifikasi & badge di dropdown profil. TODO: ganti dengan hitungan asli
@@ -120,6 +147,8 @@ function initPendaftaranBadge() {
 function populateBeasiswaSelect() {
   const select = document.getElementById('beasiswaSelect');
   if (!select) return;
+  /* Sisakan option placeholder pertama, buang sisanya supaya aman dipanggil ulang */
+  while (select.options.length > 1) select.remove(1);
   beasiswaOptions.forEach(b => {
     const opt = document.createElement('option');
     opt.value       = b.id;
@@ -333,20 +362,34 @@ document.getElementById('formLaporan')?.addEventListener('submit', async (e) => 
   if (!valid) return;
 
   setLoading(true);
-  await delay(1200);
 
-  const newLaporan = {
-    id: 'l-' + Date.now(),
-    judul_laporan: judul,
-    deskripsi: desk,
-    status: 'masuk',
-    tanggapan_staff: null,
-    tanggal_lapor: new Date().toISOString(),
-    tanggal_selesai: null,
-    beasiswa: bsId ? beasiswaOptions.find(b => b.id === bsId) : null,
-  };
+  if (isRealSession) {
+    try {
+      const { data } = await api.post('/laporan', {
+        beasiswaId: bsId || undefined,
+        judul,
+        deskripsi: desk,
+      });
+      allData.unshift(data);
+    } catch (err) {
+      setLoading(false);
+      showError('errDeskripsi', err?.message || 'Gagal mengirim laporan.');
+      return;
+    }
+  } else {
+    await delay(1200);
+    allData.unshift({
+      id: 'l-' + Date.now(),
+      judul_laporan: judul,
+      deskripsi: desk,
+      status: 'masuk',
+      tanggapan_staff: null,
+      tanggal_lapor: new Date().toISOString(),
+      tanggal_selesai: null,
+      beasiswa: bsId ? beasiswaOptions.find(b => b.id === bsId) : null,
+    });
+  }
 
-  allData.unshift(newLaporan);
   updateBadge();
   renderList();
 
@@ -519,5 +562,7 @@ document.addEventListener('DOMContentLoaded', () => {
   populateBeasiswaSelect();
   updateBadge();
   renderList();
+  loadLaporan();
+  loadBeasiswaOptions();
   console.log('📣 laporanKendala.js loaded — user:', demoSession?.nama_lengkap);
 });
