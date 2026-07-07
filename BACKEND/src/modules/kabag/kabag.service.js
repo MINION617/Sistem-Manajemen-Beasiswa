@@ -235,6 +235,7 @@ export async function getRekomendasi(beasiswaId) {
     .select(`
       status,
       pendaftaran(
+        beasiswa_id,
         profiles!mahasiswa_id(ipk),
         hasil_seleksi(*)
       ),
@@ -244,7 +245,13 @@ export async function getRekomendasi(beasiswaId) {
 
   if (penerimaError) throw Object.assign(new Error(penerimaError.message), { status: 502 })
 
-  const successfulDimensions = penerimaRows
+  // Acuan "penerima berhasil" harus dihitung KHUSUS dari penerima program ini
+  // saja — sebelumnya tidak difilter sama sekali, jadi ketiga program
+  // beasiswa (yang profil sukses-nya semestinya beda-beda) semuanya memakai
+  // satu acuan gabungan yang identik.
+  const penerimaProgramIni = penerimaRows.filter((row) => row.pendaftaran?.beasiswa_id === beasiswaId)
+
+  const successfulDimensions = penerimaProgramIni
     .filter((row) => {
       const ipk = row.pendaftaran?.profiles?.ipk
       const bestSnapshot = Math.max(0, ...(row.perkembangan_penerima || []).map((p) => p.ipk_snapshot || 0))
