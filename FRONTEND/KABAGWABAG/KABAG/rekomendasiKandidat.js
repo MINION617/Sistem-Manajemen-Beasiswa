@@ -125,12 +125,25 @@ function renderRekomendasi(result) {
     ? '<div class="cold-start-msg">Belum ada data penerima berhasil untuk dijadikan acuan pembanding — kandidat di bawah diurutkan berdasarkan IPK saja.</div>'
     : '';
 
+  /* Kandidat dengan IPK di bawah syarat minimum program TIDAK direkomendasikan
+     sama sekali — tapi ditampilkan sebagai catatan terpisah (bukan di-drop
+     diam-diam) supaya Kabag tahu ada yang disaring dan kenapa. Pendaftaran/
+     verifikasi berkas sendiri tetap tidak dibatasi IPK — ini cuma di tahap
+     rekomendasi. */
+  const excluded = result.excludedBelowMinimum || [];
+  const excludedNotice = excluded.length
+    ? `<div class="cold-start-msg">
+        ${excluded.length} kandidat tidak direkomendasikan karena IPK di bawah syarat minimum program ini (${result.ipkMinimum?.toFixed(2)}):
+        ${excluded.map(e => `${e.mahasiswa?.nama_lengkap || '—'} (IPK ${e.mahasiswa?.ipk ?? '—'})`).join(', ')}.
+      </div>`
+    : '';
+
   if (!result.candidates.length) {
-    el.innerHTML = coldStart + '<div class="list-empty">Belum ada kandidat di tahap wawancara untuk program ini.</div>';
+    el.innerHTML = coldStart + excludedNotice + '<div class="list-empty">Belum ada kandidat di tahap wawancara untuk program ini.</div>';
     return;
   }
 
-  el.innerHTML = coldStart + result.candidates.map((c, i) => `
+  el.innerHTML = coldStart + excludedNotice + result.candidates.map((c, i) => `
     <div class="rekom-card ${i === 0 ? 'rank-1' : ''}">
       <div class="rekom-card-head">
         <div>

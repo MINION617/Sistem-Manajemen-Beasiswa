@@ -265,7 +265,7 @@ export async function getRekomendasi(beasiswaId) {
     .select(`
       id, status, tanggal_daftar,
       profiles!mahasiswa_id(nama_lengkap, nim_nip, program_studi, ipk),
-      beasiswa(nama_program),
+      beasiswa(nama_program, ipk_minimum),
       hasil_seleksi(*)
     `)
     .eq('beasiswa_id', beasiswaId)
@@ -273,7 +273,20 @@ export async function getRekomendasi(beasiswaId) {
 
   if (candidateError) throw Object.assign(new Error(candidateError.message), { status: 502 })
 
-  const candidates = candidateRows.map((row) => {
+  // Pendaftaran itself has no IPK gate (daftar/verifikasi berkas tetap
+  // terbuka untuk semua, keputusan manual staff) — tapi Kabag tidak boleh
+  // direkomendasikan kandidat yang IPK-nya di bawah syarat minimum program
+  // ini, berapa pun bagus dimensi lainnya. Dipisah dari daftar utama (bukan
+  // di-drop diam-diam) supaya Kabag tahu ada yang disaring dan kenapa.
+  const ipkMinimum = candidateRows[0]?.beasiswa?.ipk_minimum ?? null
+  const belowMinimumRows = ipkMinimum != null
+    ? candidateRows.filter((row) => row.profiles?.ipk != null && row.profiles.ipk < ipkMinimum)
+    : []
+  const eligibleRows = ipkMinimum != null
+    ? candidateRows.filter((row) => row.profiles?.ipk == null || row.profiles.ipk >= ipkMinimum)
+    : candidateRows
+
+  const candidates = eligibleRows.map((row) => {
     const hs = Array.isArray(row.hasil_seleksi) ? row.hasil_seleksi[0] : row.hasil_seleksi
     const dims = extractDimensions(row.profiles?.ipk, hs)
     const { score, breakdown } = profileAvailable
@@ -294,5 +307,11 @@ export async function getRekomendasi(beasiswaId) {
     return (b.mahasiswa?.ipk ?? 0) - (a.mahasiswa?.ipk ?? 0)
   })
 
-  return { profileAvailable, profile, candidates }
+  const excludedBelowMinimum = belowMinimumRows.map((row) => ({
+    id: row.id,
+    mahasiswa: row.profiles,
+    ipkMinimum,
+  }))
+
+  return { profileAvailable, profile, candidates, ipkMinimum, excludedBelowMinimum }
 }
