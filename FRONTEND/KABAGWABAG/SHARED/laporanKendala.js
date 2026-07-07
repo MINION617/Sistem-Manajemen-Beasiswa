@@ -212,7 +212,119 @@ async function loadData() {
   }
   loadStats();
   renderList();
+  renderTrenLaporan();
 }
+
+/* ── TREN LAPORAN PER BULAN (Chart.js) ──
+   Dipecah per status (masuk/diproses/selesai) per bulan, sama pola dengan
+   grafik tren di halaman lain (Tren Pendaftaran, Tren Penyaluran, dst) —
+   supaya Kabag/Wabag bisa lihat naik-turunnya volume laporan dari waktu
+   ke waktu, bukan cuma angka kumulatif saat ini. */
+let trenLaporanChart = null;
+
+function bulanKey(tglStr) {
+  const d = new Date(tglStr);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+}
+function bulanLabel(key) {
+  const [y, m] = key.split('-').map(Number);
+  return new Date(y, m - 1, 1).toLocaleDateString('id-ID', { month: 'short', year: 'numeric' });
+}
+
+function renderTrenLaporan() {
+  const canvas = document.getElementById('chartTrenLaporan');
+  if (!canvas || typeof Chart === 'undefined') return;
+
+  const byBulan = {};
+  laporanData.forEach(d => {
+    if (!d.tgl) return;
+    const key = bulanKey(d.tgl);
+    if (!byBulan[key]) byBulan[key] = { masuk: 0, diproses: 0, selesai: 0 };
+    if (byBulan[key][d.status] != null) byBulan[key][d.status] += 1;
+  });
+
+  const bulanKeys = Object.keys(byBulan).sort();
+
+  if (trenLaporanChart) { trenLaporanChart.destroy(); trenLaporanChart = null; }
+
+  if (!bulanKeys.length) {
+    canvas.style.display = 'none';
+    const parent = canvas.parentElement;
+    if (parent && !parent.querySelector('.tren-empty')) {
+      parent.insertAdjacentHTML('beforeend', '<div class="tren-empty">Belum ada data laporan untuk ditampilkan.</div>');
+    }
+    return;
+  }
+  canvas.style.display = 'block';
+
+  const labels = bulanKeys.map(bulanLabel);
+  trenLaporanChart = new Chart(canvas, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { label: 'Baru Masuk', data: bulanKeys.map(k => byBulan[k].masuk), backgroundColor: '#e11d48' },
+        { label: 'Diproses', data: bulanKeys.map(k => byBulan[k].diproses), backgroundColor: '#d97706' },
+        { label: 'Selesai', data: bulanKeys.map(k => byBulan[k].selesai), backgroundColor: '#059669' },
+      ],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: true, position: 'bottom', labels: { usePointStyle: true, boxWidth: 8, font: { size: 11 } } } },
+      scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true, ticks: { stepSize: 1 } } },
+    },
+  });
+}
+
+/* ── EXPORT LAPORAN (Excel/PDF) ── */
+const LAPORAN_EXPORT_COLUMNS = [
+  { key: 'judul', label: 'Judul' },
+  { key: 'nama', label: 'Nama Mahasiswa' },
+  { key: 'nim', label: 'NIM' },
+  { key: 'beasiswa', label: 'Beasiswa' },
+  { key: 'kategoriLabel', label: 'Kategori' },
+  { key: 'statusLabel', label: 'Status' },
+  { key: 'tglFmt', label: 'Tanggal Lapor' },
+];
+
+function laporanExportRows() {
+  return laporanData.map(d => ({
+    judul: d.judul,
+    nama: d.mahasiswa?.nama || '—',
+    nim: d.mahasiswa?.nim || '—',
+    beasiswa: d.beasiswa || '—',
+    kategoriLabel: KATEGORI_CFG[d.kategori]?.label || d.kategori || '—',
+    statusLabel: STATUS_CFG[d.status]?.label || d.status || '—',
+    tglFmt: formatTgl(d.tgl),
+  }));
+}
+function trenLaporanChartAspectRatio() {
+  if (!trenLaporanChart) return 16 / 9;
+  return trenLaporanChart.canvas.width / trenLaporanChart.canvas.height;
+}
+
+document.getElementById('btnExportLaporanExcel')?.addEventListener('click', () => {
+  exportToExcel(
+    'laporan-kendala-' + roleCfg.label.toLowerCase(),
+    'Laporan Kendala',
+    LAPORAN_EXPORT_COLUMNS,
+    laporanExportRows(),
+    trenLaporanChart ? trenLaporanChart.toBase64Image() : null
+  );
+});
+
+document.getElementById('btnExportLaporanPdf')?.addEventListener('click', () => {
+  exportToPdf(
+    'laporan-kendala-' + roleCfg.label.toLowerCase(),
+    'Laporan Kendala — ' + roleCfg.label,
+    LAPORAN_EXPORT_COLUMNS,
+    laporanExportRows(),
+    null,
+    trenLaporanChart ? trenLaporanChart.toBase64Image() : null,
+    trenLaporanChartAspectRatio()
+  );
+});
 
 
 /* ============================================================

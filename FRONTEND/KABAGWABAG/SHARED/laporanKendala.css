@@ -10,6 +10,38 @@
 
 
 /* ============================================================
+ * GRAFIK & EXPORT (Tren Laporan per Bulan)
+ * ============================================================ */
+
+.section-wrap { display: flex; flex-direction: column; gap: 16px; }
+.section-head { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+.section-title {
+  font-family: var(--font-display); font-size: 16px; font-weight: 700;
+  color: var(--text); display: flex; align-items: center; gap: 8px;
+}
+.section-title iconify-icon { font-size: 18px; }
+
+.btn-export {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 6px 12px; border: 1.5px solid var(--border); border-radius: 99px;
+  background: var(--surface); color: var(--text-2);
+  font-family: var(--font-body); font-size: 12px; font-weight: 600;
+  cursor: pointer; transition: all .18s var(--ease);
+}
+.btn-export:hover { border-color: var(--navy-300); background: var(--bg); }
+.btn-export-excel { color: #047857; border-color: var(--mint); }
+.btn-export-excel:hover { background: var(--mint-soft); }
+.btn-export-pdf { color: var(--coral); border-color: var(--coral); }
+.btn-export-pdf:hover { background: var(--coral-soft); }
+
+.chart-box {
+  background: var(--surface); border: 1.5px solid var(--border); border-radius: var(--radius-md);
+  padding: 18px 20px; box-shadow: var(--shadow-sm); position: relative; height: 280px;
+}
+.tren-empty { font-size: 13px; color: var(--text-3); text-align: center; padding: 16px 0; }
+
+
+/* ============================================================
  * KARTU LAPORAN
  * Dirender oleh laporanKendala.js → renderList()
  * Menggunakan --card-accent sebagai warna aksen sisi kiri

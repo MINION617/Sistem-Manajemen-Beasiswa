@@ -15,6 +15,10 @@
   />
 
   <script src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
   <link rel="stylesheet" href="laporanKendala.css" />
 </head>
 <body>
@@ -241,6 +245,27 @@
 
       </div>
 
+      <!-- TREN LAPORAN PER BULAN -->
+      <div class="section-wrap reveal">
+        <div class="section-head">
+          <h3 class="section-title">
+            <iconify-icon icon="solar:chart-2-bold-duotone" style="color:var(--navy-600)"></iconify-icon>
+            Tren Laporan per Bulan
+          </h3>
+          <div style="display:flex;gap:8px">
+            <button class="btn-export btn-export-excel" id="btnExportLaporanExcel" title="Export ke Excel">
+              <iconify-icon icon="solar:file-download-bold-duotone" width="14"></iconify-icon> Excel
+            </button>
+            <button class="btn-export btn-export-pdf" id="btnExportLaporanPdf" title="Export ke PDF">
+              <iconify-icon icon="solar:file-text-bold-duotone" width="14"></iconify-icon> PDF
+            </button>
+          </div>
+        </div>
+        <div class="chart-box">
+          <canvas id="chartTrenLaporan"></canvas>
+        </div>
+      </div>
+
       <!-- TAB BAR -->
       <div class="tab-bar reveal">
         <button class="tab-btn active" data-tab="all">
@@ -346,6 +371,7 @@
   </script>
   <script src="../../shared/supabaseConfig.js"></script>
   <script src="../../shared/apiClient.js"></script>
+  <script src="../../shared/exportHelper.js"></script>
   <script src="laporanKendala.js"></script>
 </body>
 </html>
