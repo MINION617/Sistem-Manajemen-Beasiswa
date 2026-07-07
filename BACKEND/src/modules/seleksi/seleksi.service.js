@@ -9,7 +9,7 @@ const STATUS_WAWANCARA = 'wawancara'
 const PESERTA_SELECT = `
   id, mahasiswa_id, beasiswa_id, status, tanggal_daftar,
   mahasiswa:profiles!mahasiswa_id(nama_lengkap, nim_nip, program_studi, ipk),
-  beasiswa(nama_program, nominal_dana, sponsors(nama_perusahaan)),
+  beasiswa(nama_program, nominal_dana, tanggal_tes_wawancara, sponsors(nama_perusahaan)),
   hasil_seleksi(*)
 `
 

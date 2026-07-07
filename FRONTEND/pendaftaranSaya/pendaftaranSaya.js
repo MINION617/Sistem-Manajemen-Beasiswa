@@ -386,7 +386,9 @@ function openDetail(id) {
     <div class="info-item"><div class="info-label">Tanggal Daftar</div><div class="info-val">${formatTanggal(d.tanggal_daftar)}</div></div>
     <div class="info-item"><div class="info-label">Terakhir Update</div><div class="info-val">${d.updated_at ? formatTanggal(d.updated_at) : '—'}</div></div>
     <div class="info-item"><div class="info-label">Nominal Dana</div><div class="info-val">${d.beasiswa.nominal_dana != null ? formatRupiah(d.beasiswa.nominal_dana) : '—'}</div></div>
-    <div class="info-item"><div class="info-label">Kuota Penerima</div><div class="info-val">${d.beasiswa.kuota_penerima != null ? d.beasiswa.kuota_penerima + ' orang' : '—'}</div></div>`;
+    <div class="info-item"><div class="info-label">Kuota Penerima</div><div class="info-val">${d.beasiswa.kuota_penerima != null ? d.beasiswa.kuota_penerima + ' orang' : '—'}</div></div>
+    ${d.beasiswa.tanggal_tes_wawancara ? `<div class="info-item"><div class="info-label">Jadwal Tes &amp; Wawancara</div><div class="info-val">${formatTanggal(d.beasiswa.tanggal_tes_wawancara)}</div></div>` : ''}
+    ${d.beasiswa.tanggal_penetapan ? `<div class="info-item"><div class="info-label">Jadwal Penetapan</div><div class="info-val">${formatTanggal(d.beasiswa.tanggal_penetapan)}</div></div>` : ''}`;
 
   const jenisLabel = {
     sertifikat_prestasi: 'Sertifikat Prestasi',

@@ -239,10 +239,10 @@ async function loadStaffDashboardData() {
   if (!isRealSession) return; // tetap pakai data dummy yang sudah di-define di atas
 
   try {
-    const [antrean, seleksi, penerimaDiusulkan, penerimaDisahkan, penyaluranPending, laporan] = await Promise.all([
+    const [antrean, seleksi, penetapan, penerimaDisahkan, penyaluranPending, laporan] = await Promise.all([
       api.get('/verifikasi/antrean'),
       api.get('/seleksi'),
-      api.get('/penerima?status=diusulkan'),
+      api.get('/penetapan'),
       api.get('/penerima?status=disahkan'),
       api.get('/penyaluran?status=pending'),
       api.get('/laporan'),
@@ -250,7 +250,12 @@ async function loadStaffDashboardData() {
 
     const jumlahVerifikasi = antrean.data.length;
     const jumlahSeleksi    = seleksi.data.length;
-    const jumlahPenetapan  = penerimaDiusulkan.data.length;
+    /* "Siap ditetapkan" (status wawancara) — sinkron dengan tab default
+       "Siap Ditetapkan" di penetapanPenerima.js. Sebelumnya di sini malah
+       menghitung /penerima?status=diusulkan (yang artinya "sudah diputuskan
+       staff, sedang nunggu Kabag" — itu sudah lewat titik kerja staff),
+       jadi angkanya beda dengan halaman aslinya begitu ada aktivitas. */
+    const jumlahPenetapan  = penetapan.data.filter(p => p.status === 'wawancara').length;
     const jumlahPencairan  = penyaluranPending.data.length;
 
     dummyStats = {

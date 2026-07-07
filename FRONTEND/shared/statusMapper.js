@@ -67,6 +67,8 @@ function mapPendaftaranRow(row) {
     beasiswa: {
       nama_program: row.beasiswa?.nama_program,
       nominal_dana: row.beasiswa?.nominal_dana,
+      tanggal_tes_wawancara: row.beasiswa?.tanggal_tes_wawancara || null,
+      tanggal_penetapan: row.beasiswa?.tanggal_penetapan || null,
       sponsors: { nama_perusahaan: row.beasiswa?.sponsors?.nama_perusahaan },
     },
     icon: iconCfg.icon,

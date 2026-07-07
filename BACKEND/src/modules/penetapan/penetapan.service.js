@@ -11,7 +11,7 @@ export const STATUS_TIDAK_LOLOS_FINAL = 'tidak_lolos_final'
 const PENDAFTARAN_SELECT = `
   *,
   mahasiswa:profiles!mahasiswa_id(nama_lengkap, nim_nip, program_studi, ipk),
-  beasiswa(nama_program, nominal_dana, kuota, sponsors(nama_perusahaan)),
+  beasiswa(nama_program, nominal_dana, kuota, tanggal_penetapan, sponsors(nama_perusahaan)),
   hasil_seleksi(*)
 `
 

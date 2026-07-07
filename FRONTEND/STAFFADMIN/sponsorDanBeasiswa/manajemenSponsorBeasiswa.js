@@ -84,6 +84,8 @@ function mapBeasiswaFromApi(b) {
     kuota_penerima : b.kuota || 0,
     tanggal_buka   : b.tanggal_buka,
     tanggal_tutup  : b.tanggal_tutup,
+    tanggal_tes_wawancara : b.tanggal_tes_wawancara || null,
+    tanggal_penetapan     : b.tanggal_penetapan || null,
     kategori       : b.kategori || 'prestasi',
     status         : STATUS_BACKEND_TO_UI[b.status] || 'tutup',
     ...style,
@@ -207,6 +209,8 @@ let dummyBeasiswa = [
     kuota_penerima : 25,
     tanggal_buka   : '2026-03-01',
     tanggal_tutup  : '2026-07-31',
+    tanggal_tes_wawancara : '2026-08-07',
+    tanggal_penetapan     : '2026-08-14',
     kategori       : 'prestasi',
     status         : 'buka',
     icon           : 'solar:cup-star-bold-duotone',
@@ -222,6 +226,8 @@ let dummyBeasiswa = [
     kuota_penerima : 15,
     tanggal_buka   : '2026-03-15',
     tanggal_tutup  : '2026-07-15',
+    tanggal_tes_wawancara : '2026-07-22',
+    tanggal_penetapan     : '2026-07-29',
     kategori       : 'riset',
     status         : 'buka',
     icon           : 'solar:globus-bold-duotone',
@@ -237,6 +243,8 @@ let dummyBeasiswa = [
     kuota_penerima : 20,
     tanggal_buka   : '2026-04-01',
     tanggal_tutup  : '2026-08-01',
+    tanggal_tes_wawancara : '2026-08-08',
+    tanggal_penetapan     : '2026-08-15',
     kategori       : 'industri',
     status         : 'buka',
     icon           : 'solar:laptop-bold-duotone',
@@ -252,6 +260,8 @@ let dummyBeasiswa = [
     kuota_penerima : 30,
     tanggal_buka   : '2026-02-01',
     tanggal_tutup  : '2026-06-30',
+    tanggal_tes_wawancara : '2026-07-07',
+    tanggal_penetapan     : '2026-07-14',
     kategori       : 'prestasi',
     status         : 'buka',
     icon           : 'solar:star-bold-duotone',
@@ -267,6 +277,8 @@ let dummyBeasiswa = [
     kuota_penerima : 40,
     tanggal_buka   : '2026-03-01',
     tanggal_tutup  : '2026-08-31',
+    tanggal_tes_wawancara : '2026-09-07',
+    tanggal_penetapan     : '2026-09-14',
     kategori       : 'afirmasi',
     status         : 'buka',
     icon           : 'solar:leaf-bold-duotone',
@@ -282,6 +294,8 @@ let dummyBeasiswa = [
     kuota_penerima : 18,
     tanggal_buka   : '2026-03-01',
     tanggal_tutup  : '2026-07-31',
+    tanggal_tes_wawancara : '2026-08-07',
+    tanggal_penetapan     : '2026-08-14',
     kategori       : 'industri',
     status         : 'tutup',
     icon           : 'solar:wallet-money-bold-duotone',
@@ -883,6 +897,8 @@ function openEditBeasiswa(id) {
   f('fKuota',          b.kuota_penerima);
   f('fTanggalBuka',    b.tanggal_buka);
   f('fTanggalTutup',   b.tanggal_tutup);
+  f('fTanggalTesWawancara', b.tanggal_tes_wawancara);
+  f('fTanggalPenetapan',    b.tanggal_penetapan);
   f('fKategori',       b.kategori);
   f('fStatusBeasiswa', b.status);
 
@@ -923,6 +939,8 @@ document.getElementById('formBeasiswa')?.addEventListener('submit', async (e) =>
     kuota_penerima : parseInt(document.getElementById('fKuota').value) || 0,
     tanggal_buka   : document.getElementById('fTanggalBuka').value,
     tanggal_tutup  : document.getElementById('fTanggalTutup').value,
+    tanggal_tes_wawancara : document.getElementById('fTanggalTesWawancara').value || null,
+    tanggal_penetapan     : document.getElementById('fTanggalPenetapan').value || null,
     kategori       : document.getElementById('fKategori').value,
     status         : document.getElementById('fStatusBeasiswa').value,
   };
@@ -937,6 +955,8 @@ document.getElementById('formBeasiswa')?.addEventListener('submit', async (e) =>
         kuota       : payload.kuota_penerima,
         tanggalBuka : payload.tanggal_buka || undefined,
         tanggalTutup: payload.tanggal_tutup || undefined,
+        tanggalTesWawancara: payload.tanggal_tes_wawancara,
+        tanggalPenetapan   : payload.tanggal_penetapan,
         kategori    : payload.kategori || undefined,
         status      : STATUS_UI_TO_BACKEND[payload.status] || 'aktif',
       };

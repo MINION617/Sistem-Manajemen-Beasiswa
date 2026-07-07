@@ -4,8 +4,10 @@
    ============================================================
    Load AFTER apiClient.js and BEFORE inputHasilSeleksi.js.
 
-   NOTE: there is no `jadwal_wawancara` column in the real schema (the old
-   dummy data invented one) — it's dropped here rather than fabricated.
+   NOTE: per-candidate jadwal_wawancara never existed in the real schema
+   (old dummy data invented one, dropped rather than fabricated). The
+   program-level tanggal_tes_wawancara (set once when the beasiswa is
+   created, DATABASE/migrations/0004) is real and mapped below.
    ============================================================ */
 
 function mapSeleksiRow(row) {
@@ -26,6 +28,7 @@ function mapSeleksiRow(row) {
     beasiswa: {
       nama_program: row.beasiswa?.nama_program || null,
       nominal_dana: row.beasiswa?.nominal_dana ?? null,
+      tanggal_tes_wawancara: row.beasiswa?.tanggal_tes_wawancara || null,
       sponsors: { nama_perusahaan: row.beasiswa?.sponsors?.nama_perusahaan || null },
     },
     hasil_seleksi: {

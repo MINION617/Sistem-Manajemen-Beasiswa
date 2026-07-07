@@ -2,7 +2,7 @@ import { supabaseAdmin } from '../../config/supabase.js'
 
 const PENDAFTARAN_STATUS_SELECT = `
   *,
-  beasiswa(nama_program, nominal_dana, sponsors(nama_perusahaan)),
+  beasiswa(nama_program, nominal_dana, tanggal_tes_wawancara, tanggal_penetapan, sponsors(nama_perusahaan)),
   dokumen_pendaftaran(*),
   hasil_seleksi(*),
   penerima_beasiswa(*),

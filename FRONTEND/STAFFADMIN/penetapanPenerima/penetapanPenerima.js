@@ -54,7 +54,7 @@ let dummyData = [
     updated_at      : '2026-06-20T10:00:00Z',
     catatan_staff   : null,
     mahasiswa : { nama_lengkap: 'Dimas Surya Atmaja',  nim_nip: '2020130021', program_studi: 'Teknik Elektro',   ipk: 3.91 },
-    beasiswa  : { nama_program: 'Pertamina Sobat Bumi',  kuota_penerima: 15, nominal_dana: 7500000, sponsors: { nama_perusahaan: 'Pertamina' } },
+    beasiswa  : { nama_program: 'Pertamina Sobat Bumi',  kuota_penerima: 15, nominal_dana: 7500000, tanggal_penetapan: '2026-07-29', sponsors: { nama_perusahaan: 'Pertamina' } },
     /* hasil_seleksi — field IDENTIK dengan pendaftaranSaya.js */
     hasil_seleksi   : { nilai_tes: 84.5, nilai_wawancara: 88.0, catatan_staff: 'Pemahaman riset sangat mendalam.' },
   },
@@ -67,7 +67,7 @@ let dummyData = [
     updated_at      : '2026-06-21T09:00:00Z',
     catatan_staff   : null,
     mahasiswa : { nama_lengkap: 'Elisa Rahayu Putri',   nim_nip: '2022510017', program_studi: 'Sistem Informasi', ipk: 3.88 },
-    beasiswa  : { nama_program: 'Telkom Digital Talent', kuota_penerima: 20, nominal_dana: 4500000, sponsors: { nama_perusahaan: 'Telkom Indonesia' } },
+    beasiswa  : { nama_program: 'Telkom Digital Talent', kuota_penerima: 20, nominal_dana: 4500000, tanggal_penetapan: '2026-08-15', sponsors: { nama_perusahaan: 'Telkom Indonesia' } },
     hasil_seleksi   : { nilai_tes: 91.0, nilai_wawancara: 88.5, catatan_staff: 'Presentasi sangat baik, komunikasi lancar.' },
   },
   {
@@ -79,7 +79,7 @@ let dummyData = [
     updated_at      : '2026-06-22T14:00:00Z',
     catatan_staff   : null,
     mahasiswa : { nama_lengkap: 'Gita Safira Dewi',     nim_nip: '2023110029', program_studi: 'Teknik Industri',  ipk: 3.78 },
-    beasiswa  : { nama_program: 'Beasiswa Mandiri Prestasi', kuota_penerima: 25, nominal_dana: 5000000, sponsors: { nama_perusahaan: 'Bank Mandiri' } },
+    beasiswa  : { nama_program: 'Beasiswa Mandiri Prestasi', kuota_penerima: 25, nominal_dana: 5000000, tanggal_penetapan: '2026-08-14', sponsors: { nama_perusahaan: 'Bank Mandiri' } },
     hasil_seleksi   : { nilai_tes: 88.0, nilai_wawancara: 85.0, catatan_staff: 'Motivasi tinggi, cocok untuk program ini.' },
   },
   {
@@ -91,7 +91,7 @@ let dummyData = [
     updated_at      : '2026-06-10T10:00:00Z',
     catatan_staff   : 'Selamat! Kamu dinyatakan sebagai penerima beasiswa Mandiri Prestasi.',
     mahasiswa : { nama_lengkap: 'Hana Putri Azzahra',   nim_nip: '2021310088', program_studi: 'Teknik Informatika', ipk: 3.95 },
-    beasiswa  : { nama_program: 'Beasiswa Mandiri Prestasi', kuota_penerima: 25, nominal_dana: 5000000, sponsors: { nama_perusahaan: 'Bank Mandiri' } },
+    beasiswa  : { nama_program: 'Beasiswa Mandiri Prestasi', kuota_penerima: 25, nominal_dana: 5000000, tanggal_penetapan: '2026-08-14', sponsors: { nama_perusahaan: 'Bank Mandiri' } },
     hasil_seleksi   : { nilai_tes: 93.5, nilai_wawancara: 91.0, catatan_staff: 'Terbaik dari semua kandidat yang diwawancarai.' },
   },
   {
@@ -103,7 +103,7 @@ let dummyData = [
     updated_at      : '2026-06-11T10:00:00Z',
     catatan_staff   : 'Selamat! Kamu dinyatakan sebagai penerima beasiswa Pertamina Sobat Bumi.',
     mahasiswa : { nama_lengkap: 'Ivan Rizki Ramadhan',  nim_nip: '2020230045', program_studi: 'Teknik Kimia',      ipk: 3.86 },
-    beasiswa  : { nama_program: 'Pertamina Sobat Bumi',  kuota_penerima: 15, nominal_dana: 7500000, sponsors: { nama_perusahaan: 'Pertamina' } },
+    beasiswa  : { nama_program: 'Pertamina Sobat Bumi',  kuota_penerima: 15, nominal_dana: 7500000, tanggal_penetapan: '2026-07-29', sponsors: { nama_perusahaan: 'Pertamina' } },
     hasil_seleksi   : { nilai_tes: 87.0, nilai_wawancara: 90.0, catatan_staff: 'Portofolio riset energi terbarukan sangat kuat.' },
   },
   {
@@ -115,7 +115,7 @@ let dummyData = [
     updated_at      : '2026-06-12T10:00:00Z',
     catatan_staff   : 'Maaf, nilai wawancara belum memenuhi ambang batas minimum program.',
     mahasiswa : { nama_lengkap: 'Joko Widiatmoko',      nim_nip: '2022410061', program_studi: 'Teknik Sipil',      ipk: 3.55 },
-    beasiswa  : { nama_program: 'Telkom Digital Talent', kuota_penerima: 20, nominal_dana: 4500000, sponsors: { nama_perusahaan: 'Telkom Indonesia' } },
+    beasiswa  : { nama_program: 'Telkom Digital Talent', kuota_penerima: 20, nominal_dana: 4500000, tanggal_penetapan: '2026-08-15', sponsors: { nama_perusahaan: 'Telkom Indonesia' } },
     hasil_seleksi   : { nilai_tes: 72.0, nilai_wawancara: 68.5, catatan_staff: 'Perlu meningkatkan kemampuan komunikasi teknis.' },
   },
 ];
@@ -341,6 +341,12 @@ function renderList() {
               <iconify-icon icon="solar:users-group-two-rounded-bold-duotone" width="10"></iconify-icon>
               Kuota: ${d.beasiswa?.kuota_penerima}
             </span>
+            ${d.beasiswa?.tanggal_penetapan ? `
+              <span class="card-tag">
+                <iconify-icon icon="solar:clock-circle-bold-duotone" width="10"></iconify-icon>
+                Jadwal Penetapan: ${formatTgl(d.beasiswa.tanggal_penetapan)}
+              </span>
+            ` : ''}
           </div>
         </div>
 

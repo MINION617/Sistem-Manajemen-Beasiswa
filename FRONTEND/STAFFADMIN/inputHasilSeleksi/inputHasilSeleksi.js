@@ -56,7 +56,7 @@ let dummyData = [
     /* JOIN profiles */
     mahasiswa: { nama_lengkap: 'Adinda Putri Lestari', nim_nip: '2022310011', program_studi: 'Teknik Informatika', ipk: 3.82 },
     /* JOIN beasiswa */
-    beasiswa : { nama_program: 'Beasiswa Mandiri Prestasi', nominal_dana: 5000000, sponsors: { nama_perusahaan: 'Bank Mandiri' } },
+    beasiswa : { nama_program: 'Beasiswa Mandiri Prestasi', nominal_dana: 5000000, tanggal_tes_wawancara: '2026-08-07', sponsors: { nama_perusahaan: 'Bank Mandiri' } },
     /* JOIN hasil_seleksi — field name IDENTIK dengan pendaftaranSaya.js */
     hasil_seleksi  : { nilai_tes: null, nilai_wawancara: null, catatan_staff: null },
   },
@@ -67,7 +67,7 @@ let dummyData = [
     status         : 'lolos_berkas',
     tanggal_daftar : '2026-06-10T06:10:00Z',
     mahasiswa: { nama_lengkap: 'Cahaya Nur Aisyah', nim_nip: '2021220032', program_studi: 'Akuntansi', ipk: 3.75 },
-    beasiswa : { nama_program: 'Beasiswa Djarum Plus', nominal_dana: 6000000, sponsors: { nama_perusahaan: 'Djarum Foundation' } },
+    beasiswa : { nama_program: 'Beasiswa Djarum Plus', nominal_dana: 6000000, tanggal_tes_wawancara: '2026-07-07', sponsors: { nama_perusahaan: 'Djarum Foundation' } },
     hasil_seleksi  : { nilai_tes: null, nilai_wawancara: null, catatan_staff: null },
   },
   {
@@ -77,7 +77,7 @@ let dummyData = [
     status         : 'wawancara',
     tanggal_daftar : '2026-06-05T15:45:00Z',
     mahasiswa: { nama_lengkap: 'Dimas Surya Atmaja', nim_nip: '2020130021', program_studi: 'Teknik Elektro', ipk: 3.91 },
-    beasiswa : { nama_program: 'Pertamina Sobat Bumi', nominal_dana: 7500000, sponsors: { nama_perusahaan: 'Pertamina' } },
+    beasiswa : { nama_program: 'Pertamina Sobat Bumi', nominal_dana: 7500000, tanggal_tes_wawancara: '2026-07-22', sponsors: { nama_perusahaan: 'Pertamina' } },
     /* Nilai tes sudah ada, wawancara belum */
     hasil_seleksi  : { nilai_tes: 84.5, nilai_wawancara: null, catatan_staff: null },
   },
@@ -88,7 +88,7 @@ let dummyData = [
     status         : 'wawancara',
     tanggal_daftar : '2026-06-07T11:20:00Z',
     mahasiswa: { nama_lengkap: 'Elisa Rahayu Putri', nim_nip: '2022510017', program_studi: 'Sistem Informasi', ipk: 3.88 },
-    beasiswa : { nama_program: 'Telkom Digital Talent', nominal_dana: 4500000, sponsors: { nama_perusahaan: 'Telkom Indonesia' } },
+    beasiswa : { nama_program: 'Telkom Digital Talent', nominal_dana: 4500000, tanggal_tes_wawancara: '2026-08-08', sponsors: { nama_perusahaan: 'Telkom Indonesia' } },
     hasil_seleksi  : { nilai_tes: 91.0, nilai_wawancara: 88.5, catatan_staff: 'Presentasi sangat baik, komunikasi lancar.' },
   },
   {
@@ -98,7 +98,7 @@ let dummyData = [
     status         : 'wawancara',
     tanggal_daftar : '2026-06-08T09:00:00Z',
     mahasiswa: { nama_lengkap: 'Fadhlan Rizki Maulana', nim_nip: '2021410043', program_studi: 'Manajemen', ipk: 3.65 },
-    beasiswa : { nama_program: 'Beasiswa Djarum Plus', nominal_dana: 6000000, sponsors: { nama_perusahaan: 'Djarum Foundation' } },
+    beasiswa : { nama_program: 'Beasiswa Djarum Plus', nominal_dana: 6000000, tanggal_tes_wawancara: '2026-07-07', sponsors: { nama_perusahaan: 'Djarum Foundation' } },
     hasil_seleksi  : { nilai_tes: 76.0, nilai_wawancara: null, catatan_staff: null },
   },
   {
@@ -108,7 +108,7 @@ let dummyData = [
     status         : 'wawancara',
     tanggal_daftar : '2026-06-09T14:00:00Z',
     mahasiswa: { nama_lengkap: 'Gita Safira Dewi', nim_nip: '2023110029', program_studi: 'Teknik Industri', ipk: 3.78 },
-    beasiswa : { nama_program: 'Beasiswa Mandiri Prestasi', nominal_dana: 5000000, sponsors: { nama_perusahaan: 'Bank Mandiri' } },
+    beasiswa : { nama_program: 'Beasiswa Mandiri Prestasi', nominal_dana: 5000000, tanggal_tes_wawancara: '2026-08-07', sponsors: { nama_perusahaan: 'Bank Mandiri' } },
     hasil_seleksi  : { nilai_tes: 88.0, nilai_wawancara: 85.0, catatan_staff: 'Motivasi tinggi, cocok untuk program ini.' },
   },
 ];
@@ -281,6 +281,12 @@ function renderList() {
               <iconify-icon icon="solar:calendar-bold-duotone" width="10"></iconify-icon>
               Daftar ${formatTgl(d.tanggal_daftar)}
             </span>
+            ${d.beasiswa?.tanggal_tes_wawancara ? `
+              <span class="card-tag">
+                <iconify-icon icon="solar:clock-circle-bold-duotone" width="10"></iconify-icon>
+                Jadwal Tes &amp; Wawancara: ${formatTgl(d.beasiswa.tanggal_tes_wawancara)}
+              </span>
+            ` : ''}
           </div>
         </div>
 
@@ -333,6 +339,9 @@ function openInputNilai(id) {
           ${d.beasiswa?.nama_program}
           &nbsp;·&nbsp;
           <span class="status-pill ${STATUS_CFG[d.status]?.cls || ''}">${STATUS_CFG[d.status]?.label || d.status}</span>
+          ${d.beasiswa?.tanggal_tes_wawancara ? `
+            &nbsp;·&nbsp; Jadwal: ${formatTgl(d.beasiswa.tanggal_tes_wawancara)}
+          ` : ''}
         </div>
       </div>
     </div>
