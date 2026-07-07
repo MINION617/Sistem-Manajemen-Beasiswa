@@ -176,12 +176,18 @@ function initUserInfo() {
   setEl('topbarAvatar',  nama.charAt(0).toUpperCase());
 }
 
-/* ── STATS ── */
+/* ── STATS ──
+   Dihitung dari NILAI ASLI (hasil_seleksi.nilai_tes/nilai_wawancara), bukan
+   dari asumsi status pendaftaran — status bisa saja belum sempat pindah ke
+   'wawancara' meski nilai tes & wawancara sudah lengkap diinput (mis. staff
+   isi kedua nilai sekaligus dalam satu form sebelum transisi tercatat).
+   Mengandalkan status saja membuat kandidat yang sudah lengkap masih
+   tampil seolah "perlu input". */
 function loadStats() {
   const active      = dummyData.filter(d => ['lolos_berkas','wawancara'].includes(d.status));
-  const belumTes    = active.filter(d => !d.hasil_seleksi?.nilai_tes).length;
-  const belumWaw    = dummyData.filter(d => d.status === 'wawancara' && !d.hasil_seleksi?.nilai_wawancara).length;
-  const lengkap     = dummyData.filter(d => d.status === 'wawancara' && d.hasil_seleksi?.nilai_tes && d.hasil_seleksi?.nilai_wawancara).length;
+  const belumTes    = active.filter(d => d.hasil_seleksi?.nilai_tes == null).length;
+  const belumWaw    = active.filter(d => d.hasil_seleksi?.nilai_tes != null && d.hasil_seleksi?.nilai_wawancara == null).length;
+  const lengkap     = active.filter(d => d.hasil_seleksi?.nilai_tes != null && d.hasil_seleksi?.nilai_wawancara != null).length;
   const total       = active.length;
 
   animateNum('statBelumTes',       belumTes);
@@ -256,10 +262,12 @@ function renderList() {
     const nilaiTes  = hs?.nilai_tes  ?? null;
     const nilaiWaw  = hs?.nilai_wawancara ?? null;
 
-    /* Label tombol sesuai tahap */
+    /* Label tombol dari NILAI ASLI, bukan status — status pendaftaran bisa
+       saja belum pindah ke 'wawancara' meski nilai tes & wawancara sudah
+       sama-sama terisi (lihat catatan di loadStats()). */
     let btnLabel = 'Input Nilai Tes';
-    if (d.status === 'wawancara' && nilaiWaw === null) btnLabel = 'Input Nilai Wawancara';
-    if (d.status === 'wawancara' && nilaiWaw !== null) btnLabel = 'Edit Nilai';
+    if (nilaiTes !== null && nilaiWaw === null) btnLabel = 'Input Nilai Wawancara';
+    if (nilaiTes !== null && nilaiWaw !== null) btnLabel = 'Edit Nilai';
 
     return `
       <div class="peserta-card" style="--card-accent:${cfg.accent};animation-delay:${i * 0.06}s">
