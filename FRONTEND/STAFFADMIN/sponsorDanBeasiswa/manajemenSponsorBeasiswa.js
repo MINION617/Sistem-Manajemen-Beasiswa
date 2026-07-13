@@ -87,6 +87,13 @@ function mapBeasiswaFromApi(b) {
     tanggal_tes_wawancara : b.tanggal_tes_wawancara || null,
     tanggal_penetapan     : b.tanggal_penetapan || null,
     ipk_minimum           : b.ipk_minimum ?? null,
+    target_ipk             : b.target_ipk ?? null,
+    target_nilai_tes       : b.target_nilai_tes ?? null,
+    target_nilai_wawancara : b.target_nilai_wawancara ?? null,
+    target_kerja_keras     : b.target_kerja_keras ?? null,
+    target_kepemimpinan    : b.target_kepemimpinan ?? null,
+    target_komunikasi      : b.target_komunikasi ?? null,
+    target_keberanian      : b.target_keberanian ?? null,
     kategori       : b.kategori || 'prestasi',
     status         : STATUS_BACKEND_TO_UI[b.status] || 'tutup',
     ...style,
@@ -907,6 +914,13 @@ function openEditBeasiswa(id) {
   f('fTanggalTesWawancara', b.tanggal_tes_wawancara);
   f('fTanggalPenetapan',    b.tanggal_penetapan);
   f('fIpkMinimum',          b.ipk_minimum);
+  f('fTargetIpk',             b.target_ipk);
+  f('fTargetNilaiTes',        b.target_nilai_tes);
+  f('fTargetNilaiWawancara',  b.target_nilai_wawancara);
+  f('fTargetKerjaKeras',      b.target_kerja_keras);
+  f('fTargetKepemimpinan',    b.target_kepemimpinan);
+  f('fTargetKomunikasi',      b.target_komunikasi);
+  f('fTargetKeberanian',      b.target_keberanian);
   f('fKategori',       b.kategori);
   f('fStatusBeasiswa', b.status);
 
@@ -950,6 +964,13 @@ document.getElementById('formBeasiswa')?.addEventListener('submit', async (e) =>
     tanggal_tes_wawancara : document.getElementById('fTanggalTesWawancara').value || null,
     tanggal_penetapan     : document.getElementById('fTanggalPenetapan').value || null,
     ipk_minimum           : document.getElementById('fIpkMinimum').value ? parseFloat(document.getElementById('fIpkMinimum').value) : null,
+    target_ipk             : document.getElementById('fTargetIpk').value ? parseFloat(document.getElementById('fTargetIpk').value) : null,
+    target_nilai_tes       : document.getElementById('fTargetNilaiTes').value ? parseFloat(document.getElementById('fTargetNilaiTes').value) : null,
+    target_nilai_wawancara : document.getElementById('fTargetNilaiWawancara').value ? parseFloat(document.getElementById('fTargetNilaiWawancara').value) : null,
+    target_kerja_keras     : document.getElementById('fTargetKerjaKeras').value ? parseFloat(document.getElementById('fTargetKerjaKeras').value) : null,
+    target_kepemimpinan    : document.getElementById('fTargetKepemimpinan').value ? parseFloat(document.getElementById('fTargetKepemimpinan').value) : null,
+    target_komunikasi      : document.getElementById('fTargetKomunikasi').value ? parseFloat(document.getElementById('fTargetKomunikasi').value) : null,
+    target_keberanian      : document.getElementById('fTargetKeberanian').value ? parseFloat(document.getElementById('fTargetKeberanian').value) : null,
     kategori       : document.getElementById('fKategori').value,
     status         : document.getElementById('fStatusBeasiswa').value,
   };
@@ -967,6 +988,13 @@ document.getElementById('formBeasiswa')?.addEventListener('submit', async (e) =>
         tanggalTesWawancara: payload.tanggal_tes_wawancara,
         tanggalPenetapan   : payload.tanggal_penetapan,
         ipkMinimum         : payload.ipk_minimum,
+        targetIpk             : payload.target_ipk,
+        targetNilaiTes        : payload.target_nilai_tes,
+        targetNilaiWawancara  : payload.target_nilai_wawancara,
+        targetKerjaKeras      : payload.target_kerja_keras,
+        targetKepemimpinan    : payload.target_kepemimpinan,
+        targetKomunikasi      : payload.target_komunikasi,
+        targetKeberanian      : payload.target_keberanian,
         kategori    : payload.kategori || undefined,
         status      : STATUS_UI_TO_BACKEND[payload.status] || 'aktif',
       };

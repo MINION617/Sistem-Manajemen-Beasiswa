@@ -38,6 +38,7 @@ const dummyBeasiswaList = [
 ];
 const dummyRekomendasi = {
   profileAvailable: true,
+  profileSource: 'historis',
   candidates: [
     {
       // Skor dihitung ulang persis mengikuti rumus scoreCandidate() di
@@ -121,9 +122,11 @@ function renderRekomendasi(result) {
   rekomCharts.forEach(c => c.destroy());
   rekomCharts = [];
 
-  const coldStart = !result.profileAvailable
-    ? '<div class="cold-start-msg">Belum ada data penerima berhasil untuk dijadikan acuan pembanding — kandidat di bawah diurutkan berdasarkan IPK saja.</div>'
-    : '';
+  const coldStart = result.profileSource === 'manual'
+    ? '<div class="cold-start-msg">Belum cukup data penerima berhasil untuk program ini — acuan pembanding memakai target manual yang diatur staff saat program dibuat.</div>'
+    : !result.profileAvailable
+      ? '<div class="cold-start-msg">Belum ada data penerima berhasil maupun target manual untuk dijadikan acuan pembanding — kandidat di bawah diurutkan berdasarkan IPK saja.</div>'
+      : '';
 
   /* Kandidat dengan IPK di bawah syarat minimum program TIDAK direkomendasikan
      sama sekali — tapi ditampilkan sebagai catatan terpisah (bukan di-drop
@@ -176,7 +179,7 @@ function renderRekomendasi(result) {
         labels,
         datasets: [
           { label: 'Kandidat', data: candidateVals, borderColor: '#1e3a8a', backgroundColor: 'rgba(30,58,138,0.15)', tension: 0.3, pointRadius: 4 },
-          { label: 'Acuan Penerima Berhasil', data: profileVals, borderColor: '#059669', backgroundColor: 'rgba(5,150,105,0.12)', tension: 0.3, pointRadius: 4 },
+          { label: result.profileSource === 'manual' ? 'Acuan Target Manual (Staff)' : 'Acuan Penerima Berhasil', data: profileVals, borderColor: '#059669', backgroundColor: 'rgba(5,150,105,0.12)', tension: 0.3, pointRadius: 4 },
         ],
       },
       options: {

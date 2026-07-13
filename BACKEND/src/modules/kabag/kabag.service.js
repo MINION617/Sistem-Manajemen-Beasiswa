@@ -125,6 +125,14 @@ export async function getPerkembangan() {
 // bar. Named constant so the threshold is a documented, tunable decision.
 const SUCCESS_IPK_THRESHOLD = 3.0
 
+// A program only switches from staff's manual target (beasiswa.target_*) to
+// the automatically-derived historical profile once it has accumulated this
+// many successful recipients — a handful of early graduates isn't a reliable
+// enough sample to trust over what staff deliberately set at program
+// creation. Below this count, manual targets (if any were set) are used
+// instead; see buildManualProfile() and getRekomendasi().
+const MIN_HISTORICAL_SAMPLE = 10
+
 // Recommendation dimensions and their weights (sum to 1). IPK and nilai tes
 // are the two dominant indicators (0.40 each, 0.80 combined) since they're
 // the most objective, comparable-across-candidates signals. The remaining
@@ -188,6 +196,31 @@ function computeSuccessProfile(dimensionRows) {
 }
 
 /**
+ * Staff-set target scores (beasiswa.target_ipk etc.), normalized the same
+ * way as computeSuccessProfile so scoreCandidate() can't tell the two apart.
+ * Returns null if staff left every target column unset (nothing to fall
+ * back to — caller stays in cold-start mode).
+ */
+function buildManualProfile(beasiswaRow) {
+  const raw = {
+    ipk: beasiswaRow?.target_ipk,
+    nilai_tes: beasiswaRow?.target_nilai_tes,
+    nilai_wawancara: beasiswaRow?.target_nilai_wawancara,
+    nilai_kerja_keras: beasiswaRow?.target_kerja_keras,
+    nilai_kepemimpinan: beasiswaRow?.target_kepemimpinan,
+    nilai_komunikasi: beasiswaRow?.target_komunikasi,
+    nilai_keberanian: beasiswaRow?.target_keberanian,
+  }
+  if (Object.values(raw).every((v) => v == null)) return null
+
+  const profile = {}
+  for (const key of Object.keys(DIMENSION_WEIGHTS)) {
+    profile[key] = raw[key] != null ? raw[key] / DIMENSION_SCALE[key] : null
+  }
+  return profile
+}
+
+/**
  * Weighted score (0-100, higher = better). Missing dimensions are skipped,
  * not zero-filled.
  *
@@ -224,11 +257,22 @@ function scoreCandidate(dims, profile) {
 
 /**
  * Ranks current wawancara-stage candidates for a scholarship program against
- * the automatically-derived profile of past successful recipients. Cold-start
- * (no successful recipients yet) returns profileAvailable: false and an
- * unranked candidate list sorted by IPK instead.
+ * an "acuan penerima berhasil" profile. Once the program has at least
+ * MIN_HISTORICAL_SAMPLE successful recipients, the profile is the
+ * automatically-derived average of their scores (profileSource: 'historis').
+ * Below that, it falls back to staff's manual target_* columns on beasiswa
+ * if any were set (profileSource: 'manual'). If neither is available, this
+ * is cold-start: profileAvailable: false, candidates just sorted by IPK.
  */
 export async function getRekomendasi(beasiswaId) {
+  const { data: beasiswaRow, error: beasiswaRowError } = await supabaseAdmin
+    .from('beasiswa')
+    .select('id, ipk_minimum, target_ipk, target_nilai_tes, target_nilai_wawancara, target_kerja_keras, target_kepemimpinan, target_komunikasi, target_keberanian')
+    .eq('id', beasiswaId)
+    .single()
+
+  if (beasiswaRowError) throw Object.assign(new Error(beasiswaRowError.message), { status: 502 })
+
   const { data: penerimaRows, error: penerimaError } = await supabaseAdmin
     .from('penerima_beasiswa')
     .select(`
@@ -263,15 +307,18 @@ export async function getRekomendasi(beasiswaId) {
       return extractDimensions(row.pendaftaran?.profiles?.ipk, hs)
     })
 
-  const profileAvailable = successfulDimensions.length > 0
-  const profile = profileAvailable ? computeSuccessProfile(successfulDimensions) : null
+  const historicalAvailable = successfulDimensions.length >= MIN_HISTORICAL_SAMPLE
+  const manualProfile = buildManualProfile(beasiswaRow)
+  const profileSource = historicalAvailable ? 'historis' : manualProfile ? 'manual' : null
+  const profile = historicalAvailable ? computeSuccessProfile(successfulDimensions) : manualProfile
+  const profileAvailable = profile != null
 
   const { data: candidateRows, error: candidateError } = await supabaseAdmin
     .from('pendaftaran')
     .select(`
       id, status, tanggal_daftar,
       profiles!mahasiswa_id(nama_lengkap, nim_nip, program_studi, ipk),
-      beasiswa(nama_program, ipk_minimum),
+      beasiswa(nama_program),
       hasil_seleksi(*)
     `)
     .eq('beasiswa_id', beasiswaId)
@@ -284,7 +331,7 @@ export async function getRekomendasi(beasiswaId) {
   // direkomendasikan kandidat yang IPK-nya di bawah syarat minimum program
   // ini, berapa pun bagus dimensi lainnya. Dipisah dari daftar utama (bukan
   // di-drop diam-diam) supaya Kabag tahu ada yang disaring dan kenapa.
-  const ipkMinimum = candidateRows[0]?.beasiswa?.ipk_minimum ?? null
+  const ipkMinimum = beasiswaRow?.ipk_minimum ?? null
   const belowMinimumRows = ipkMinimum != null
     ? candidateRows.filter((row) => row.profiles?.ipk != null && row.profiles.ipk < ipkMinimum)
     : []
@@ -319,5 +366,5 @@ export async function getRekomendasi(beasiswaId) {
     ipkMinimum,
   }))
 
-  return { profileAvailable, profile, candidates, ipkMinimum, excludedBelowMinimum }
+  return { profileAvailable, profileSource, profile, candidates, ipkMinimum, excludedBelowMinimum }
 }
