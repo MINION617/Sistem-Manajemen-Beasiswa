@@ -249,8 +249,13 @@ function setFormValue(id, val) {
  * 06. MODE EDIT / VIEW
  * ============================================================ */
 
-/* Field yang bisa diedit (sisanya readonly by design) */
-const EDITABLE_FIELDS = ['inputNama', 'inputEmail', 'inputTelp'];
+/* Field yang bisa diedit (sisanya readonly by design).
+   Email sengaja tidak diikutkan — endpoint PATCH /profil cuma mengubah
+   kolom `profiles.email`, bukan email login Supabase Auth, jadi kalau
+   diizinkan diedit sendiri, tampilan profil bisa desync dari email yang
+   sebenarnya dipakai login. Backend juga sudah menolak field ini untuk
+   role kabag/wabag (lihat profil.controller.js, EMAIL_LOCKED_ROLES). */
+const EDITABLE_FIELDS = ['inputNama', 'inputTelp'];
 
 function enableEditMode() {
   editMode = true;
@@ -333,19 +338,6 @@ function validateProfileForm() {
     document.getElementById('inputNama')?.classList.remove('has-error');
   }
 
-  /* Email: format dasar */
-  const email  = (document.getElementById('inputEmail')?.value || '').trim();
-  const errEmail = document.getElementById('errEmail');
-  const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  if (!emailOk) {
-    errEmail?.classList.add('is-visible');
-    document.getElementById('inputEmail')?.classList.add('has-error');
-    valid = false;
-  } else {
-    errEmail?.classList.remove('is-visible');
-    document.getElementById('inputEmail')?.classList.remove('has-error');
-  }
-
   return valid;
 }
 
@@ -353,12 +345,12 @@ async function handleSaveProfile() {
   if (!validateProfileForm()) return;
 
   const nama  = document.getElementById('inputNama').value.trim();
-  const email = document.getElementById('inputEmail').value.trim();
+  const email = document.getElementById('inputEmail').value.trim(); // readonly, cuma buat tampilan
   const telp  = (document.getElementById('inputTelp')?.value || '').trim();
 
   if (isRealSession) {
     try {
-      await api.patch('/profil', { nama_lengkap: nama, email, nomor_whatsapp: telp });
+      await api.patch('/profil', { nama_lengkap: nama, nomor_whatsapp: telp });
     } catch (err) {
       showToast(err?.message || 'Gagal menyimpan profil.', 'error');
       return;

@@ -901,6 +901,33 @@ button {
 
 .input-wrap input::placeholder { color: var(--text-4); }
 
+.input-wrap textarea {
+  flex        : 1;
+  border      : none;
+  outline     : none;
+  font-size   : 13px;
+  font-family : var(--font-body);
+  background  : transparent;
+  color       : var(--text);
+  min-width   : 0;
+  resize      : vertical;
+  min-height  : 40px;
+}
+.input-wrap textarea::placeholder { color: var(--text-4); }
+
+.input-wrap.is-readonly {
+  background : var(--bg);
+  opacity    : .7;
+}
+.input-wrap.is-readonly input { cursor: not-allowed; color: var(--text-3); }
+
+.field-hint {
+  font-size : 11px;
+  color     : var(--text-4);
+  margin-top: 2px;
+  display   : block;
+}
+
 .toggle-eye {
   background  : none;
   border      : none;

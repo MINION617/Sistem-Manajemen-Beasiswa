@@ -222,26 +222,29 @@
             <div class="form-row">
               <div class="form-group">
                 <label>Nama Lengkap</label>
-                <div class="input-wrap">
+                <div class="input-wrap is-readonly">
                   <iconify-icon icon="solar:user-bold" width="15"></iconify-icon>
-                  <input type="text" id="editNama" placeholder="Nama lengkap" />
+                  <input type="text" id="editNama" placeholder="Nama lengkap" disabled readonly />
                 </div>
+                <span class="field-hint">Tidak dapat diubah — hubungi admin</span>
               </div>
               <div class="form-group">
                 <label>NIP</label>
-                <div class="input-wrap">
+                <div class="input-wrap is-readonly">
                   <iconify-icon icon="solar:card-bold" width="15"></iconify-icon>
-                  <input type="text" id="editNip" placeholder="NIP" />
+                  <input type="text" id="editNip" placeholder="NIP" disabled readonly />
                 </div>
+                <span class="field-hint">Tidak dapat diubah</span>
               </div>
             </div>
             <div class="form-row">
               <div class="form-group">
                 <label>Email</label>
-                <div class="input-wrap">
+                <div class="input-wrap is-readonly">
                   <iconify-icon icon="solar:letter-bold" width="15"></iconify-icon>
-                  <input type="email" id="editEmail" placeholder="email@kampus.ac.id" />
+                  <input type="email" id="editEmail" placeholder="email@kampus.ac.id" disabled readonly />
                 </div>
+                <span class="field-hint">Tidak dapat diubah — hubungi admin</span>
               </div>
               <div class="form-group">
                 <label>No. WhatsApp</label>
@@ -254,16 +257,27 @@
             <div class="form-row">
               <div class="form-group">
                 <label>Jabatan</label>
-                <div class="input-wrap">
+                <div class="input-wrap is-readonly">
                   <iconify-icon icon="solar:buildings-bold" width="15"></iconify-icon>
-                  <input type="text" id="editJabatan" placeholder="Jabatan" />
+                  <input type="text" id="editJabatan" placeholder="Jabatan" disabled readonly />
                 </div>
+                <span class="field-hint">Ditetapkan oleh admin</span>
               </div>
               <div class="form-group">
                 <label>Unit Kerja</label>
-                <div class="input-wrap">
+                <div class="input-wrap is-readonly">
                   <iconify-icon icon="solar:folder-with-files-bold" width="15"></iconify-icon>
-                  <input type="text" id="editUnit" placeholder="Unit kerja" />
+                  <input type="text" id="editUnit" placeholder="Unit kerja" disabled readonly />
+                </div>
+                <span class="field-hint">Ditetapkan oleh admin</span>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group" style="grid-column:1/-1">
+                <label>Alamat</label>
+                <div class="input-wrap">
+                  <iconify-icon icon="solar:map-point-bold" width="15"></iconify-icon>
+                  <textarea id="editAlamat" placeholder="Alamat tempat tinggal" rows="2"></textarea>
                 </div>
               </div>
             </div>

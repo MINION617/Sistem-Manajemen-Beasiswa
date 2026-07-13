@@ -30,10 +30,31 @@ export async function getMe(req, res) {
   res.json({ data })
 }
 
+// Per-role fields that cannot be changed via self-service PATCH /profil —
+// identity/employment fields assigned by the institution (email is tied to
+// the actual Supabase Auth login, which this endpoint never touches — only
+// `profiles.email` — so letting it be self-edited would desync display
+// from the real login email). Contact-only fields (nomor_whatsapp, alamat)
+// are always left editable for every role. nim_nip/role are never in
+// updateSchema at all, so they're already unconditionally locked for
+// everyone regardless of this map.
+const LOCKED_FIELDS_BY_ROLE = {
+  kabag: ['email'],
+  wabag: ['email'],
+  staff: ['nama_lengkap', 'email', 'jabatan', 'unit'],
+}
+
 export async function patchMe(req, res) {
   const parsed = updateSchema.safeParse(req.body)
   if (!parsed.success) {
     return res.status(400).json({ error: parsed.error.issues[0]?.message || 'Invalid body' })
+  }
+  const lockedFields = LOCKED_FIELDS_BY_ROLE[req.user.role] || []
+  const violatingField = lockedFields.find((field) => parsed.data[field] !== undefined)
+  if (violatingField) {
+    return res
+      .status(400)
+      .json({ error: `Field "${violatingField}" tidak dapat diubah sendiri untuk role ini. Hubungi admin.` })
   }
   const data = await profilService.updateOwn(req.user.id, parsed.data)
   res.json({ data })

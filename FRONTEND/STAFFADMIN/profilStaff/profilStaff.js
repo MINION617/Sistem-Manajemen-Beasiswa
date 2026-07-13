@@ -59,6 +59,7 @@ const demoSession = session || {
   jabatan        : 'Staff Bagian Beasiswa',
   unit           : 'Bagian Kemahasiswaan',
   nomor_whatsapp : '081220001001',
+  alamat         : 'Jl. Kampus Merdeka No. 1, Jakarta',
 };
 
 
@@ -147,6 +148,7 @@ const INFO_FIELDS = [
   { key: 'nomor_whatsapp', label: 'No. WhatsApp',    icon: 'solar:phone-bold-duotone',              color: '#059669' },
   { key: 'jabatan',        label: 'Jabatan',         icon: 'solar:buildings-2-bold-duotone',        color: '#0284c7' },
   { key: 'unit',           label: 'Unit Kerja',      icon: 'solar:folder-with-files-bold-duotone',  color: '#be123c' },
+  { key: 'alamat',         label: 'Alamat',          icon: 'solar:map-point-bold-duotone',          color: '#d97706' },
 ];
 
 function renderInfoRows() {
@@ -203,13 +205,16 @@ btnToggleEditInfo?.addEventListener('click', () => {
 btnCancelInfo?.addEventListener('click', closeEditInfo);
 
 function openEditInfo() {
-  /* Isi form dengan data saat ini */
+  /* Isi form dengan data saat ini — Nama/NIP/Email/Jabatan/Unit cuma buat
+     referensi (input-nya readonly), yang benar-benar bisa diubah cuma
+     No. WhatsApp dan Alamat. */
   document.getElementById('editNama').value     = profileData.nama_lengkap   || '';
   document.getElementById('editNip').value      = profileData.nim_nip        || '';
   document.getElementById('editEmail').value    = profileData.email          || '';
   document.getElementById('editWa').value       = profileData.nomor_whatsapp || '';
   document.getElementById('editJabatan').value  = profileData.jabatan        || '';
   document.getElementById('editUnit').value     = profileData.unit           || '';
+  document.getElementById('editAlamat').value   = profileData.alamat         || '';
 
   viewInfo.style.display    = 'none';
   formEditInfo.style.display = '';
@@ -233,31 +238,18 @@ formEditInfo?.addEventListener('submit', async (e) => {
   e.preventDefault();
   const msgEl = document.getElementById('msgInfo');
 
-  const nama     = document.getElementById('editNama').value.trim();
-  const nip      = document.getElementById('editNip').value.trim();
-  const email    = document.getElementById('editEmail').value.trim();
-  const wa       = document.getElementById('editWa').value.trim();
-  const jabatan  = document.getElementById('editJabatan').value.trim();
-  const unit     = document.getElementById('editUnit').value.trim();
-
-  /* Validasi sederhana */
-  if (!nama) {
-    showMsg('msgInfo', 'error', '⚠ Nama lengkap wajib diisi.');
-    return;
-  }
-  if (email && !isValidEmail(email)) {
-    showMsg('msgInfo', 'error', '⚠ Format email tidak valid.');
-    return;
-  }
+  /* Nama/NIP/Email/Jabatan/Unit sengaja tidak diikutkan — field-nya
+     readonly (lihat HTML) dan backend juga menolaknya untuk role staff
+     (BACKEND/src/modules/profil/profil.controller.js, LOCKED_FIELDS_BY_ROLE).
+     Cuma No. WhatsApp dan Alamat yang boleh diubah sendiri oleh staff. */
+  const wa     = document.getElementById('editWa').value.trim();
+  const alamat = document.getElementById('editAlamat').value.trim();
 
   if (isRealSession) {
     try {
       const { data } = await api.patch('/profil', {
-        nama_lengkap: nama,
-        email,
         nomor_whatsapp: wa,
-        jabatan,
-        unit,
+        alamat,
       });
       profileData = { ...profileData, ...data };
     } catch (err) {
@@ -266,12 +258,8 @@ formEditInfo?.addEventListener('submit', async (e) => {
     }
   } else {
     /* Update state & session (dummy fallback) */
-    profileData.nama_lengkap   = nama;
-    profileData.nim_nip        = nip;
-    profileData.email          = email;
     profileData.nomor_whatsapp = wa;
-    profileData.jabatan        = jabatan;
-    profileData.unit           = unit;
+    profileData.alamat         = alamat;
   }
 
   saveSession(profileData);
@@ -282,10 +270,6 @@ formEditInfo?.addEventListener('submit', async (e) => {
   closeEditInfo();
   showToast('✓ Informasi profil berhasil diperbarui!');
 });
-
-function isValidEmail(email) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-}
 
 
 /* ============================================================

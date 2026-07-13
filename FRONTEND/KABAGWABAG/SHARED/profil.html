@@ -314,20 +314,18 @@
                 <span class="form-hint">Tidak dapat diubah</span>
               </div>
 
-              <!-- Email -->
+              <!-- Email — readonly, terikat ke akun login -->
               <div class="form-group">
-                <label class="form-label" for="inputEmail">
-                  Email Institusi
-                  <span class="label-required">*</span>
-                </label>
+                <label class="form-label" for="inputEmail">Email Institusi</label>
                 <input
                   type="email"
                   id="inputEmail"
-                  class="form-input"
+                  class="form-input is-readonly"
                   placeholder="nama@universitas.ac.id"
                   disabled
+                  readonly
                 />
-                <span class="form-error-msg" id="errEmail">Format email tidak valid</span>
+                <span class="form-hint">Tidak dapat diubah — hubungi admin</span>
               </div>
 
               <!-- No. HP -->
