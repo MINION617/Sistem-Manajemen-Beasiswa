@@ -7,11 +7,11 @@ scripts:
   - type: beforeRequest
     code: |-
       if (!pm.environment.get('penerima_id')) {
-        console.warn('penerima_id kosong -> request di-skip (jalankan request 20 dulu)');
+        console.warn('penerima_id kosong -> request di-skip (jalankan request 18 dulu)');
         pm.execution.skipRequest();
       }
     language: text/javascript
   - type: afterResponse
     code: pm.test('Status 200', () => pm.response.to.have.status(200));
     language: text/javascript
-order: 21000
+order: 19000

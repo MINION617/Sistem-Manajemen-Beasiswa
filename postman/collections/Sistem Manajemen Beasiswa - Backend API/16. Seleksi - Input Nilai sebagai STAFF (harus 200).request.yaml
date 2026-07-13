@@ -1,6 +1,6 @@
 $kind: http-request
-url: "{{base_url}}/api/penerima"
-method: POST
+url: "{{base_url}}/api/seleksi/{{pendaftaran_id}}"
+method: PATCH
 headers:
   Authorization: Bearer {{token_staff}}
   Content-Type: application/json
@@ -8,7 +8,12 @@ body:
   type: json
   content: |-
     {
-      "pendaftaranId": "{{pendaftaran_id}}"
+      "nilaiTes": 88,
+      "nilaiWawancara": 85,
+      "nilaiKerjaKeras": 8,
+      "nilaiKepemimpinan": 8,
+      "nilaiKomunikasi": 8,
+      "nilaiKeberanian": 8
     }
 scripts:
   - type: beforeRequest
@@ -20,12 +25,8 @@ scripts:
     language: text/javascript
   - type: afterResponse
     code: |-
-      pm.test('Status 201', () => pm.response.to.have.status(201));
+      pm.test('Status 200', () => pm.response.to.have.status(200));
       const json = pm.response.json();
-      pm.test('Response punya property data', () => pm.expect(json).to.have.property('data'));
-      if (json.data && json.data.id) {
-        pm.environment.set('penerima_id', json.data.id);
-        console.log('penerima_id disimpan:', json.data.id);
-      }
+      pm.test('Status pendaftaran naik ke wawancara', () => pm.expect(json.data?.status).to.eql('wawancara'));
     language: text/javascript
-order: 20000
+order: 16000

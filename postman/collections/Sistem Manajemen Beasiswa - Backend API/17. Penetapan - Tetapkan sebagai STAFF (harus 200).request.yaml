@@ -1,0 +1,27 @@
+$kind: http-request
+url: "{{base_url}}/api/penetapan/{{pendaftaran_id}}"
+method: PATCH
+headers:
+  Authorization: Bearer {{token_staff}}
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "decision": "tetapkan"
+    }
+scripts:
+  - type: beforeRequest
+    code: |-
+      if (!pm.environment.get('pendaftaran_id')) {
+        console.warn('pendaftaran_id kosong -> request di-skip (jalankan request 3 dulu)');
+        pm.execution.skipRequest();
+      }
+    language: text/javascript
+  - type: afterResponse
+    code: |-
+      pm.test('Status 200', () => pm.response.to.have.status(200));
+      const json = pm.response.json();
+      pm.test('Status pendaftaran menjadi lolos_final', () => pm.expect(json.data?.status).to.eql('lolos_final'));
+    language: text/javascript
+order: 17000

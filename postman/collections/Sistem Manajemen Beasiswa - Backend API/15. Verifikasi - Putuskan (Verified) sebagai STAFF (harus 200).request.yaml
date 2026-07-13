@@ -21,4 +21,4 @@ scripts:
   - type: afterResponse
     code: pm.test('Status 200', () => pm.response.to.have.status(200));
     language: text/javascript
-order: 19000
+order: 15000

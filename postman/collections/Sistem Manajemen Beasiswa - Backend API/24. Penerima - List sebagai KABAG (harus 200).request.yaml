@@ -1,8 +1,8 @@
 $kind: http-request
-url: "{{base_url}}/api/penyaluran"
+url: "{{base_url}}/api/penerima"
 method: GET
 headers:
-  Authorization: Bearer {{token_staff}}
+  Authorization: Bearer {{token_kabag}}
 scripts:
   - type: afterResponse
     code: |-
@@ -13,4 +13,4 @@ scripts:
         pm.expect(json.data).to.be.an('array');
       });
     language: text/javascript
-order: 18000
+order: 24000

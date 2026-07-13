@@ -1,5 +1,5 @@
 $kind: http-request
-url: "{{base_url}}/api/penyaluran"
+url: "{{base_url}}/api/penerima"
 method: POST
 headers:
   Authorization: Bearer {{token_staff}}
@@ -8,9 +8,7 @@ body:
   type: json
   content: |-
     {
-      "pendaftaranId": "{{pendaftaran_id}}",
-      "nominal": 2500000,
-      "buktiTransferUrl": "https://example.com/bukti-transfer-demo.jpg"
+      "pendaftaranId": "{{pendaftaran_id}}"
     }
 scripts:
   - type: beforeRequest
@@ -26,8 +24,8 @@ scripts:
       const json = pm.response.json();
       pm.test('Response punya property data', () => pm.expect(json).to.have.property('data'));
       if (json.data && json.data.id) {
-        pm.environment.set('penyaluran_id', json.data.id);
-        console.log('penyaluran_id disimpan:', json.data.id);
+        pm.environment.set('penerima_id', json.data.id);
+        console.log('penerima_id disimpan:', json.data.id);
       }
     language: text/javascript
-order: 15000
+order: 18000
