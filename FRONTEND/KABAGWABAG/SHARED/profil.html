@@ -285,20 +285,18 @@
           <div class="form-body">
             <div class="form-grid">
 
-              <!-- Nama Lengkap -->
+              <!-- Nama Lengkap — readonly, ditetapkan institusi -->
               <div class="form-group">
-                <label class="form-label" for="inputNama">
-                  Nama Lengkap
-                  <span class="label-required">*</span>
-                </label>
+                <label class="form-label" for="inputNama">Nama Lengkap</label>
                 <input
                   type="text"
                   id="inputNama"
-                  class="form-input"
+                  class="form-input is-readonly"
                   placeholder="Nama lengkap beserta gelar"
                   disabled
+                  readonly
                 />
-                <span class="form-error-msg" id="errNama">Nama tidak boleh kosong</span>
+                <span class="form-hint">Tidak dapat diubah — hubungi admin</span>
               </div>
 
               <!-- NIP — readonly -->

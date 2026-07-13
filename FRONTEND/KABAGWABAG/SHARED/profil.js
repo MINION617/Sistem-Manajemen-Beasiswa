@@ -253,9 +253,11 @@ function setFormValue(id, val) {
    Email sengaja tidak diikutkan — endpoint PATCH /profil cuma mengubah
    kolom `profiles.email`, bukan email login Supabase Auth, jadi kalau
    diizinkan diedit sendiri, tampilan profil bisa desync dari email yang
-   sebenarnya dipakai login. Backend juga sudah menolak field ini untuk
-   role kabag/wabag (lihat profil.controller.js, EMAIL_LOCKED_ROLES). */
-const EDITABLE_FIELDS = ['inputNama', 'inputTelp'];
+   sebenarnya dipakai login. Nama Lengkap juga dikunci — nama resmi
+   pemegang jabatan ditetapkan institusi, sama seperti jabatan/unit untuk
+   staff. Backend juga sudah menolak kedua field ini untuk role kabag/wabag
+   (lihat profil.controller.js, LOCKED_FIELDS_BY_ROLE). */
+const EDITABLE_FIELDS = ['inputTelp'];
 
 function enableEditMode() {
   editMode = true;
@@ -323,34 +325,14 @@ function disableEditMode(restore) {
  * 07. VALIDASI & SIMPAN PROFIL
  * ============================================================ */
 
-function validateProfileForm() {
-  let valid = true;
-
-  /* Nama: tidak boleh kosong */
-  const nama = (document.getElementById('inputNama')?.value || '').trim();
-  const errNama = document.getElementById('errNama');
-  if (!nama) {
-    errNama?.classList.add('is-visible');
-    document.getElementById('inputNama')?.classList.add('has-error');
-    valid = false;
-  } else {
-    errNama?.classList.remove('is-visible');
-    document.getElementById('inputNama')?.classList.remove('has-error');
-  }
-
-  return valid;
-}
-
 async function handleSaveProfile() {
-  if (!validateProfileForm()) return;
-
-  const nama  = document.getElementById('inputNama').value.trim();
+  const nama  = document.getElementById('inputNama').value.trim(); // readonly, cuma buat tampilan
   const email = document.getElementById('inputEmail').value.trim(); // readonly, cuma buat tampilan
   const telp  = (document.getElementById('inputTelp')?.value || '').trim();
 
   if (isRealSession) {
     try {
-      await api.patch('/profil', { nama_lengkap: nama, nomor_whatsapp: telp });
+      await api.patch('/profil', { nomor_whatsapp: telp });
     } catch (err) {
       showToast(err?.message || 'Gagal menyimpan profil.', 'error');
       return;

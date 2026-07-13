@@ -34,13 +34,15 @@ export async function getMe(req, res) {
 // identity/employment fields assigned by the institution (email is tied to
 // the actual Supabase Auth login, which this endpoint never touches — only
 // `profiles.email` — so letting it be self-edited would desync display
-// from the real login email). Contact-only fields (nomor_whatsapp, alamat)
-// are always left editable for every role. nim_nip/role are never in
-// updateSchema at all, so they're already unconditionally locked for
-// everyone regardless of this map.
+// from the real login email; nama_lengkap is the institution's official
+// record of who holds the position, same reasoning as jabatan/unit for
+// staff). Contact-only fields (nomor_whatsapp, alamat) are always left
+// editable for every role. nim_nip/role are never in updateSchema at all,
+// so they're already unconditionally locked for everyone regardless of
+// this map.
 const LOCKED_FIELDS_BY_ROLE = {
-  kabag: ['email'],
-  wabag: ['email'],
+  kabag: ['nama_lengkap', 'email'],
+  wabag: ['nama_lengkap', 'email'],
   staff: ['nama_lengkap', 'email', 'jabatan', 'unit'],
 }
 

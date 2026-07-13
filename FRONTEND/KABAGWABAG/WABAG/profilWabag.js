@@ -108,11 +108,12 @@ function renderProfil() {
 /* ── SIMPAN ── */
 document.getElementById('formProfil')?.addEventListener('submit', async (e) => {
   e.preventDefault();
-  const nama   = document.getElementById('inpNama')?.value.trim() || profil.nama;
-  // Email sengaja tidak diikutkan — field-nya readonly (lihat HTML) dan
-  // backend juga menolaknya untuk role wabag (profil.controller.js,
-  // EMAIL_LOCKED_ROLES): PATCH /profil cuma mengubah profiles.email, bukan
-  // email login Supabase Auth, jadi tidak boleh diubah lewat sini.
+  // Nama Lengkap & Email sengaja tidak diikutkan — kedua field readonly
+  // (lihat HTML) dan backend juga menolaknya untuk role wabag
+  // (profil.controller.js, LOCKED_FIELDS_BY_ROLE): nama resmi pemegang
+  // jabatan ditetapkan institusi, dan PATCH /profil cuma mengubah
+  // profiles.email, bukan email login Supabase Auth, jadi tidak boleh
+  // diubah lewat sini.
   const telp   = document.getElementById('inpTelp')?.value.trim() || '';
   const alamat = document.getElementById('inpAlamat')?.value.trim() || '';
 
@@ -121,7 +122,6 @@ document.getElementById('formProfil')?.addEventListener('submit', async (e) => {
   if (isRealSession) {
     try {
       const { data } = await api.patch('/profil', {
-        nama_lengkap: nama,
         nomor_whatsapp: telp,
         alamat,
       });
@@ -134,7 +134,6 @@ document.getElementById('formProfil')?.addEventListener('submit', async (e) => {
       return;
     }
   } else {
-    profil.nama   = nama;
     profil.telp   = telp;
     profil.alamat = alamat;
     localStorage.setItem(STORAGE_KEY, JSON.stringify(profil));
