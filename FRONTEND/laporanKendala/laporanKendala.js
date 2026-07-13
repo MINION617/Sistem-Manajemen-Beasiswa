@@ -390,13 +390,15 @@ document.getElementById('formLaporan')?.addEventListener('submit', async (e) => 
   e.preventDefault();
   clearErrors();
 
-  const judul = document.getElementById('judulLaporan').value.trim();
-  const desk  = document.getElementById('deskripsiLaporan').value.trim();
-  const bsId  = document.getElementById('beasiswaSelect').value;
+  const judul    = document.getElementById('judulLaporan').value.trim();
+  const kategori = document.getElementById('kategoriLaporan').value;
+  const desk     = document.getElementById('deskripsiLaporan').value.trim();
+  const bsId     = document.getElementById('beasiswaSelect').value;
   let valid = true;
 
-  if (!judul) { showError('errJudul',     'Judul laporan wajib diisi');                                    valid = false; }
-  if (!desk)  { showError('errDeskripsi', 'Deskripsi masalah wajib diisi');                               valid = false; }
+  if (!judul)    { showError('errJudul',     'Judul laporan wajib diisi');                                    valid = false; }
+  if (!kategori) { showError('errKategori',  'Kategori kendala wajib dipilih');                              valid = false; }
+  if (!desk)     { showError('errDeskripsi', 'Deskripsi masalah wajib diisi');                               valid = false; }
   if (desk.length < 20) { showError('errDeskripsi', 'Deskripsi terlalu singkat (min. 20 karakter)');      valid = false; }
   if (!valid) return;
 
@@ -407,6 +409,7 @@ document.getElementById('formLaporan')?.addEventListener('submit', async (e) => 
       const { data } = await api.post('/laporan', {
         beasiswaId: bsId || undefined,
         judul,
+        kategori,
         deskripsi: desk,
       });
       allData.unshift(data);
@@ -420,6 +423,7 @@ document.getElementById('formLaporan')?.addEventListener('submit', async (e) => 
     allData.unshift({
       id: 'l-' + Date.now(),
       judul_laporan: judul,
+      kategori,
       deskripsi: desk,
       status: 'masuk',
       tanggapan_staff: null,

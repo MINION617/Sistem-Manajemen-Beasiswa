@@ -5,7 +5,7 @@ const createSchema = z.object({
   beasiswaId: z.string().uuid().optional(),
   judul: z.string().min(1),
   deskripsi: z.string().min(1),
-  kategori: z.string().min(1).optional(),
+  kategori: z.enum(['dokumen', 'status', 'dana', 'teknis', 'lainnya']).optional(),
 })
 
 const resolveSchema = z.object({

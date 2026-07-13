@@ -184,6 +184,18 @@
             <span class="field-error" id="errJudul"></span>
           </div>
           <div class="form-group">
+            <label>Kategori Kendala <span class="req">*</span></label>
+            <select id="kategoriLaporan" required>
+              <option value="">-- Pilih kategori --</option>
+              <option value="dokumen">Dokumen &amp; Berkas</option>
+              <option value="status">Status Pendaftaran</option>
+              <option value="dana">Dana &amp; Transfer</option>
+              <option value="teknis">Masalah Teknis</option>
+              <option value="lainnya">Lainnya</option>
+            </select>
+            <span class="field-error" id="errKategori"></span>
+          </div>
+          <div class="form-group">
             <label>Terkait Beasiswa <span class="opt">(opsional)</span></label>
             <select id="beasiswaSelect"><option value="">-- Pilih beasiswa (jika ada) --</option></select>
           </div>
