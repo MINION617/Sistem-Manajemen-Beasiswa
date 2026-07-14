@@ -464,6 +464,7 @@ document.getElementById('confirmPenetapan')?.addEventListener('click', async () 
   } catch (err) {
     console.warn('Gagal menyimpan keputusan penetapan:', err);
     closeKonfirmasi();
+    alert(err.message || 'Gagal menyimpan keputusan penetapan.');
   }
 });
 

@@ -87,11 +87,18 @@ export async function update(penyaluranId, { nominal, buktiTransferUrl, status }
 }
 
 /**
- * PAY-01: staff records a disbursement with transfer proof. Only allowed for
- * applications already ratified as `lolos_final` — otherwise funds could be
- * recorded against a still-pending or rejected application (a data state
- * that has no legitimate meaning and previously showed up as inconsistent
- * "dana sudah cair" on a rejected mahasiswa's Penerimaan Dana page).
+ * PAY-01: staff records a disbursement's transfer proof. Only allowed once
+ * Kabag has ratified the recipient (penerima_beasiswa.status = 'disahkan')
+ * — ratification is what's supposed to open the disbursement pipeline
+ * (approve() -> ensurePending()), so recording proof against a pendaftaran
+ * that's merely `lolos_final` but not yet ratified let staff move money
+ * before Kabag's plenary sign-off at all.
+ *
+ * Reuses the pending row ensurePending() already created instead of
+ * inserting a second one — previously this always inserted a fresh
+ * penyaluran_dana row here, so every ratified recipient ended up with two
+ * rows (one stuck at 'pending' forever from ensurePending, one carrying the
+ * actual transfer proof from here).
  */
 export async function record(pendaftaranId, nominal, buktiTransferUrl) {
   const { data: pendaftaran, error: pendaftaranError } = await supabaseAdmin
@@ -107,6 +114,41 @@ export async function record(pendaftaranId, nominal, buktiTransferUrl) {
       new Error('Pencairan dana hanya bisa dibuat untuk pendaftaran berstatus lolos_final'),
       { status: 409 }
     )
+  }
+
+  const { data: ratified, error: ratifiedError } = await supabaseAdmin
+    .from('penerima_beasiswa')
+    .select('id')
+    .eq('pendaftaran_id', pendaftaranId)
+    .eq('status', 'disahkan')
+    .maybeSingle()
+
+  if (ratifiedError) throw Object.assign(new Error(ratifiedError.message), { status: 502 })
+  if (!ratified) {
+    throw Object.assign(
+      new Error('Penerima belum diratifikasi Kabag — pencairan dana belum bisa dicatat'),
+      { status: 409 }
+    )
+  }
+
+  const { data: existing, error: findError } = await supabaseAdmin
+    .from('penyaluran_dana')
+    .select(PENYALURAN_SELECT)
+    .eq('pendaftaran_id', pendaftaranId)
+    .maybeSingle()
+
+  if (findError) throw Object.assign(new Error(findError.message), { status: 502 })
+
+  if (existing) {
+    const { data, error } = await supabaseAdmin
+      .from('penyaluran_dana')
+      .update({ nominal, bukti_transfer_url: buktiTransferUrl })
+      .eq('id', existing.id)
+      .select(PENYALURAN_SELECT)
+      .single()
+
+    if (error) throw Object.assign(new Error(error.message), { status: 502 })
+    return data
   }
 
   const { data, error } = await supabaseAdmin

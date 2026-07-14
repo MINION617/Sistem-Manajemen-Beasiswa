@@ -38,9 +38,32 @@ export async function listCandidates() {
  * `tetapkan` also proposes the applicant to Kabag as a recipient candidate
  * (penerima_beasiswa: diusulkan) so the plenary-approval feature is reached
  * without a separate manual step. `batal` reverses to `wawancara` and cancels
- * that proposal if Kabag has not already ratified/rejected it.
+ * that proposal — but only while it's still `diusulkan`. Once Kabag has
+ * ratified it (`disahkan`, which also opens the disbursement pipeline via
+ * ensurePending()), staff can no longer unilaterally revert the pendaftaran:
+ * that used to silently reset pendaftaran.status to `wawancara` while leaving
+ * the ratified penerima_beasiswa/penyaluran_dana rows untouched, an
+ * inconsistent state. Cancelling a ratified recipient is Kabag's own call
+ * (PATCH /penerima/:id/batalkan).
  */
 export async function decide(pendaftaranId, decision, catatan, staffId) {
+  if (decision === 'batal') {
+    const { data: ratified, error: ratifiedError } = await supabaseAdmin
+      .from('penerima_beasiswa')
+      .select('id')
+      .eq('pendaftaran_id', pendaftaranId)
+      .eq('status', 'disahkan')
+      .maybeSingle()
+
+    if (ratifiedError) throw Object.assign(new Error(ratifiedError.message), { status: 502 })
+    if (ratified) {
+      throw Object.assign(
+        new Error('Penerima ini sudah diratifikasi Kabag — pembatalan hanya bisa dilakukan Kabag di halaman Perkembangan Penerima'),
+        { status: 409 }
+      )
+    }
+  }
+
   const newStatus =
     decision === 'tetapkan'
       ? STATUS_LOLOS_FINAL
