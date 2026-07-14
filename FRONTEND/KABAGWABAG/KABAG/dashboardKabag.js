@@ -47,37 +47,67 @@ const PIPELINE_STAGES = [
   { key:'pencairan',           label:'Dana Dicairkan',    icon:'solar:transfer-horizontal-bold-duotone',    color:'#0284c7' },
 ];
 
+/* ── DUMMY DATA — penerima aktif (penerima_beasiswa: disahkan), sama bentuk
+   respons dengan GET /kabag/perkembangan (lihat perkembanganPenerima.js) ── */
+const dummyPerkembangan = [
+  {
+    id: 'r-001',
+    pendaftaran: {
+      profiles: { nama_lengkap: 'Fadhlan Rizki Maulana', nim_nip: '2021410043', program_studi: 'Manajemen', ipk: 3.65 },
+      beasiswa: { nama_program: 'Beasiswa Mandiri Prestasi', ipk_minimum: 3.60, sponsors: { nama_perusahaan: 'Bank Mandiri' } },
+    },
+    perkembangan_penerima: [
+      { id: 'k-001', periode: 'Semester 1 2026', ipk_snapshot: 3.55, catatan: 'IPK turun, perlu dipantau.', created_at: '2026-06-01T00:00:00Z' },
+    ],
+  },
+  {
+    id: 'r-002',
+    pendaftaran: {
+      profiles: { nama_lengkap: 'Hana Putri Azzahra', nim_nip: '2021310088', program_studi: 'Teknik Informatika', ipk: 3.95 },
+      beasiswa: { nama_program: 'Beasiswa Mandiri Prestasi', ipk_minimum: 3.60, sponsors: { nama_perusahaan: 'Bank Mandiri' } },
+    },
+    perkembangan_penerima: [
+      { id: 'k-003', periode: 'Semester 1 2026', ipk_snapshot: 3.95, catatan: 'Nilai stabil.', created_at: '2026-07-01T00:00:00Z' },
+    ],
+  },
+];
+
 /* ── DATA (real backend, falls back to dummy above) ── */
 let pendaftarData = dummyPendaftar;
 let laporanCounts = null; // {total, perStatus} from /kabag/laporan-statistik; null → derive from dummyLaporan
 let trenPendaftaran = null; // {years, byYear} from /kabag/tren-pendaftaran; null → hide the section
 let danaDicairkanCount = 0; // count of penyaluran_dana rows with status sudah_cair, from /penyaluran
+let perkembanganData = dummyPerkembangan; // ratified recipients + progress entries, from /kabag/perkembangan
 
 async function loadDashboardData() {
   if (isRealSession) {
     try {
-      const [{ data: pendaftar }, { data: laporanStat }, { data: tren }, { data: penyaluran }] = await Promise.all([
+      const [{ data: pendaftar }, { data: laporanStat }, { data: tren }, { data: penyaluran }, { data: perkembangan }] = await Promise.all([
         api.get('/kabag/pendaftar'),
         api.get('/kabag/laporan-statistik'),
         api.get('/kabag/tren-pendaftaran'),
         api.get('/penyaluran?status=sudah_cair'),
+        api.get('/kabag/perkembangan'),
       ]);
       pendaftarData = pendaftar.map(mapKabagApplicantRow);
       laporanCounts = laporanStat;
       trenPendaftaran = tren;
       danaDicairkanCount = penyaluran.length;
+      perkembanganData = perkembangan;
     } catch (err) {
       console.warn('Gagal memuat data kabag, pakai data contoh:', err);
       pendaftarData = dummyPendaftar;
       laporanCounts = null;
       trenPendaftaran = null;
       danaDicairkanCount = 0;
+      perkembanganData = dummyPerkembangan;
     }
   }
   loadStats();
   renderInsight();
   renderTopNilai();
   renderRingkasanLaporan();
+  renderRingkasanPerkembangan();
   renderPipeline();
   renderTrenPendaftaran();
 }
@@ -418,6 +448,61 @@ function renderRingkasanLaporan() {
         </div>
       `;
     }).join('')}
+  `;
+}
+
+/* ── RINGKASAN PERKEMBANGAN PENERIMA ──
+   Logika ipkTerkini()/butuhPerhatian() sengaja disalin persis dari
+   perkembanganPenerima.js supaya angka "perlu perhatian" di dashboard tidak
+   pernah menyimpang dari halaman detailnya: IPK terkini diambil dari catatan
+   perkembangan TERBARU kalau ada, kalau belum pernah dicatat dipakai IPK
+   profil saat ini; program tanpa ipk_minimum (null) tidak pernah dianggap
+   butuh perhatian. */
+function ipkTerkini(p) {
+  const entries = p.perkembangan_penerima || [];
+  const sorted = [...entries].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+  const latest = sorted[0];
+  return latest?.ipk_snapshot ?? p.pendaftaran?.profiles?.ipk ?? null;
+}
+function butuhPerhatian(p) {
+  const min = p.pendaftaran?.beasiswa?.ipk_minimum;
+  const ipk = ipkTerkini(p);
+  return min != null && ipk != null && ipk < min;
+}
+
+function renderRingkasanPerkembangan() {
+  const el = document.getElementById('ringkasanPerkembangan');
+  if (!el) return;
+
+  const total = perkembanganData.length;
+  const perhatianList = perkembanganData.filter(butuhPerhatian);
+
+  el.innerHTML = `
+    <div class="laporan-summary" style="grid-template-columns:repeat(2,1fr)">
+      <div class="laporan-sum-card">
+        <div class="laporan-sum-num" style="color:var(--accent)">${total}</div>
+        <div class="laporan-sum-label">Penerima Aktif</div>
+      </div>
+      <div class="laporan-sum-card">
+        <div class="laporan-sum-num" style="color:#be123c">${perhatianList.length}</div>
+        <div class="laporan-sum-label">Perlu Perhatian</div>
+      </div>
+    </div>
+    ${perhatianList.length ? perhatianList.slice(0, 4).map(p => {
+      const profil = p.pendaftaran?.profiles;
+      const beasiswa = p.pendaftaran?.beasiswa;
+      const ipk = ipkTerkini(p);
+      return `
+        <div class="laporan-item">
+          <div class="laporan-dot masuk"></div>
+          <div class="laporan-info">
+            <div class="laporan-judul">${profil?.nama_lengkap || '—'}</div>
+            <div class="laporan-by">${beasiswa?.nama_program || '—'} · IPK ${ipk?.toFixed(2) ?? '—'} (min. ${beasiswa?.ipk_minimum?.toFixed(2) ?? '—'})</div>
+          </div>
+          <span class="laporan-status-pill pill-masuk">Perhatian</span>
+        </div>
+      `;
+    }).join('') : '<div style="padding:20px;text-align:center;color:var(--text-4);font-size:13px">Semua penerima aktif memenuhi syarat IPK minimum program masing-masing</div>'}
   `;
 }
 
